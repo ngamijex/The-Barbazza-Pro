@@ -6,7 +6,18 @@ import { allow, AuthUser, requireAuth, signToken } from "./auth";
 import { isoDate, num, query } from "./db";
 
 const app = express();
-app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:3000", credentials: true }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, process.env.CORS_ORIGIN || false);
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 function monthBounds(month: string) {
