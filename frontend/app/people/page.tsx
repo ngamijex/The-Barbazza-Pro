@@ -95,7 +95,7 @@ export default function PeoplePage() {
   return (
     <Shell title="People" subtitle="Roles, chairs, and recruitment balances.">
       {message ? <p className="mb-3 text-sm text-gold">{message}</p> : null}
-      <button onClick={recover} className="mb-4 rounded-full border border-line px-4 py-2 text-sm text-mute">Recover advance balances</button>
+      <button onClick={recover} className="mb-4 rounded-md border border-gold px-4 py-2 text-sm text-mute">Recover advance balances</button>
       <Panel title={editing ? `Edit ${editing.username}` : "New person"}>
         <form onSubmit={editing ? saveEdit : createUser} className="grid gap-3 md:grid-cols-2">
           {!editing ? <input required placeholder="Username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className="rounded-2xl bg-ink px-4 py-3" /> : null}
@@ -123,7 +123,7 @@ export default function PeoplePage() {
       </Panel>
       <div className="mt-4 space-y-3">
         {users.map((person) => (
-          <button key={person.id} onClick={() => setEditing(person)} className="block w-full rounded-[24px] border border-line bg-panel p-4 text-left">
+          <button key={person.id} onClick={() => setEditing(person)} className="block w-full rounded-lg border border-line bg-panel p-4 text-left">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-medium">{person.fullName}</p>

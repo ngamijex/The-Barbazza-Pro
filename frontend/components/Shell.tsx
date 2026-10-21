@@ -2,23 +2,35 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import {
+  CalendarDays,
+  ChartColumn,
+  ClipboardList,
+  Home,
+  LogOut,
+  Scissors,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Role, SessionUser } from "@/lib/api";
-import { CalendarDays, Home, Scissors, Users, Wallet } from "lucide-react";
 
-const NAV: Record<Role, { href: string; label: string; icon: typeof Home }[]> = {
+type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
+
+const NAV: Record<Role, NavItem[]> = {
   admin: [
     { href: "/home", label: "Home", icon: Home },
-    { href: "/performance", label: "Month", icon: CalendarDays },
-    { href: "/floor", label: "Floor", icon: Scissors },
+    { href: "/performance", label: "Month", icon: ChartColumn },
+    { href: "/floor", label: "Floor", icon: CalendarDays },
     { href: "/people", label: "People", icon: Users },
-    { href: "/services", label: "Menu", icon: Wallet },
+    { href: "/services", label: "Menu", icon: Scissors },
   ],
   manager: [
     { href: "/home", label: "Today", icon: Home },
-    { href: "/floor", label: "Floor", icon: Scissors },
+    { href: "/floor", label: "Floor", icon: CalendarDays },
     { href: "/expenses", label: "Spend", icon: Wallet },
-    { href: "/reports", label: "Books", icon: CalendarDays },
+    { href: "/reports", label: "Books", icon: ClipboardList },
   ],
   supervisor: [
     { href: "/home", label: "Today", icon: Home },
@@ -47,74 +59,118 @@ export function useSession() {
   return user;
 }
 
-export function Shell({ children, title, subtitle }: { children: React.ReactNode; title: string; subtitle?: string }) {
+export function Shell({
+  children,
+  title,
+  subtitle,
+  action,
+}: {
+  children: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  action?: React.ReactNode;
+}) {
   const user = useSession();
   const pathname = usePathname();
   const router = useRouter();
-  if (!user) return <div className="min-h-[100dvh] bg-ink" />;
+  if (!user) {
+    return (
+      <div className="app-shell flex min-h-[100dvh] items-center justify-center">
+        <div className="h-10 w-10 animate-pulse rounded-full border-2 border-gold/40 border-t-gold" />
+      </div>
+    );
+  }
   const items = NAV[user.role];
 
+  function signOut() {
+    localStorage.clear();
+    router.replace("/");
+  }
+
   return (
-    <div className="min-h-[100dvh] bg-ink text-cream">
-      <div className="mx-auto flex min-h-[100dvh] max-w-6xl">
-        <aside className="sticky top-0 hidden h-[100dvh] w-64 shrink-0 flex-col border-r border-line bg-panel px-5 py-6 md:flex">
-          <p className="font-display text-2xl gold-text">Barbazza</p>
-          <p className="mt-1 text-xs uppercase tracking-[0.28em] text-mute">{user.role}</p>
-          <nav className="mt-10 flex flex-col gap-1">
-            {items.map((item) => {
-              const active = pathname === item.href;
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 rounded-2xl px-3 py-3 text-sm ${active ? "bg-gold text-ink" : "text-cream/80 hover:bg-white/5"}`}
-                >
-                  <Icon size={18} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <button
-            className="mt-auto rounded-2xl border border-line px-3 py-3 text-left text-sm text-mute"
-            onClick={() => {
-              localStorage.clear();
-              router.replace("/");
-            }}
-          >
-            Sign out · {user.fullName}
-          </button>
-        </aside>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex items-center justify-between border-b border-white/5 bg-ink/80 px-4 py-4 backdrop-blur md:px-8">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.32em] text-gold md:hidden">Barbazza</p>
-              <h1 className="font-display text-2xl leading-none md:text-3xl">{title}</h1>
-              {subtitle ? <p className="mt-1 text-sm text-mute">{subtitle}</p> : null}
+    <div className="app-shell">
+      <header
+        className="sticky top-0 z-30 border-b border-line/80 bg-night/85 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl md:px-6"
+      >
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <img src="/logo.png" alt="Barbazza" className="h-9 w-auto shrink-0 md:h-10" />
+            <div className="min-w-0">
+              <p className="font-display text-xl tracking-[0.14em] text-gold md:text-2xl">BARBAZZA</p>
+              <p className="truncate text-[11px] uppercase tracking-[0.18em] text-mute">
+                {user.role} · {user.fullName.split(" ")[0]}
+              </p>
             </div>
-            <button
-              className="rounded-full border border-line px-3 py-2 text-xs uppercase tracking-widest text-mute md:hidden"
-              onClick={() => {
-                localStorage.clear();
-                router.replace("/");
-              }}
-            >
-              Out
-            </button>
-          </header>
-          <main className="app-scroll flex-1 px-4 pb-28 pt-4 md:px-8 md:pb-10">{children}</main>
+          </div>
+          <button
+            onClick={signOut}
+            className="inline-flex items-center gap-2 rounded-xl border border-line bg-field/50 px-3 py-2 text-sm text-cream transition hover:border-gold/40"
+            aria-label="Sign out"
+          >
+            <LogOut className="h-4 w-4 text-gold" />
+            <span className="hidden sm:inline">Logout</span>
+          </button>
         </div>
-      </div>
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-[#100e0c]/95 px-2 pb-[max(env(safe-area-inset-bottom),10px)] pt-2 backdrop-blur md:hidden">
-        <div className="mx-auto flex max-w-lg justify-around">
+      </header>
+
+      {/* Desktop secondary nav under header */}
+      <nav className="sticky top-[72px] z-20 hidden border-b border-line/60 bg-night/80 backdrop-blur-xl md:block">
+        <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 no-scrollbar md:px-6">
           {items.map((item) => {
             const active = pathname === item.href;
             const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href} className={`flex min-w-[64px] flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] ${active ? "text-gold" : "text-mute"}`}>
-                <Icon size={20} />
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`inline-flex items-center gap-2 border-b-2 px-4 py-3 text-sm transition ${
+                  active ? "border-gold text-gold" : "border-transparent text-mute hover:text-cream"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
                 {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      <main className="app-main mx-auto w-full max-w-6xl px-4 pt-5 md:px-6">
+        <div className="mb-5 flex items-end justify-between gap-3">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+            <h1 className="font-display text-3xl text-cream md:text-4xl">{title}</h1>
+            {subtitle ? <p className="mt-1 text-sm text-mute">{subtitle}</p> : null}
+          </motion.div>
+          {action}
+        </div>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }}>
+          {children}
+        </motion.div>
+      </main>
+
+      {/* Mobile bottom tab bar — native app feel */}
+      <nav className="bottom-nav fixed inset-x-0 bottom-0 z-40 border-t border-line/80 bg-night/92 px-2 pt-2 backdrop-blur-xl md:hidden">
+        <div className="mx-auto flex max-w-lg items-stretch justify-around">
+          {items.map((item) => {
+            const active = pathname === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`relative flex min-w-[64px] flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] transition ${
+                  active ? "text-gold" : "text-mute"
+                }`}
+              >
+                {active ? (
+                  <motion.span
+                    layoutId="tab-glow"
+                    className="absolute inset-0 rounded-2xl bg-gold/10"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                ) : null}
+                <Icon className={`relative z-10 h-5 w-5 ${active ? "text-gold" : ""}`} />
+                <span className="relative z-10 font-medium tracking-wide">{item.label}</span>
               </Link>
             );
           })}
@@ -124,20 +180,37 @@ export function Shell({ children, title, subtitle }: { children: React.ReactNode
   );
 }
 
-export function Kpi({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+export function Kpi({
+  label,
+  value,
+  hint,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  accent?: boolean;
+}) {
   return (
-    <div className="rounded-[22px] border border-line bg-panel p-4">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-mute">{label}</p>
-      <p className={`mt-2 font-display text-2xl ${accent ? "text-gold" : "text-cream"}`}>{value}</p>
+    <div className="kpi-card">
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-mute">{label}</p>
+      <p className={`mt-2 font-display text-2xl md:text-3xl ${accent ? "text-gold-soft" : "text-cream"}`}>{value}</p>
+      {hint ? <p className="mt-1 text-xs text-mute">{hint}</p> : null}
     </div>
   );
 }
 
-export function Panel({ title, children }: { title?: string; children: React.ReactNode }) {
+export function Panel({ title, children, className = "" }: { title?: string; children: React.ReactNode; className?: string }) {
   return (
-    <section className="rounded-[28px] border border-line bg-panel p-4 md:p-5">
-      {title ? <h2 className="mb-4 font-display text-xl">{title}</h2> : null}
+    <section className={`card p-4 md:p-5 ${className}`}>
+      {title ? <h2 className="mb-4 font-display text-2xl text-gold">{title}</h2> : null}
       {children}
     </section>
+  );
+}
+
+export function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-line px-4 py-10 text-center text-sm text-mute">{message}</div>
   );
 }

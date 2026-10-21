@@ -86,7 +86,7 @@ export default function FloorPage() {
   return (
     <Shell title="The floor" subtitle="Any day, every chair, every expense.">
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mb-4 w-full rounded-2xl border border-line bg-panel px-4 py-3 md:max-w-xs" />
-      {error ? <p className="mb-3 text-sm text-red-300">{error}</p> : null}
+      {error ? <p className="mb-3 rounded-xl border border-burgundy/40 bg-burgundy/20 px-4 py-3 text-sm">{error}</p> : null}
       {day ? (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
@@ -111,7 +111,7 @@ export default function FloorPage() {
                 </select>
                 <input required type="number" placeholder="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="rounded-2xl bg-ink px-4 py-3" />
                 <input placeholder="Client name" value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} className="rounded-2xl bg-ink px-4 py-3" />
-                <button className="rounded-2xl bg-gold py-3 font-semibold text-ink md:col-span-2">Record service</button>
+                <button className="btn-gold md:col-span-2">Record service</button>
               </form>
             </Panel>
           ) : null}

@@ -53,7 +53,7 @@ export default function HomePage() {
 
   return (
     <Shell title={title} subtitle={user ? `Welcome, ${user.fullName}` : ""}>
-      {error ? <p className="mb-4 text-red-300">{error}</p> : null}
+      {error ? <p className="mb-4 rounded-xl border border-burgundy/40 bg-burgundy/20 px-4 py-3 text-sm">{error}</p> : null}
       {user?.role === "admin" && overview ? (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -73,8 +73,8 @@ export default function HomePage() {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={overview.trend}>
                   <XAxis dataKey="date" hide />
-                  <Tooltip formatter={(value) => money(Number(value))} contentStyle={{ background: "#141210", border: "1px solid #2a241c" }} />
-                  <Area dataKey="total" stroke="#d4af37" fill="#d4af3733" strokeWidth={2} />
+                  <Tooltip formatter={(value) => money(Number(value))} contentStyle={{ background: "#1a1816", border: "1px solid rgba(201,162,39,0.25)", color: "#f3efe6", borderRadius: 12 }} />
+                  <Area dataKey="total" stroke="#c9a227" fill="rgba(201,162,39,0.18)" strokeWidth={2.5} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>

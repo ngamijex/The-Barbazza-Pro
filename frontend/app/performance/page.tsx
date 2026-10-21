@@ -53,7 +53,7 @@ export default function PerformancePage() {
         </select>
         <div className="grid grid-cols-2 rounded-2xl border border-line bg-panel p-1">
           {(["salon", "barber"] as const).map((item) => (
-            <button key={item} onClick={() => setFace(item)} className={`rounded-xl px-4 py-2 capitalize ${face === item ? "bg-gold text-ink" : "text-mute"}`}>
+            <button key={item} onClick={() => setFace(item)} className={`rounded-xl px-4 py-2 capitalize ${face === item ? "bg-gold text-night" : "text-mute"}`}>
               {item === "salon" ? "Barbershop" : "Barber"}
             </button>
           ))}
@@ -73,7 +73,7 @@ export default function PerformancePage() {
             <div className="space-y-3">
               {data.ranking.map((row) => (
                 <div key={row.barberId} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl bg-ink px-3 py-3">
-                  <span className="grid h-9 w-9 place-items-center rounded-full bg-gold text-sm font-semibold text-ink">{row.rank}</span>
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-gold text-sm font-semibold text-night">{row.rank}</span>
                   <div>
                     <p>{row.name}</p>
                     <p className="text-xs text-mute">{row.customers} clients · {row.share}% of the house</p>
@@ -107,8 +107,8 @@ export default function PerformancePage() {
                     <BarChart data={barber.trend}>
                       <XAxis dataKey="date" hide />
                       <YAxis hide />
-                      <Tooltip formatter={(value) => money(Number(value))} contentStyle={{ background: "#141210", border: "1px solid #2a241c" }} />
-                      <Bar dataKey="total" fill="#d4af37" radius={6} />
+                      <Tooltip formatter={(value) => money(Number(value))} contentStyle={{ background: "#1a1816", border: "1px solid rgba(201,162,39,0.25)", color: "#f3efe6", borderRadius: 12 }} />
+                      <Bar dataKey="total" fill="#c9a227" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

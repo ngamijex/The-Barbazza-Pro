@@ -44,7 +44,7 @@ export default function ServicesPage() {
       </Panel>
       <div className="mt-4 space-y-3">
         {services.map((service) => (
-          <div key={service.id} className="flex items-center justify-between rounded-[24px] border border-line bg-panel px-4 py-4">
+          <div key={service.id} className="flex items-center justify-between rounded-lg border border-line bg-panel px-4 py-4">
             <div>
               <p>{service.name}</p>
               <p className="text-xs text-mute">{service.active ? "On the menu" : "Hidden"}</p>
