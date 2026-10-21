@@ -1,65 +1,157 @@
-# Barbazza
+# Barbazza Barbershop Management System
 
-Premium barbershop operations platform — **TypeScript**, **Next.js**, **Tailwind CSS**, and an **Express** API on the same Neon PostgreSQL database as before.
+A comprehensive daily-operations-focused barbershop management system built with R Shiny.
 
-On a phone it behaves like a native app: safe areas, bottom tab bar, dark luxury chrome, and role-specific screens. On desktop you get a full console with the same data.
+## Features
 
-## Stack
+### User Roles
 
-| Layer | Tech |
-| --- | --- |
-| Language | TypeScript |
-| Frontend | Next.js 15 (App Router) + Tailwind + Framer Motion + Recharts |
-| Backend | Express + Zod + JWT + `pg` |
-| Database | Existing Neon PostgreSQL (unchanged schema) |
+1. **Admin** - Full system control
+   - User management (create/manage managers & barbers)
+   - View global reports (daily, weekly, monthly)
+   - Manage services & prices
+   - System settings
+   - Audit logs
 
-```
-backend/     API on :4000
-frontend/    Web app on :3000
-```
+2. **Manager** - Daily operations
+   - Add daily service transactions
+   - Record expenses (shop & barber-specific)
+   - View daily income & profit summaries
+   - Generate daily reports
+   - Close the day
 
-## Roles
+3. **Barber** - Personal performance
+   - View today's income (real-time)
+   - See number of clients served
+   - View performance history (daily/weekly/monthly)
+   - Track personal earnings
 
-| Role | Access |
-| --- | --- |
-| **Admin** | House overview, monthly performance (salon + barber), floor history, people, services |
-| **Manager** | Record services & expenses, day floor, books/reports |
-| **Supervisor** | Read-only day view: income, clients, expenses, net, chair breakdown |
-| **Barber** | Personal chair: commission today & month, advances |
+## Installation
 
-Recruitment advances **keep amount already paid** when edited. Admin can **Recover advance balances** from monthly salary deductions.
+### 1. Install Required R Packages
 
-## Setup
+Run the package installation script:
 
-1. Copy env files:
-
-```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env.local
+```r
+source("install_packages.R")
 ```
 
-2. In `backend/.env` set your Neon `DATABASE_URL` and a strong `JWT_SECRET`.
+Or manually install:
 
-3. Install & run:
-
-```bash
-npm run install:all
-npm run dev:api    # terminal 1
-npm run dev:web    # terminal 2
+```r
+install.packages(c("shiny", "shinyjs", "DT", "RPostgres", "DBI", "digest"))
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Sign in with the same usernames/passwords already in the database (bcrypt via PostgreSQL `crypt()`).
+### 2. Database Setup
 
-## Mobile
+The database is already configured. To ensure password verification works properly, run:
 
-- `viewport-fit=cover` + safe-area padding  
-- Fixed bottom navigation (iOS-style tabs)  
-- Apple web-app capable meta for home-screen install  
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+```
 
-## GitHub
+You can run this in your Neon database console or use the provided `setup_db.sql` file.
 
-Repository: [github.com/ngamijex/the-barbazza](https://github.com/ngamijex/the-barbazza)
+### 3. Run the Application
 
-## Legacy R Shiny
+```r
+shiny::runApp("app.R")
+```
 
-The previous R Shiny app remains in this workspace for reference. Runtime secrets (`.env`, Google JSON keys) are gitignored — never commit them.
+Or simply:
+
+```r
+source("app.R")
+```
+
+## Database Connection
+
+The system connects to a Neon PostgreSQL database. Connection details are configured in `utils/db_connection.R`.
+
+**Connection String:**
+```
+postgresql://neondb_owner:npg_RBWT5yV4LGsJ@ep-sparkling-pond-agk40clv-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+```
+
+## Project Structure
+
+```
+the_barbazza/
+├── app.R                    # Main application file
+├── install_packages.R        # Package installation script
+├── setup_db.sql             # Database setup script
+├── check_db.R               # Database structure checker
+├── utils/
+│   ├── db_connection.R      # Database connection utilities
+│   ├── auth.R               # Authentication functions
+│   └── helpers.R            # Helper functions
+├── modules/
+│   ├── admin_module.R       # Admin portal
+│   ├── manager_module.R     # Manager portal
+│   └── barber_module.R       # Barber portal
+└── www/
+    ├── styles.css           # Custom CSS styles
+    ├── app.js               # JavaScript for interactivity
+    └── logo.png             # Barbazza logo
+```
+
+## Default Login
+
+The system comes with a default admin user:
+- **Username:** admin
+- **Password:** (check database or contact system administrator)
+
+## Key Features
+
+### Daily Operations
+- Real-time transaction tracking
+- Automatic income calculation
+- Expense management
+- Daily profit calculation
+
+### Reports
+- Daily summaries
+- Barber performance tracking
+- Income/expense reports
+- Historical data analysis
+
+### Security
+- Role-based access control
+- Password hashing (bcrypt)
+- Audit logging
+- Session management
+
+## Development Notes
+
+- The system uses Shiny (not shinydashboard) for a custom UI
+- CSS follows the Barbazza design system (dark theme with gold accents)
+- JavaScript enhances user experience with animations and interactivity
+- All database operations use parameterized queries for security
+
+## Troubleshooting
+
+### Authentication Issues
+If you encounter password verification errors:
+1. Ensure `pgcrypto` extension is installed in your database
+2. Run `setup_db.sql` to enable the extension
+3. Check that password hashes in the database are valid bcrypt hashes
+
+### Database Connection Issues
+1. Verify your internet connection
+2. Check that the database credentials in `utils/db_connection.R` are correct
+3. Ensure SSL is properly configured
+
+### Package Installation Issues
+1. Update R to the latest version
+2. Install packages from CRAN
+3. For RPostgres, you may need to install system dependencies (libpq-dev on Linux)
+
+## License
+
+This is a proprietary system for Barbazza Barbershop.
+
+## Support
+
+For issues or questions, contact the system administrator.
+
+

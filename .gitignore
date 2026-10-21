@@ -1,16 +1,13 @@
-node_modules
+﻿node_modules
 .next
 dist
 *.tsbuildinfo
 .env
 .env.local
-*.R
-*.Rproj
 .Rproj.user
 .Rhistory
 reports
 the-barbazza-*.json
 rsconnect
-LEGACY_README.md
 *.xlsx
 ~$*.xlsx
