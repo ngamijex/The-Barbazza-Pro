@@ -11,3 +11,4 @@ the-barbazza-*.json
 rsconnect
 *.xlsx
 ~$*.xlsx
+.vscode
