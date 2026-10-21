@@ -6,8 +6,9 @@ dist
 .env.local
 .Rproj.user
 .Rhistory
-reports
+/reports/
 the-barbazza-*.json
+frontend/next-env.d.ts
 rsconnect
 *.xlsx
 ~$*.xlsx
