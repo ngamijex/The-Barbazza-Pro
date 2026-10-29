@@ -40,59 +40,55 @@ export default function ReportsPage() {
   );
 
   return (
-    <Shell title="Reports & Analytics" subtitle="Daily reports from the books.">
-      <Panel title="Daily Reports">
-        <div className="mb-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
-          <label className="text-sm text-cream">
-            Start Date
-            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1" />
-          </label>
-          <label className="text-sm text-cream">
-            End Date
-            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1" />
-          </label>
+    <Shell>
+      <Panel title="Reports & Analytics" className="admin-card">
+        <div className="form-grid form-grid-2" style={{ marginBottom: "var(--space-4)" }}>
+          <div className="form-group">
+            <label>Start Date</label>
+            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label>End Date</label>
+            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          </div>
         </div>
-        {error ? <p className="mb-3 border-l-4 border-error bg-red-50 px-3 py-2 text-sm">{error}</p> : null}
-        <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {error ? <div className="alert alert-danger">{error}</div> : null}
+        <div className="daily-summary" style={{ marginBottom: "var(--space-4)" }}>
           <Kpi label="Total Income" value={money(totals.income)} />
           <Kpi label="Total Expenses" value={money(totals.expenses)} />
           <Kpi label="Net Profit" value={money(totals.profit)} />
           <Kpi label="Total Customers" value={String(totals.customers)} />
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-line text-xs uppercase tracking-wide text-mute">
-                <th className="py-2 pr-3">Date</th>
-                <th className="py-2 pr-3">Customers</th>
-                <th className="py-2 pr-3">Income</th>
-                <th className="py-2 pr-3">Expenses</th>
-                <th className="py-2 pr-3">Net Profit</th>
-                <th className="py-2">Status</th>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Customers</th>
+              <th>Income</th>
+              <th>Expenses</th>
+              <th>Net Profit</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={6}>No reports in this range.</td>
               </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-6 text-mute">
-                    No reports in this range.
-                  </td>
+            ) : (
+              rows.map((row) => (
+                <tr key={row.date}>
+                  <td>{row.date}</td>
+                  <td>{row.customers}</td>
+                  <td>{money(row.income)}</td>
+                  <td>{money(row.expenses)}</td>
+                  <td>{money(row.profit)}</td>
+                  <td>{row.locked ? "Locked" : "Open"}</td>
                 </tr>
-              ) : (
-                rows.map((row) => (
-                  <tr key={row.date} className="border-b border-line/70">
-                    <td className="py-2.5 pr-3">{row.date}</td>
-                    <td className="py-2.5 pr-3">{row.customers}</td>
-                    <td className="py-2.5 pr-3">{money(row.income)}</td>
-                    <td className="py-2.5 pr-3">{money(row.expenses)}</td>
-                    <td className="py-2.5 pr-3 font-medium text-gold">{money(row.profit)}</td>
-                    <td className="py-2.5">{row.locked ? "Locked" : "Open"}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </Panel>
     </Shell>
   );

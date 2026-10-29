@@ -33,26 +33,47 @@ export default function ServicesPage() {
   }
 
   return (
-    <Shell title="Service menu" subtitle="Prices the floor charges today.">
-      {error ? <p className="mb-3 text-sm text-red-300">{error}</p> : null}
-      <Panel title="Add a service">
-        <form onSubmit={onSubmit} className="grid gap-3 md:grid-cols-[1fr_160px_auto]">
-          <input required placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} className="rounded-2xl bg-field px-4 py-3" />
-          <input required type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} className="rounded-2xl bg-field px-4 py-3" />
-          <button className="rounded-2xl bg-gold px-5 py-3 font-semibold text-white">Add</button>
+    <Shell>
+      {error ? <div className="alert alert-danger">{error}</div> : null}
+      <Panel title="Service Management" className="admin-card">
+        <form onSubmit={onSubmit} className="service-form">
+          <div className="form-grid form-grid-3">
+            <div className="form-group">
+              <label>Service Name</label>
+              <input required value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label>Base Price (RWF)</label>
+              <input required type="number" min={0} value={price} onChange={(e) => setPrice(e.target.value)} />
+            </div>
+            <div className="form-group" style={{ display: "flex", alignItems: "flex-end" }}>
+              <button type="submit" className="btn-action" style={{ width: "100%" }}>
+                Add Service
+              </button>
+            </div>
+          </div>
         </form>
       </Panel>
-      <div className="mt-4 space-y-3">
-        {services.map((service) => (
-          <div key={service.id} className="flex items-center justify-between rounded-lg border border-line bg-panel px-4 py-4">
-            <div>
-              <p>{service.name}</p>
-              <p className="text-xs text-mute">{service.active ? "On the menu" : "Hidden"}</p>
-            </div>
-            <p className="font-display text-gold">{money(service.price)}</p>
-          </div>
-        ))}
-      </div>
+      <Panel title="Services" className="admin-card">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Active</th>
+            </tr>
+          </thead>
+          <tbody>
+            {services.map((service) => (
+              <tr key={service.id}>
+                <td>{service.name}</td>
+                <td>{money(service.price)}</td>
+                <td>{service.active ? "Yes" : "No"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Panel>
     </Shell>
   );
 }

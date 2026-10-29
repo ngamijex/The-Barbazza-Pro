@@ -3,9 +3,13 @@ import cors from "cors";
 import express from "express";
 import { z } from "zod";
 import { allow, AuthUser, requireAuth, signToken } from "./auth";
-import { isoDate, num, query } from "./db";
+import { pool, isoDate, num, query, cacheGet, cacheSet, cacheDel } from "./db";
+import { ensurePublicSchema } from "./publicSchema";
+import { publicApi } from "./publicApi";
 
 const app = express();
+app.disable("x-powered-by");
+app.set("etag", false);
 app.use(
   cors({
     origin(origin, callback) {
@@ -18,7 +22,13 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
+app.use("/api/public", publicApi);
+
+/** Mark short-lived API GETs as privately cacheable on the client */
+function fastGetHeaders(res: import("express").Response, seconds = 10) {
+  res.setHeader("Cache-Control", `private, max-age=${seconds}`);
+}
 
 function monthBounds(month: string) {
   const start = `${month.slice(0, 7)}-01`;
@@ -56,11 +66,13 @@ app.post("/api/auth/login", async (req, res) => {
       res.status(401).json({ error: "Invalid username or password" });
       return;
     }
-    await query(`UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = $1`, [user.user_id]);
-    const barber = await query<{ barber_id: number }>(
+    const barberPromise = query<{ barber_id: number }>(
       `SELECT barber_id FROM barbers WHERE user_id = $1 LIMIT 1`,
       [user.user_id]
     );
+    // Don't block login on last_login write
+    void query(`UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = $1`, [user.user_id]);
+    const barber = await barberPromise;
     const authUser: AuthUser = {
       userId: Number(user.user_id),
       username: user.username,
@@ -104,12 +116,41 @@ app.get("/api/dashboard/overview", requireAuth, allow("admin"), async (_req, res
     const income = num(month[0]?.income);
     const expenses = num(month[0]?.expenses);
     const days = Math.max(1, num(month[0]?.days));
-    const trend = await query<{ day: string; total: string }>(
-      `SELECT transaction_date AS day, COALESCE(SUM(amount),0) AS total
-       FROM transactions
-       WHERE transaction_date >= date_trunc('month', CURRENT_DATE)
-       GROUP BY transaction_date ORDER BY transaction_date`
-    );
+    const [trend, topBarbers, recentActivity] = await Promise.all([
+      query<{ day: string; total: string }>(
+        `SELECT transaction_date AS day, COALESCE(SUM(amount),0) AS total
+         FROM transactions
+         WHERE transaction_date >= date_trunc('month', CURRENT_DATE)
+         GROUP BY transaction_date ORDER BY transaction_date`
+      ),
+      query<{ barber_code: string; full_name: string | null; customers: string; earned: string }>(
+        `SELECT b.barber_code, u.full_name,
+                COUNT(t.transaction_id)::int AS customers,
+                COALESCE(SUM(t.amount),0) AS earned
+         FROM barbers b
+         LEFT JOIN users u ON b.user_id = u.user_id
+         LEFT JOIN transactions t
+           ON b.barber_id = t.barber_id
+          AND t.transaction_date >= date_trunc('month', CURRENT_DATE)
+         WHERE b.is_active = TRUE
+         GROUP BY b.barber_id, b.barber_code, u.full_name
+         ORDER BY earned DESC NULLS LAST
+         LIMIT 10`
+      ),
+      query<{ action_type: string | null; table_name: string | null; created_at: string }>(
+        `SELECT action_type, table_name, TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at
+         FROM audit_logs
+         ORDER BY created_at DESC
+         LIMIT 20`
+      ).catch(async () =>
+        query<{ action_type: string | null; table_name: string | null; created_at: string }>(
+          `SELECT action AS action_type, details AS table_name, TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at
+           FROM audit_logs
+           ORDER BY created_at DESC
+           LIMIT 20`
+        ).catch(() => [])
+      ),
+    ]);
     res.json({
       totalUsers: num(users[0]?.count),
       activeBarbers: num(barbers[0]?.count),
@@ -128,53 +169,74 @@ app.get("/api/dashboard/overview", requireAuth, allow("admin"), async (_req, res
         avgDaily: income / days,
       },
       trend: trend.map((row) => ({ date: isoDate(row.day), total: num(row.total) })),
+      topBarbers: topBarbers.map((row) => ({
+        code: row.barber_code,
+        name: row.full_name || row.barber_code,
+        customers: num(row.customers),
+        earned: num(row.earned),
+        avg: num(row.customers) > 0 ? num(row.earned) / num(row.customers) : 0,
+      })),
+      recentActivity: recentActivity.map((row) => ({
+        action: row.action_type || "-",
+        table: row.table_name || "-",
+        time: row.created_at,
+      })),
     });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load overview" });
   }
 });
 
-app.get("/api/dashboard/performance", requireAuth, allow("admin"), async (req, res) => {
+app.get("/api/dashboard/performance", requireAuth, allow("admin", "manager"), async (req, res) => {
   const month = String(req.query.month || new Date().toISOString().slice(0, 7));
   const { start, end } = monthBounds(month);
   try {
-    const salon = await query<{ income: string; customers: string; expenses: string; days: string }>(
-      `SELECT
-         (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date BETWEEN $1 AND $2) AS income,
-         (SELECT COUNT(*)::int FROM transactions WHERE transaction_date BETWEEN $1 AND $2) AS customers,
-         (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date BETWEEN $1 AND $2) AS expenses,
-         (SELECT COUNT(DISTINCT transaction_date)::int FROM transactions WHERE transaction_date BETWEEN $1 AND $2) AS days`,
-      [start, end]
-    );
+    const cacheKey = `perf:${month}`;
+    const cached = cacheGet<unknown>(cacheKey);
+    if (cached) {
+      fastGetHeaders(res, 15);
+      res.json(cached);
+      return;
+    }
+    const [salon, ranking, trend] = await Promise.all([
+      query<{ income: string; customers: string; expenses: string; days: string }>(
+        `SELECT
+           (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date BETWEEN $1 AND $2) AS income,
+           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date BETWEEN $1 AND $2) AS customers,
+           (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date BETWEEN $1 AND $2) AS expenses,
+           (SELECT COUNT(DISTINCT transaction_date)::int FROM transactions WHERE transaction_date BETWEEN $1 AND $2) AS days`,
+        [start, end]
+      ),
+      query<{
+        barber_id: number;
+        barber_code: string;
+        full_name: string | null;
+        customers: string;
+        earned: string;
+      }>(
+        `SELECT b.barber_id, b.barber_code, u.full_name,
+                COUNT(t.transaction_id)::int AS customers,
+                COALESCE(SUM(t.amount),0) AS earned
+         FROM barbers b
+         LEFT JOIN users u ON b.user_id = u.user_id
+         LEFT JOIN transactions t ON b.barber_id = t.barber_id
+           AND t.transaction_date BETWEEN $1 AND $2
+         WHERE b.is_active = TRUE
+         GROUP BY b.barber_id, b.barber_code, u.full_name
+         ORDER BY earned DESC NULLS LAST`,
+        [start, end]
+      ),
+      query<{ day: string; total: string }>(
+        `SELECT transaction_date AS day, COALESCE(SUM(amount),0) AS total
+         FROM transactions WHERE transaction_date BETWEEN $1 AND $2
+         GROUP BY transaction_date ORDER BY transaction_date`,
+        [start, end]
+      ),
+    ]);
     const income = num(salon[0]?.income);
     const expenses = num(salon[0]?.expenses);
     const days = num(salon[0]?.days);
-    const ranking = await query<{
-      barber_id: number;
-      barber_code: string;
-      full_name: string | null;
-      customers: string;
-      earned: string;
-    }>(
-      `SELECT b.barber_id, b.barber_code, u.full_name,
-              COUNT(t.transaction_id)::int AS customers,
-              COALESCE(SUM(t.amount),0) AS earned
-       FROM barbers b
-       LEFT JOIN users u ON b.user_id = u.user_id
-       LEFT JOIN transactions t ON b.barber_id = t.barber_id
-         AND t.transaction_date BETWEEN $1 AND $2
-       WHERE b.is_active = TRUE
-       GROUP BY b.barber_id, b.barber_code, u.full_name
-       ORDER BY earned DESC NULLS LAST`,
-      [start, end]
-    );
-    const trend = await query<{ day: string; total: string }>(
-      `SELECT transaction_date AS day, COALESCE(SUM(amount),0) AS total
-       FROM transactions WHERE transaction_date BETWEEN $1 AND $2
-       GROUP BY transaction_date ORDER BY transaction_date`,
-      [start, end]
-    );
-    res.json({
+    const payload = {
       month: start.slice(0, 7),
       salon: {
         income,
@@ -194,7 +256,10 @@ app.get("/api/dashboard/performance", requireAuth, allow("admin"), async (req, r
         share: income > 0 ? Math.round((num(row.earned) / income) * 1000) / 10 : 0,
       })),
       trend: trend.map((row) => ({ date: isoDate(row.day), total: num(row.total) })),
-    });
+    };
+    cacheSet(cacheKey, payload, 20_000);
+    fastGetHeaders(res, 15);
+    res.json(payload);
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load performance" });
   }
@@ -202,6 +267,12 @@ app.get("/api/dashboard/performance", requireAuth, allow("admin"), async (req, r
 
 app.get("/api/barbers", requireAuth, async (_req, res) => {
   try {
+    const cached = cacheGet<unknown[]>("barbers");
+    if (cached) {
+      fastGetHeaders(res, 15);
+      res.json(cached);
+      return;
+    }
     const rows = await query<{ barber_id: number; barber_code: string; full_name: string | null; commission_rate: string }>(
       `SELECT b.barber_id, b.barber_code, u.full_name, b.commission_rate
        FROM barbers b
@@ -209,14 +280,15 @@ app.get("/api/barbers", requireAuth, async (_req, res) => {
        WHERE b.is_active = TRUE
        ORDER BY b.barber_code`
     );
-    res.json(
-      rows.map((row) => ({
-        id: Number(row.barber_id),
-        code: row.barber_code,
-        name: row.full_name || row.barber_code,
-        commissionRate: num(row.commission_rate),
-      }))
-    );
+    const payload = rows.map((row) => ({
+      id: Number(row.barber_id),
+      code: row.barber_code,
+      name: row.full_name || row.barber_code,
+      commissionRate: num(row.commission_rate),
+    }));
+    cacheSet("barbers", payload, 20_000);
+    fastGetHeaders(res, 15);
+    res.json(payload);
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load barbers" });
   }
@@ -275,46 +347,56 @@ app.get("/api/dashboard/barber", requireAuth, allow("admin"), async (req, res) =
 });
 
 async function daySnapshot(date: string) {
-  const summary = await query<{ income: string; customers: string; expenses: string }>(
-    `SELECT
-       (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date = $1) AS income,
-       (SELECT COUNT(*)::int FROM transactions WHERE transaction_date = $1) AS customers,
-       (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date = $1) AS expenses`,
-    [date]
-  );
-  const barbers = await query<{
-    barber_code: string;
-    full_name: string | null;
-    clients: string;
-    earned: string;
-  }>(
-    `SELECT b.barber_code, u.full_name,
-            COUNT(t.transaction_id)::int AS clients,
-            COALESCE(SUM(t.amount),0) AS earned
-     FROM barbers b
-     LEFT JOIN users u ON b.user_id = u.user_id
-     LEFT JOIN transactions t ON b.barber_id = t.barber_id AND t.transaction_date = $1
-     WHERE b.is_active = TRUE
-     GROUP BY b.barber_id, b.barber_code, u.full_name
-     ORDER BY earned DESC NULLS LAST`,
-    [date]
-  );
-  const expenses = await query<{
-    category: string | null;
-    description: string | null;
-    amount: string;
-    time: string | null;
-    added_by: string | null;
-  }>(
-    `SELECT c.category_name AS category, e.description, e.amount,
-            TO_CHAR(e.created_at, 'HH24:MI') AS time, u.username AS added_by
-     FROM expenses e
-     LEFT JOIN expense_categories c ON e.category_id = c.category_id
-     LEFT JOIN users u ON e.created_by = u.user_id
-     WHERE e.expense_date = $1
-     ORDER BY e.created_at DESC`,
-    [date]
-  );
+  const cached = cacheGet<ReturnType<typeof Object>>(`day:${date}`);
+  if (cached) return cached as Awaited<ReturnType<typeof daySnapshotUncached>>;
+  const result = await daySnapshotUncached(date);
+  cacheSet(`day:${date}`, result, 8_000);
+  return result;
+}
+
+async function daySnapshotUncached(date: string) {
+  const [summary, barbers, expenses] = await Promise.all([
+    query<{ income: string; customers: string; expenses: string }>(
+      `SELECT
+         (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date = $1) AS income,
+         (SELECT COUNT(*)::int FROM transactions WHERE transaction_date = $1) AS customers,
+         (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date = $1) AS expenses`,
+      [date]
+    ),
+    query<{
+      barber_code: string;
+      full_name: string | null;
+      clients: string;
+      earned: string;
+    }>(
+      `SELECT b.barber_code, u.full_name,
+              COUNT(t.transaction_id)::int AS clients,
+              COALESCE(SUM(t.amount),0) AS earned
+       FROM barbers b
+       LEFT JOIN users u ON b.user_id = u.user_id
+       LEFT JOIN transactions t ON b.barber_id = t.barber_id AND t.transaction_date = $1
+       WHERE b.is_active = TRUE
+       GROUP BY b.barber_id, b.barber_code, u.full_name
+       ORDER BY earned DESC NULLS LAST`,
+      [date]
+    ),
+    query<{
+      category: string | null;
+      description: string | null;
+      amount: string;
+      time: string | null;
+      added_by: string | null;
+    }>(
+      `SELECT c.category_name AS category, e.description, e.amount,
+              TO_CHAR(e.created_at, 'HH24:MI') AS time, u.username AS added_by
+       FROM expenses e
+       LEFT JOIN expense_categories c ON e.category_id = c.category_id
+       LEFT JOIN users u ON e.created_by = u.user_id
+       WHERE e.expense_date = $1
+       ORDER BY e.created_at DESC`,
+      [date]
+    ),
+  ]);
   const income = num(summary[0]?.income);
   const expenseTotal = num(summary[0]?.expenses);
   return {
@@ -342,6 +424,7 @@ async function daySnapshot(date: string) {
 app.get("/api/day", requireAuth, allow("admin", "manager", "supervisor"), async (req, res) => {
   const date = String(req.query.date || new Date().toISOString().slice(0, 10));
   try {
+    fastGetHeaders(res, 5);
     res.json(await daySnapshot(date));
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load day" });
@@ -350,6 +433,12 @@ app.get("/api/day", requireAuth, allow("admin", "manager", "supervisor"), async 
 
 app.get("/api/services", requireAuth, async (_req, res) => {
   try {
+    const cached = cacheGet<unknown[]>("services");
+    if (cached) {
+      fastGetHeaders(res, 20);
+      res.json(cached);
+      return;
+    }
     const rows = await query<{
       service_id: number;
       service_name: string;
@@ -357,15 +446,16 @@ app.get("/api/services", requireAuth, async (_req, res) => {
       service_description: string | null;
       is_active: boolean;
     }>(`SELECT service_id, service_name, base_price, service_description, is_active FROM services ORDER BY service_name`);
-    res.json(
-      rows.map((row) => ({
-        id: Number(row.service_id),
-        name: row.service_name,
-        price: num(row.base_price),
-        description: row.service_description || "",
-        active: row.is_active,
-      }))
-    );
+    const payload = rows.map((row) => ({
+      id: Number(row.service_id),
+      name: row.service_name,
+      price: num(row.base_price),
+      description: row.service_description || "",
+      active: row.is_active,
+    }));
+    cacheSet("services", payload, 30_000);
+    fastGetHeaders(res, 20);
+    res.json(payload);
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load services" });
   }
@@ -390,6 +480,7 @@ app.post("/api/services", requireAuth, allow("admin"), async (req, res) => {
        VALUES ($1, $2, $3, $4, $5)`,
       [parsed.data.name, parsed.data.price, parsed.data.description || null, parsed.data.active ?? true, req.user!.userId]
     );
+    cacheDel("services");
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Could not save service" });
@@ -398,17 +489,24 @@ app.post("/api/services", requireAuth, allow("admin"), async (req, res) => {
 
 app.get("/api/categories", requireAuth, async (_req, res) => {
   try {
+    const cached = cacheGet<unknown[]>("categories");
+    if (cached) {
+      fastGetHeaders(res, 20);
+      res.json(cached);
+      return;
+    }
     const rows = await query<{ category_id: number; category_name: string; description: string | null; is_active: boolean }>(
       `SELECT category_id, category_name, description, is_active FROM expense_categories ORDER BY category_name`
     );
-    res.json(
-      rows.map((row) => ({
-        id: Number(row.category_id),
-        name: row.category_name,
-        description: row.description || "",
-        active: row.is_active,
-      }))
-    );
+    const payload = rows.map((row) => ({
+      id: Number(row.category_id),
+      name: row.category_name,
+      description: row.description || "",
+      active: row.is_active,
+    }));
+    cacheSet("categories", payload, 30_000);
+    fastGetHeaders(res, 20);
+    res.json(payload);
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load categories" });
   }
@@ -445,6 +543,8 @@ app.post("/api/transactions", requireAuth, allow("manager", "admin"), async (req
         req.user!.userId,
       ]
     );
+    cacheDel("day:");
+    cacheDel("operations");
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Could not add service" });
@@ -480,6 +580,8 @@ app.post("/api/expenses", requireAuth, allow("manager", "admin"), async (req, re
         req.user!.userId,
       ]
     );
+    cacheDel("day:");
+    cacheDel("operations");
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Could not add expense" });
@@ -681,31 +783,33 @@ app.get("/api/barber/home", requireAuth, allow("barber"), async (req, res) => {
     return;
   }
   try {
-    const profile = await query<{ commission_rate: string; advance_remaining: string; advance_monthly_deduction: string }>(
-      `SELECT commission_rate, advance_remaining, advance_monthly_deduction FROM barbers WHERE barber_id = $1`,
-      [barberId]
-    );
-    const rate = num(profile[0]?.commission_rate) > 1 ? num(profile[0]?.commission_rate) / 100 : num(profile[0]?.commission_rate);
-    const today = await query<{ income: string; customers: string }>(
-      `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers
-       FROM transactions WHERE barber_id = $1 AND transaction_date = CURRENT_DATE`,
-      [barberId]
-    );
-    const monthIncome = await query<{ income: string; customers: string }>(
-      `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers
-       FROM transactions
-       WHERE barber_id = $1 AND transaction_date >= date_trunc('month', CURRENT_DATE)`,
-      [barberId]
-    );
-    const best = await query<{ best: string }>(
-      `SELECT COALESCE(MAX(daily),0) AS best FROM (
-         SELECT SUM(amount) AS daily
+    const [profile, today, monthIncome, best] = await Promise.all([
+      query<{ commission_rate: string; advance_remaining: string; advance_monthly_deduction: string }>(
+        `SELECT commission_rate, advance_remaining, advance_monthly_deduction FROM barbers WHERE barber_id = $1`,
+        [barberId]
+      ),
+      query<{ income: string; customers: string }>(
+        `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers
+         FROM transactions WHERE barber_id = $1 AND transaction_date = CURRENT_DATE`,
+        [barberId]
+      ),
+      query<{ income: string; customers: string }>(
+        `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers
          FROM transactions
-         WHERE barber_id = $1 AND transaction_date >= date_trunc('month', CURRENT_DATE)
-         GROUP BY transaction_date
-       ) d`,
-      [barberId]
-    );
+         WHERE barber_id = $1 AND transaction_date >= date_trunc('month', CURRENT_DATE)`,
+        [barberId]
+      ),
+      query<{ best: string }>(
+        `SELECT COALESCE(MAX(daily),0) AS best FROM (
+           SELECT SUM(amount) AS daily
+           FROM transactions
+           WHERE barber_id = $1 AND transaction_date >= date_trunc('month', CURRENT_DATE)
+           GROUP BY transaction_date
+         ) d`,
+        [barberId]
+      ),
+    ]);
+    const rate = num(profile[0]?.commission_rate) > 1 ? num(profile[0]?.commission_rate) / 100 : num(profile[0]?.commission_rate);
     const grossToday = num(today[0]?.income);
     const grossMonth = num(monthIncome[0]?.income);
     res.json({
@@ -728,6 +832,235 @@ app.get("/api/barber/home", requireAuth, allow("barber"), async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load barber home" });
+  }
+});
+
+app.get("/api/transactions", requireAuth, allow("admin", "manager", "supervisor"), async (req, res) => {
+  const date = String(req.query.date || new Date().toISOString().slice(0, 10));
+  try {
+    const rows = await query<{
+      transaction_id: number;
+      service_name: string;
+      amount: string;
+      customer_name: string | null;
+      notes: string | null;
+      barber_code: string;
+      full_name: string | null;
+      created_at: string;
+    }>(
+      `SELECT t.transaction_id, t.service_name, t.amount, t.customer_name, t.notes,
+              b.barber_code, u.full_name, TO_CHAR(t.created_at, 'HH24:MI') AS created_at
+       FROM transactions t
+       JOIN barbers b ON t.barber_id = b.barber_id
+       LEFT JOIN users u ON b.user_id = u.user_id
+       WHERE t.transaction_date = $1
+       ORDER BY t.created_at DESC`,
+      [date]
+    );
+    res.json(
+      rows.map((row) => ({
+        id: Number(row.transaction_id),
+        service: row.service_name,
+        amount: num(row.amount),
+        customer: row.customer_name || "",
+        notes: row.notes || "",
+        barberCode: row.barber_code,
+        barberName: row.full_name || row.barber_code,
+        time: row.created_at,
+      }))
+    );
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load transactions" });
+  }
+});
+
+app.delete("/api/transactions/:id", requireAuth, allow("manager", "admin"), async (req, res) => {
+  try {
+    await query(`DELETE FROM transactions WHERE transaction_id = $1`, [Number(req.params.id)]);
+    cacheDel("day:");
+    cacheDel("operations");
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not delete transaction" });
+  }
+});
+
+app.get("/api/operations", requireAuth, allow("admin", "manager"), async (_req, res) => {
+  try {
+    const cached = cacheGet<unknown>("operations");
+    if (cached) {
+      fastGetHeaders(res, 5);
+      res.json(cached);
+      return;
+    }
+    const [today, month, trend, tx] = await Promise.all([
+      query<{ income: string; customers: string; expenses: string }>(
+        `SELECT
+           (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date = CURRENT_DATE) AS income,
+           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date = CURRENT_DATE) AS customers,
+           (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date = CURRENT_DATE) AS expenses`
+      ),
+      query<{ income: string; customers: string; expenses: string; services: string; days: string }>(
+        `SELECT
+           (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date >= date_trunc('month', CURRENT_DATE)) AS income,
+           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date >= date_trunc('month', CURRENT_DATE)) AS customers,
+           (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date >= date_trunc('month', CURRENT_DATE)) AS expenses,
+           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date >= date_trunc('month', CURRENT_DATE)) AS services,
+           (SELECT COUNT(DISTINCT transaction_date)::int FROM transactions WHERE transaction_date >= date_trunc('month', CURRENT_DATE)) AS days`
+      ),
+      query<{ day: string; total: string }>(
+        `SELECT transaction_date AS day, COALESCE(SUM(amount),0) AS total
+         FROM transactions
+         WHERE transaction_date >= date_trunc('month', CURRENT_DATE)
+         GROUP BY transaction_date ORDER BY transaction_date`
+      ),
+      query<{
+        transaction_id: number;
+        service_name: string;
+        amount: string;
+        customer_name: string | null;
+        barber_code: string;
+        full_name: string | null;
+        created_at: string;
+      }>(
+        `SELECT t.transaction_id, t.service_name, t.amount, t.customer_name,
+                b.barber_code, u.full_name, TO_CHAR(t.created_at, 'HH24:MI') AS created_at
+         FROM transactions t
+         JOIN barbers b ON t.barber_id = b.barber_id
+         LEFT JOIN users u ON b.user_id = u.user_id
+         WHERE t.transaction_date = CURRENT_DATE
+         ORDER BY t.created_at DESC`
+      ),
+    ]);
+    const mIncome = num(month[0]?.income);
+    const mExpenses = num(month[0]?.expenses);
+    const days = Math.max(1, num(month[0]?.days));
+    const tIncome = num(today[0]?.income);
+    const tExpenses = num(today[0]?.expenses);
+    const payload = {
+      today: {
+        income: tIncome,
+        customers: num(today[0]?.customers),
+        expenses: tExpenses,
+        profit: tIncome - tExpenses,
+      },
+      month: {
+        income: mIncome,
+        customers: num(month[0]?.customers),
+        expenses: mExpenses,
+        profit: mIncome - mExpenses,
+        services: num(month[0]?.services),
+        avgDaily: mIncome / days,
+        label: new Date().toLocaleString("en-US", { month: "long", year: "numeric" }),
+      },
+      trend: trend.map((row) => ({ date: isoDate(row.day), total: num(row.total) })),
+      transactions: tx.map((row) => ({
+        id: Number(row.transaction_id),
+        service: row.service_name,
+        amount: num(row.amount),
+        customer: row.customer_name || "",
+        barberCode: row.barber_code,
+        barberName: row.full_name || row.barber_code,
+        time: row.created_at,
+      })),
+    };
+    cacheSet("operations", payload, 8_000);
+    fastGetHeaders(res, 5);
+    res.json(payload);
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load operations" });
+  }
+});
+
+app.get("/api/credits", requireAuth, allow("admin", "manager", "barber"), async (req, res) => {
+  const status = String(req.query.status || "all");
+  try {
+    const params: unknown[] = [];
+    let where = "WHERE 1=1";
+    if (req.user!.role === "barber") {
+      params.push(req.user!.barberId);
+      where += ` AND c.barber_id = $${params.length}`;
+    }
+    if (status !== "all") {
+      params.push(status);
+      where += ` AND c.status = $${params.length}`;
+    }
+    const rows = await query<{
+      credit_id: number;
+      amount: string;
+      reason: string | null;
+      status: string;
+      remaining_balance: string | null;
+      barber_code: string;
+      full_name: string | null;
+      request_date: string;
+      approved_by_name: string | null;
+    }>(
+      `SELECT c.credit_id, c.amount, c.reason, c.status, c.remaining_balance,
+              b.barber_code, u.full_name, TO_CHAR(c.request_date, 'YYYY-MM-DD') AS request_date,
+              u2.full_name AS approved_by_name
+       FROM barber_credits c
+       JOIN barbers b ON c.barber_id = b.barber_id
+       LEFT JOIN users u ON b.user_id = u.user_id
+       LEFT JOIN users u2 ON c.approved_by = u2.user_id
+       ${where}
+       ORDER BY c.request_date DESC`,
+      params
+    );
+    res.json(
+      rows.map((row) => ({
+        id: Number(row.credit_id),
+        amount: num(row.amount),
+        reason: row.reason || "",
+        status: row.status,
+        remaining: num(row.remaining_balance),
+        barberCode: row.barber_code,
+        barberName: row.full_name || row.barber_code,
+        requestedAt: row.request_date,
+        approvedBy: row.approved_by_name || "",
+      }))
+    );
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load credits" });
+  }
+});
+
+app.post("/api/credits", requireAuth, allow("barber"), async (req, res) => {
+  const parsed = z
+    .object({ amount: z.number().positive(), reason: z.string().min(1) })
+    .safeParse(req.body);
+  if (!parsed.success || !req.user!.barberId) {
+    res.status(400).json({ error: "Amount and reason are required" });
+    return;
+  }
+  try {
+    await query(
+      `INSERT INTO barber_credits (barber_id, amount, reason, status, remaining_balance)
+       VALUES ($1, $2, $3, 'pending', $2)`,
+      [req.user!.barberId, parsed.data.amount, parsed.data.reason]
+    );
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not submit credit request" });
+  }
+});
+
+app.post("/api/credits/:id/decide", requireAuth, allow("manager", "admin"), async (req, res) => {
+  const parsed = z.object({ decision: z.enum(["approved", "rejected"]) }).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Decision required" });
+    return;
+  }
+  try {
+    await query(
+      `UPDATE barber_credits
+       SET status = $1, approved_by = $2, approved_date = CURRENT_TIMESTAMP
+       WHERE credit_id = $3 AND status = 'pending'`,
+      [parsed.data.decision, req.user!.userId, Number(req.params.id)]
+    );
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not update credit" });
   }
 });
 
@@ -764,7 +1097,299 @@ app.get("/api/reports", requireAuth, allow("admin", "manager"), async (req, res)
   }
 });
 
-const port = Number(process.env.PORT || 4000);
-app.listen(port, () => {
-  console.log(`Barbazza API listening on ${port}`);
+type ClosingRow = {
+  barberId: number;
+  barberCode: string;
+  fullName: string;
+  commissionRate: number;
+  recruitmentDeduction: number;
+  recruitmentBalance: number;
+  grossIncome: number;
+  creditDeduction: number;
+  commissionEarned: number;
+  totalDeductions: number;
+  netSalary: number;
+};
+
+async function closingSummary(monthKey: string): Promise<ClosingRow[]> {
+  const [yearStr, monthStr] = monthKey.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  const rows = await query<{
+    barber_id: number;
+    barber_code: string;
+    full_name: string | null;
+    commission_rate: string;
+    recruitment_deduction: string;
+    recruitment_balance: string;
+    gross_income: string;
+    credit_deduction: string;
+  }>(
+    `SELECT
+       b.barber_id,
+       b.barber_code,
+       u.full_name,
+       b.commission_rate,
+       COALESCE(b.advance_monthly_deduction, 0) AS recruitment_deduction,
+       COALESCE(b.advance_remaining, 0) AS recruitment_balance,
+       COALESCE(
+         (SELECT SUM(amount)
+          FROM transactions
+          WHERE barber_id = b.barber_id
+            AND EXTRACT(YEAR FROM transaction_date) = $1
+            AND EXTRACT(MONTH FROM transaction_date) = $2),
+         0
+       ) AS gross_income,
+       COALESCE(
+         (SELECT SUM(monthly_deduction)
+          FROM barber_credits
+          WHERE barber_id = b.barber_id
+            AND status = 'approved'
+            AND remaining_balance > 0),
+         0
+       ) AS credit_deduction
+     FROM barbers b
+     LEFT JOIN users u ON b.user_id = u.user_id
+     WHERE b.is_active = TRUE
+     ORDER BY b.barber_code`,
+    [year, month]
+  );
+
+  return rows.map((row) => {
+    const rateRaw = num(row.commission_rate);
+    const ratePct = rateRaw > 0 && rateRaw <= 1 ? rateRaw * 100 : rateRaw;
+    const grossIncome = num(row.gross_income);
+    const recruitmentDeduction = num(row.recruitment_deduction);
+    const creditDeduction = num(row.credit_deduction);
+    const commissionEarned = grossIncome * (ratePct / 100);
+    const totalDeductions = recruitmentDeduction + creditDeduction;
+    const netSalary = Math.max(commissionEarned - totalDeductions, 0);
+    return {
+      barberId: Number(row.barber_id),
+      barberCode: row.barber_code,
+      fullName: row.full_name || row.barber_code,
+      commissionRate: ratePct,
+      recruitmentDeduction,
+      recruitmentBalance: num(row.recruitment_balance),
+      grossIncome,
+      creditDeduction,
+      commissionEarned,
+      totalDeductions,
+      netSalary,
+    };
+  });
+}
+
+app.get("/api/monthly-closing/months", requireAuth, allow("manager", "admin"), async (_req, res) => {
+  try {
+    const rows = await query<{ month_key: string; month_label: string }>(
+      `SELECT DISTINCT
+         TO_CHAR(transaction_date, 'YYYY-MM') AS month_key,
+         TO_CHAR(transaction_date, 'Month YYYY') AS month_label
+       FROM transactions
+       WHERE transaction_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '12 months')
+         AND TO_CHAR(transaction_date, 'YYYY-MM') NOT IN (
+           SELECT DISTINCT
+             LPAD(year::text, 4, '0') || '-' || LPAD(month::text, 2, '0')
+           FROM monthly_salaries
+           WHERE status = 'paid'
+         )
+       ORDER BY month_key DESC`
+    );
+    res.json(
+      rows.map((row) => ({
+        key: row.month_key,
+        label: row.month_label.trim(),
+      }))
+    );
+  } catch (error) {
+    try {
+      const fallback = await query<{ month_key: string; month_label: string }>(
+        `SELECT DISTINCT
+           TO_CHAR(transaction_date, 'YYYY-MM') AS month_key,
+           TO_CHAR(transaction_date, 'Month YYYY') AS month_label
+         FROM transactions
+         WHERE transaction_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '12 months')
+         ORDER BY month_key DESC`
+      );
+      res.json(fallback.map((row) => ({ key: row.month_key, label: row.month_label.trim() })));
+    } catch (fallbackError) {
+      res.status(500).json({
+        error: fallbackError instanceof Error ? fallbackError.message : "Failed to load months",
+      });
+    }
+  }
 });
+
+app.get("/api/monthly-closing/summary", requireAuth, allow("manager", "admin"), async (req, res) => {
+  const month = String(req.query.month || "");
+  if (!/^\d{4}-\d{2}$/.test(month)) {
+    res.status(400).json({ error: "Select a month" });
+    return;
+  }
+  try {
+    res.json(await closingSummary(month));
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load closing summary" });
+  }
+});
+
+app.get("/api/monthly-closing/history", requireAuth, allow("manager", "admin"), async (_req, res) => {
+  try {
+    const rows = await query<{
+      barber_code: string;
+      full_name: string | null;
+      month: number;
+      year: number;
+      gross_income: string;
+      commission_earned: string;
+      recruitment_deduction: string;
+      credit_deduction: string;
+      net_salary: string;
+      paid_date: string | null;
+      status: string;
+    }>(
+      `SELECT
+         b.barber_code,
+         u.full_name,
+         ms.month,
+         ms.year,
+         ms.gross_income,
+         ms.commission_earned,
+         ms.recruitment_deduction,
+         ms.credit_deduction,
+         ms.net_salary,
+         TO_CHAR(ms.paid_date, 'YYYY-MM-DD HH24:MI') AS paid_date,
+         ms.status
+       FROM monthly_salaries ms
+       JOIN barbers b ON ms.barber_id = b.barber_id
+       LEFT JOIN users u ON b.user_id = u.user_id
+       ORDER BY ms.year DESC, ms.month DESC, b.barber_code
+       LIMIT 100`
+    );
+    res.json(
+      rows.map((row) => ({
+        barberCode: row.barber_code,
+        barberName: row.full_name || row.barber_code,
+        month: Number(row.month),
+        year: Number(row.year),
+        grossIncome: num(row.gross_income),
+        commission: num(row.commission_earned),
+        recruitmentDeduction: num(row.recruitment_deduction),
+        creditDeduction: num(row.credit_deduction),
+        netSalary: num(row.net_salary),
+        paidDate: row.paid_date || "",
+        status: row.status,
+      }))
+    );
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load payment history" });
+  }
+});
+
+app.post("/api/monthly-closing/process", requireAuth, allow("manager", "admin"), async (req, res) => {
+  const parsed = z.object({ month: z.string().regex(/^\d{4}-\d{2}$/) }).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Month is required" });
+    return;
+  }
+  const monthKey = parsed.data.month;
+  const now = new Date();
+  const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  if (monthKey >= currentKey) {
+    res.status(400).json({
+      error: "This month has not ended yet. Payments can only be processed after the calendar month is complete.",
+    });
+    return;
+  }
+  const [yearStr, monthStr] = monthKey.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  const client = await pool.connect();
+  try {
+    const summary = await closingSummary(monthKey);
+    if (summary.length === 0) {
+      res.status(400).json({ error: "No barber data to process" });
+      return;
+    }
+    await client.query("BEGIN");
+    for (const barber of summary) {
+      await client.query(
+        `INSERT INTO monthly_salaries (
+           barber_id, month, year, gross_income, commission_earned,
+           recruitment_deduction, credit_deduction, net_salary,
+           paid_date, status
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), 'paid')`,
+        [
+          barber.barberId,
+          month,
+          year,
+          barber.grossIncome,
+          barber.commissionEarned,
+          barber.recruitmentDeduction,
+          barber.creditDeduction,
+          barber.netSalary,
+        ]
+      );
+      const newRecruitmentBalance = Math.max(barber.recruitmentBalance - barber.recruitmentDeduction, 0);
+      await client.query(`UPDATE barbers SET advance_remaining = $1 WHERE barber_id = $2`, [
+        newRecruitmentBalance,
+        barber.barberId,
+      ]);
+      if (barber.creditDeduction > 0) {
+        const credits = await client.query<{
+          credit_id: number;
+          monthly_deduction: string;
+          remaining_balance: string;
+        }>(
+          `SELECT credit_id, monthly_deduction, remaining_balance
+           FROM barber_credits
+           WHERE barber_id = $1 AND status = 'approved' AND remaining_balance > 0
+           ORDER BY credit_id`,
+          [barber.barberId]
+        );
+        for (const credit of credits.rows) {
+          const newBalance = Math.max(num(credit.remaining_balance) - num(credit.monthly_deduction), 0);
+          await client.query(`UPDATE barber_credits SET remaining_balance = $1 WHERE credit_id = $2`, [
+            newBalance,
+            credit.credit_id,
+          ]);
+        }
+      }
+    }
+    await client.query("COMMIT");
+    res.json({
+      ok: true,
+      processed: summary.length,
+      totals: {
+        barbers: summary.length,
+        grossIncome: summary.reduce((s, r) => s + r.grossIncome, 0),
+        commission: summary.reduce((s, r) => s + r.commissionEarned, 0),
+        deductions: summary.reduce((s, r) => s + r.totalDeductions, 0),
+        netSalary: summary.reduce((s, r) => s + r.netSalary, 0),
+      },
+    });
+  } catch (error) {
+    try {
+      await client.query("ROLLBACK");
+    } catch {
+      /* ignore */
+    }
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to process monthly payments" });
+  } finally {
+    client.release();
+  }
+});
+
+const port = Number(process.env.PORT || 4000);
+
+ensurePublicSchema()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Barbazza API listening on ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to prepare public booking schema:", error);
+    process.exit(1);
+  });

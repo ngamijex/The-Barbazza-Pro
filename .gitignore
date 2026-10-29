@@ -4,12 +4,13 @@ dist
 *.tsbuildinfo
 .env
 .env.local
+.env.*.local
 .Rproj.user
 .Rhistory
 /reports/
 the-barbazza-*.json
-frontend/next-env.d.ts
 rsconnect
 *.xlsx
 ~$*.xlsx
-.vscode
+backend/.env
+frontend/.env.local

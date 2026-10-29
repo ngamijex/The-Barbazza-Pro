@@ -93,48 +93,123 @@ export default function PeoplePage() {
   }
 
   return (
-    <Shell title="People" subtitle="Roles, chairs, and recruitment balances.">
-      {message ? <p className="mb-3 text-sm text-gold">{message}</p> : null}
-      <button onClick={recover} className="mb-4 rounded-md border border-gold px-4 py-2 text-sm text-mute">Recover advance balances</button>
-      <Panel title={editing ? `Edit ${editing.username}` : "New person"}>
-        <form onSubmit={editing ? saveEdit : createUser} className="grid gap-3 md:grid-cols-2">
-          {!editing ? <input required placeholder="Username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className="rounded-2xl bg-field px-4 py-3" /> : null}
-          <input required placeholder="Full name" value={editing ? editing.fullName : form.fullName} onChange={(e) => editing ? setEditing({ ...editing, fullName: e.target.value }) : setForm({ ...form, fullName: e.target.value })} className="rounded-2xl bg-field px-4 py-3" />
-          <input placeholder={editing ? "New password (optional)" : "Password"} type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="rounded-2xl bg-field px-4 py-3" />
-          <select value={editing ? editing.role : form.role} onChange={(e) => editing ? setEditing({ ...editing, role: e.target.value }) : setForm({ ...form, role: e.target.value })} className="rounded-2xl bg-field px-4 py-3">
-            {["admin", "manager", "supervisor", "barber"].map((role) => <option key={role}>{role}</option>)}
-          </select>
-          {(editing ? editing.role : form.role) === "barber" ? (
-            <>
-              <input type="number" placeholder="Commission %" value={editing ? editing.commissionRate : form.commissionRate} onChange={(e) => {
-                const value = Number(e.target.value);
-                editing ? setEditing({ ...editing, commissionRate: value }) : setForm({ ...form, commissionRate: value });
-              }} className="rounded-2xl bg-field px-4 py-3" />
-              <input type="number" placeholder="Recruitment advance" value={editing ? editing.recruitmentAdvance : form.recruitmentAdvance} onChange={(e) => {
-                const value = Number(e.target.value);
-                editing ? setEditing({ ...editing, recruitmentAdvance: value }) : setForm({ ...form, recruitmentAdvance: value });
-              }} className="rounded-2xl bg-field px-4 py-3" />
-              {editing ? <p className="text-sm text-mute md:col-span-2">Already paid {money(editing.alreadyPaid)} · remaining {money(editing.advanceRemaining)}. Changing the advance keeps what was already paid.</p> : null}
-            </>
+    <Shell>
+      {message ? <p style={{ marginBottom: "var(--space-3)", color: "var(--barbazza-gold)" }}>{message}</p> : null}
+      <button type="button" onClick={recover} className="btn-action" style={{ width: "auto", marginBottom: "var(--space-4)" }}>
+        Recover advance balances
+      </button>
+      <Panel title={editing ? `Edit ${editing.username}` : "User Management"} className="admin-card">
+        <form onSubmit={editing ? saveEdit : createUser} className="service-form">
+          <div className="form-grid form-grid-2">
+            {!editing ? (
+              <div className="form-group">
+                <label>Username</label>
+                <input required value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+              </div>
+            ) : null}
+            <div className="form-group">
+              <label>Full name</label>
+              <input
+                required
+                value={editing ? editing.fullName : form.fullName}
+                onChange={(e) =>
+                  editing ? setEditing({ ...editing, fullName: e.target.value }) : setForm({ ...form, fullName: e.target.value })
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>{editing ? "New password (optional)" : "Password"}</label>
+              <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>Role</label>
+              <select
+                value={editing ? editing.role : form.role}
+                onChange={(e) =>
+                  editing ? setEditing({ ...editing, role: e.target.value }) : setForm({ ...form, role: e.target.value })
+                }
+              >
+                {["admin", "manager", "supervisor", "barber"].map((role) => (
+                  <option key={role}>{role}</option>
+                ))}
+              </select>
+            </div>
+            {(editing ? editing.role : form.role) === "barber" ? (
+              <>
+                <div className="form-group">
+                  <label>Commission %</label>
+                  <input
+                    type="number"
+                    value={editing ? editing.commissionRate : form.commissionRate}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      editing ? setEditing({ ...editing, commissionRate: value }) : setForm({ ...form, commissionRate: value });
+                    }}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Recruitment advance</label>
+                  <input
+                    type="number"
+                    value={editing ? editing.recruitmentAdvance : form.recruitmentAdvance}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      editing
+                        ? setEditing({ ...editing, recruitmentAdvance: value })
+                        : setForm({ ...form, recruitmentAdvance: value });
+                    }}
+                  />
+                </div>
+                {editing ? (
+                  <p style={{ gridColumn: "1 / -1", color: "var(--barbazza-cream)", fontSize: "0.9rem" }}>
+                    Already paid {money(editing.alreadyPaid)} · remaining {money(editing.advanceRemaining)}. Changing the
+                    advance keeps what was already paid.
+                  </p>
+                ) : null}
+              </>
+            ) : null}
+          </div>
+          <button type="submit" className="btn-action">
+            {editing ? "Save changes" : "Create"}
+          </button>
+          {editing ? (
+            <button type="button" onClick={() => setEditing(null)} style={{ marginLeft: 12 }}>
+              Cancel
+            </button>
           ) : null}
-          <button className="rounded-2xl bg-gold py-3 font-semibold text-white md:col-span-2">{editing ? "Save changes" : "Create"}</button>
-          {editing ? <button type="button" onClick={() => setEditing(null)} className="text-sm text-mute md:col-span-2">Cancel</button> : null}
         </form>
       </Panel>
-      <div className="mt-4 space-y-3">
-        {users.map((person) => (
-          <button key={person.id} onClick={() => setEditing(person)} className="block w-full rounded-lg border border-line bg-panel p-4 text-left">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-medium">{person.fullName}</p>
-                <p className="text-xs uppercase tracking-[0.18em] text-gold">{person.role}{person.barberCode ? ` · ${person.barberCode}` : ""}</p>
-              </div>
-              <span className="text-xs text-mute">{person.active ? "Active" : "Off"}</span>
-            </div>
-            {person.role === "barber" ? <p className="mt-2 text-sm text-mute">Paid {money(person.alreadyPaid)} · left {money(person.advanceRemaining)}</p> : null}
-          </button>
-        ))}
-      </div>
+      <Panel title="Users" className="admin-card">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((person) => (
+              <tr key={person.id}>
+                <td>{person.fullName}</td>
+                <td>{person.username}</td>
+                <td>
+                  {person.role}
+                  {person.barberCode ? ` · ${person.barberCode}` : ""}
+                </td>
+                <td>{person.active ? "Active" : "Off"}</td>
+                <td>
+                  <button type="button" className="btn-action" style={{ width: "auto" }} onClick={() => setEditing(person)}>
+                    Edit
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Panel>
     </Shell>
   );
 }

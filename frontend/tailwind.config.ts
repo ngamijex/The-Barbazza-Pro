@@ -21,8 +21,12 @@ const config: Config = {
         body: ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
       },
       boxShadow: {
-        card: "0 4px 8px rgba(0, 0, 0, 0.1)",
-        glow: "0 8px 16px rgba(0, 0, 0, 0.12)",
+        card: "0 4px 14px rgba(0, 0, 0, 0.06)",
+        glow: "0 12px 28px rgba(0, 0, 0, 0.1)",
+      },
+      borderRadius: {
+        xl: "12px",
+        "2xl": "16px",
       },
     },
   },
