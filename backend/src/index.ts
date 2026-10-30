@@ -6,24 +6,41 @@ import { allow, AuthUser, requireAuth, signToken } from "./auth";
 import { pool, isoDate, num, query, cacheGet, cacheSet, cacheDel } from "./db";
 import { ensurePublicSchema } from "./publicSchema";
 import { publicApi } from "./publicApi";
+import { profileRoutes } from "./profileRoutes";
+import { UPLOAD_DIR, ensureUploadDir } from "./uploads";
 
 const app = express();
 app.disable("x-powered-by");
 app.set("etag", false);
+const corsOrigins = new Set(
+  [
+    "http://localhost:3000",
+    "https://thebarbazza.co",
+    "https://www.thebarbazza.co",
+    process.env.CORS_ORIGIN,
+    ...(process.env.CORS_ORIGINS || "").split(","),
+  ]
+    .map((v) => (v || "").trim())
+    .filter(Boolean)
+);
+
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
+      if (!origin || /^http:\/\/localhost:\d+$/.test(origin) || corsOrigins.has(origin)) {
         callback(null, true);
         return;
       }
-      callback(null, process.env.CORS_ORIGIN || false);
+      callback(null, false);
     },
     credentials: true,
   })
 );
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "8mb" }));
+ensureUploadDir();
+app.use("/uploads", express.static(UPLOAD_DIR));
 app.use("/api/public", publicApi);
+app.use("/api", profileRoutes);
 
 /** Mark short-lived API GETs as privately cacheable on the client */
 function fastGetHeaders(res: import("express").Response, seconds = 10) {
@@ -63,6 +80,10 @@ app.post("/api/auth/login", async (req, res) => {
     );
     const user = rows[0];
     if (!user || !user.verified) {
+      void query(
+        `INSERT INTO audit_logs (action_type, table_name, record_id, performed_by, created_at)
+         VALUES ('LOGIN', 'users', NULL, NULL, CURRENT_TIMESTAMP)`
+      ).catch(() => undefined);
       res.status(401).json({ error: "Invalid username or password" });
       return;
     }
@@ -72,6 +93,11 @@ app.post("/api/auth/login", async (req, res) => {
     );
     // Don't block login on last_login write
     void query(`UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = $1`, [user.user_id]);
+    void query(
+      `INSERT INTO audit_logs (action_type, table_name, record_id, performed_by, created_at)
+       VALUES ('LOGIN', 'users', $1, $1, CURRENT_TIMESTAMP)`,
+      [user.user_id]
+    ).catch(() => undefined);
     const barber = await barberPromise;
     const authUser: AuthUser = {
       userId: Number(user.user_id),
@@ -487,6 +513,49 @@ app.post("/api/services", requireAuth, allow("admin"), async (req, res) => {
   }
 });
 
+app.put("/api/services/:id", requireAuth, allow("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  const parsed = z
+    .object({
+      name: z.string().min(1),
+      price: z.number().min(0),
+      description: z.string().optional(),
+      active: z.boolean(),
+    })
+    .safeParse(req.body);
+  if (!id || !parsed.success) {
+    res.status(400).json({ error: "Invalid service update" });
+    return;
+  }
+  try {
+    await query(
+      `UPDATE services
+       SET service_name = $1, base_price = $2, service_description = $3, is_active = $4
+       WHERE service_id = $5`,
+      [parsed.data.name, parsed.data.price, parsed.data.description || null, parsed.data.active, id]
+    );
+    cacheDel("services");
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not update service" });
+  }
+});
+
+app.delete("/api/services/:id", requireAuth, allow("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  if (!id) {
+    res.status(400).json({ error: "Invalid service" });
+    return;
+  }
+  try {
+    await query(`UPDATE services SET is_active = FALSE WHERE service_id = $1`, [id]);
+    cacheDel("services");
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not delete service" });
+  }
+});
+
 app.get("/api/categories", requireAuth, async (_req, res) => {
   try {
     const cached = cacheGet<unknown[]>("categories");
@@ -512,6 +581,73 @@ app.get("/api/categories", requireAuth, async (_req, res) => {
   }
 });
 
+app.post("/api/categories", requireAuth, allow("admin"), async (req, res) => {
+  const parsed = z
+    .object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      active: z.boolean().optional(),
+    })
+    .safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Category name is required" });
+    return;
+  }
+  try {
+    await query(
+      `INSERT INTO expense_categories (category_name, description, is_active)
+       VALUES ($1, $2, $3)`,
+      [parsed.data.name, parsed.data.description || null, parsed.data.active ?? true]
+    );
+    cacheDel("categories");
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not create category" });
+  }
+});
+
+app.put("/api/categories/:id", requireAuth, allow("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  const parsed = z
+    .object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      active: z.boolean(),
+    })
+    .safeParse(req.body);
+  if (!id || !parsed.success) {
+    res.status(400).json({ error: "Invalid category update" });
+    return;
+  }
+  try {
+    await query(
+      `UPDATE expense_categories
+       SET category_name = $1, description = $2, is_active = $3
+       WHERE category_id = $4`,
+      [parsed.data.name, parsed.data.description || null, parsed.data.active, id]
+    );
+    cacheDel("categories");
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not update category" });
+  }
+});
+
+app.delete("/api/categories/:id", requireAuth, allow("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  if (!id) {
+    res.status(400).json({ error: "Invalid category" });
+    return;
+  }
+  try {
+    await query(`UPDATE expense_categories SET is_active = FALSE WHERE category_id = $1`, [id]);
+    cacheDel("categories");
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not delete category" });
+  }
+});
+
 app.post("/api/transactions", requireAuth, allow("manager", "admin"), async (req, res) => {
   const parsed = z
     .object({
@@ -520,6 +656,7 @@ app.post("/api/transactions", requireAuth, allow("manager", "admin"), async (req
       amount: z.number().positive(),
       customerName: z.string().optional(),
       notes: z.string().optional(),
+      discountReason: z.string().optional(),
     })
     .safeParse(req.body);
   if (!parsed.success) {
@@ -527,9 +664,18 @@ app.post("/api/transactions", requireAuth, allow("manager", "admin"), async (req
     return;
   }
   try {
-    const service = await query<{ service_name: string }>(`SELECT service_name FROM services WHERE service_id = $1`, [
-      parsed.data.serviceId,
-    ]);
+    const service = await query<{ service_name: string; base_price: string }>(
+      `SELECT service_name, base_price FROM services WHERE service_id = $1`,
+      [parsed.data.serviceId]
+    );
+    const base = num(service[0]?.base_price);
+    if (parsed.data.amount < base && !(parsed.data.discountReason || "").trim()) {
+      res.status(400).json({ error: "Discount reason is required when amount is below base price" });
+      return;
+    }
+    const notesParts = [parsed.data.notes || "", parsed.data.discountReason ? `Discount: ${parsed.data.discountReason}` : ""].filter(
+      Boolean
+    );
     await query(
       `INSERT INTO transactions (transaction_date, barber_id, service_id, service_name, amount, customer_name, notes, created_by)
        VALUES (CURRENT_DATE, $1, $2, $3, $4, $5, $6, $7)`,
@@ -539,7 +685,7 @@ app.post("/api/transactions", requireAuth, allow("manager", "admin"), async (req
         service[0]?.service_name || "Service",
         parsed.data.amount,
         parsed.data.customerName || null,
-        parsed.data.notes || null,
+        notesParts.join(" | ") || null,
         req.user!.userId,
       ]
     );
@@ -548,6 +694,57 @@ app.post("/api/transactions", requireAuth, allow("manager", "admin"), async (req
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Could not add service" });
+  }
+});
+
+app.put("/api/transactions/:id", requireAuth, allow("manager", "admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  const parsed = z
+    .object({
+      barberId: z.number().int(),
+      serviceId: z.number().int(),
+      amount: z.number().positive(),
+      customerName: z.string().optional(),
+      notes: z.string().optional(),
+      discountReason: z.string().optional(),
+    })
+    .safeParse(req.body);
+  if (!id || !parsed.success) {
+    res.status(400).json({ error: "Invalid transaction update" });
+    return;
+  }
+  try {
+    const service = await query<{ service_name: string; base_price: string }>(
+      `SELECT service_name, base_price FROM services WHERE service_id = $1`,
+      [parsed.data.serviceId]
+    );
+    const base = num(service[0]?.base_price);
+    if (parsed.data.amount < base && !(parsed.data.discountReason || "").trim()) {
+      res.status(400).json({ error: "Discount reason is required when amount is below base price" });
+      return;
+    }
+    const notesParts = [parsed.data.notes || "", parsed.data.discountReason ? `Discount: ${parsed.data.discountReason}` : ""].filter(
+      Boolean
+    );
+    await query(
+      `UPDATE transactions
+       SET barber_id = $1, service_id = $2, service_name = $3, amount = $4, customer_name = $5, notes = $6
+       WHERE transaction_id = $7`,
+      [
+        parsed.data.barberId,
+        parsed.data.serviceId,
+        service[0]?.service_name || "Service",
+        parsed.data.amount,
+        parsed.data.customerName || null,
+        notesParts.join(" | ") || null,
+        id,
+      ]
+    );
+    cacheDel("day:");
+    cacheDel("operations");
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not update transaction" });
   }
 });
 
@@ -750,6 +947,30 @@ app.put("/api/users/:id", requireAuth, allow("admin"), async (req, res) => {
   }
 });
 
+app.delete("/api/users/:id", requireAuth, allow("admin"), async (req, res) => {
+  const userId = Number(req.params.id);
+  if (!userId) {
+    res.status(400).json({ error: "Invalid user" });
+    return;
+  }
+  if (userId === req.user!.userId) {
+    res.status(400).json({ error: "You cannot delete your own account" });
+    return;
+  }
+  try {
+    await query(`UPDATE barbers SET is_active = FALSE WHERE user_id = $1`, [userId]);
+    await query(`UPDATE users SET is_active = FALSE WHERE user_id = $1`, [userId]);
+    void query(
+      `INSERT INTO audit_logs (action_type, table_name, record_id, performed_by, created_at)
+       VALUES ('DELETE', 'users', $1, $2, CURRENT_TIMESTAMP)`,
+      [userId, req.user!.userId]
+    ).catch(() => undefined);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not delete user" });
+  }
+});
+
 app.post("/api/users/recover-advances", requireAuth, allow("admin"), async (_req, res) => {
   try {
     const report = await query<{ barber_id: number; current_remaining: string; correct_remaining: string }>(
@@ -783,7 +1004,7 @@ app.get("/api/barber/home", requireAuth, allow("barber"), async (req, res) => {
     return;
   }
   try {
-    const [profile, today, monthIncome, best] = await Promise.all([
+    const [profile, today, weekIncome, monthIncome, best, credits, trend, services] = await Promise.all([
       query<{ commission_rate: string; advance_remaining: string; advance_monthly_deduction: string }>(
         `SELECT commission_rate, advance_remaining, advance_monthly_deduction FROM barbers WHERE barber_id = $1`,
         [barberId]
@@ -795,6 +1016,12 @@ app.get("/api/barber/home", requireAuth, allow("barber"), async (req, res) => {
       ),
       query<{ income: string; customers: string }>(
         `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers
+         FROM transactions
+         WHERE barber_id = $1 AND transaction_date >= date_trunc('week', CURRENT_DATE)`,
+        [barberId]
+      ),
+      query<{ income: string; customers: string; services: string }>(
+        `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers, COUNT(*)::int AS services
          FROM transactions
          WHERE barber_id = $1 AND transaction_date >= date_trunc('month', CURRENT_DATE)`,
         [barberId]
@@ -808,10 +1035,35 @@ app.get("/api/barber/home", requireAuth, allow("barber"), async (req, res) => {
          ) d`,
         [barberId]
       ),
+      query<{ remaining: string; month_deduction: string }>(
+        `SELECT COALESCE(SUM(remaining_balance),0) AS remaining,
+                COALESCE(SUM(monthly_deduction),0) AS month_deduction
+         FROM barber_credits
+         WHERE barber_id = $1 AND status = 'approved' AND remaining_balance > 0`,
+        [barberId]
+      ).catch(() => [{ remaining: "0", month_deduction: "0" }]),
+      query<{ day: string; total: string }>(
+        `SELECT transaction_date AS day, COALESCE(SUM(amount),0) AS total
+         FROM transactions
+         WHERE barber_id = $1 AND transaction_date >= date_trunc('month', CURRENT_DATE)
+         GROUP BY transaction_date ORDER BY transaction_date`,
+        [barberId]
+      ),
+      query<{ service_name: string; amount: string; customer_name: string | null; created_at: string }>(
+        `SELECT service_name, amount, customer_name, TO_CHAR(created_at, 'HH24:MI') AS created_at
+         FROM transactions WHERE barber_id = $1 AND transaction_date = CURRENT_DATE
+         ORDER BY created_at DESC`,
+        [barberId]
+      ),
     ]);
     const rate = num(profile[0]?.commission_rate) > 1 ? num(profile[0]?.commission_rate) / 100 : num(profile[0]?.commission_rate);
     const grossToday = num(today[0]?.income);
+    const grossWeek = num(weekIncome[0]?.income);
     const grossMonth = num(monthIncome[0]?.income);
+    const recruitmentDeduction = num(profile[0]?.advance_monthly_deduction);
+    const creditBalance = num(credits[0]?.remaining);
+    const creditDeduction = num(credits[0]?.month_deduction);
+    const commission = grossMonth * rate;
     res.json({
       commissionRate: Math.round(rate * 100),
       today: {
@@ -820,15 +1072,31 @@ app.get("/api/barber/home", requireAuth, allow("barber"), async (req, res) => {
         shop: grossToday * (1 - rate),
         customers: num(today[0]?.customers),
       },
+      week: {
+        gross: grossWeek,
+        commission: grossWeek * rate,
+        customers: num(weekIncome[0]?.customers),
+      },
       month: {
         gross: grossMonth,
-        commission: grossMonth * rate,
+        commission,
         customers: num(monthIncome[0]?.customers),
+        services: num(monthIncome[0]?.services),
         bestDay: num(best[0]?.best),
-        recruitmentDeduction: num(profile[0]?.advance_monthly_deduction),
+        avgDaily: commission / Math.max(1, new Date().getDate()),
+        recruitmentDeduction,
         recruitmentBalance: num(profile[0]?.advance_remaining),
-        expectedNet: grossMonth * rate - num(profile[0]?.advance_monthly_deduction),
+        creditBalance,
+        creditDeduction,
+        expectedNet: commission - recruitmentDeduction - creditDeduction,
       },
+      trend: trend.map((row) => ({ date: isoDate(row.day), total: num(row.total) })),
+      todayServices: services.map((s) => ({
+        service: s.service_name,
+        amount: num(s.amount),
+        customer: s.customer_name || "Walk-in",
+        time: s.created_at,
+      })),
     });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load barber home" });
@@ -916,14 +1184,17 @@ app.get("/api/operations", requireAuth, allow("admin", "manager"), async (_req, 
       ),
       query<{
         transaction_id: number;
+        barber_id: number;
+        service_id: number | null;
         service_name: string;
         amount: string;
         customer_name: string | null;
+        notes: string | null;
         barber_code: string;
         full_name: string | null;
         created_at: string;
       }>(
-        `SELECT t.transaction_id, t.service_name, t.amount, t.customer_name,
+        `SELECT t.transaction_id, t.barber_id, t.service_id, t.service_name, t.amount, t.customer_name, t.notes,
                 b.barber_code, u.full_name, TO_CHAR(t.created_at, 'HH24:MI') AS created_at
          FROM transactions t
          JOIN barbers b ON t.barber_id = b.barber_id
@@ -956,6 +1227,9 @@ app.get("/api/operations", requireAuth, allow("admin", "manager"), async (_req, 
       trend: trend.map((row) => ({ date: isoDate(row.day), total: num(row.total) })),
       transactions: tx.map((row) => ({
         id: Number(row.transaction_id),
+        barberId: Number(row.barber_id),
+        serviceId: row.service_id == null ? null : Number(row.service_id),
+        notes: row.notes || "",
         service: row.service_name,
         amount: num(row.amount),
         customer: row.customer_name || "",
@@ -1381,11 +1655,350 @@ app.post("/api/monthly-closing/process", requireAuth, allow("manager", "admin"),
   }
 });
 
+/** Barber history for a specific day (Shiny History tab) */
+app.get("/api/barber/day", requireAuth, allow("barber"), async (req, res) => {
+  const barberId = req.user!.barberId;
+  const date = String(req.query.date || new Date().toISOString().slice(0, 10));
+  if (!barberId) {
+    res.status(404).json({ error: "No barber profile is linked to this account" });
+    return;
+  }
+  try {
+    const [profile, summary, services] = await Promise.all([
+      query<{ commission_rate: string }>(`SELECT commission_rate FROM barbers WHERE barber_id = $1`, [barberId]),
+      query<{ income: string; customers: string }>(
+        `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers
+         FROM transactions WHERE barber_id = $1 AND transaction_date = $2`,
+        [barberId, date]
+      ),
+      query<{ service_name: string; amount: string; customer_name: string | null; created_at: string }>(
+        `SELECT service_name, amount, customer_name, TO_CHAR(created_at, 'HH24:MI') AS created_at
+         FROM transactions WHERE barber_id = $1 AND transaction_date = $2
+         ORDER BY created_at`,
+        [barberId, date]
+      ),
+    ]);
+    const rate = num(profile[0]?.commission_rate) > 1 ? num(profile[0]?.commission_rate) / 100 : num(profile[0]?.commission_rate);
+    const gross = num(summary[0]?.income);
+    res.json({
+      date,
+      servicesCount: services.length,
+      customers: num(summary[0]?.customers),
+      gross,
+      commission: gross * rate,
+      services: services.map((s) => ({
+        service: s.service_name,
+        amount: num(s.amount),
+        customer: s.customer_name || "Walk-in",
+        time: s.created_at,
+      })),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load day history" });
+  }
+});
+
+app.get("/api/audit", requireAuth, allow("admin"), async (req, res) => {
+  const action = String(req.query.action || "");
+  const from = String(req.query.from || new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10));
+  const to = String(req.query.to || new Date().toISOString().slice(0, 10));
+  try {
+    const params: unknown[] = [from, to];
+    let sql = `
+      SELECT TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at,
+             action_type, table_name, record_id, performed_by
+      FROM audit_logs
+      WHERE DATE(created_at) BETWEEN $1 AND $2`;
+    if (action) {
+      params.push(action);
+      sql += ` AND action_type = $${params.length}`;
+    }
+    sql += ` ORDER BY created_at DESC LIMIT 500`;
+    const rows = await query<{
+      created_at: string;
+      action_type: string | null;
+      table_name: string | null;
+      record_id: number | null;
+      performed_by: number | null;
+    }>(sql, params);
+    res.json(
+      rows.map((r) => ({
+        timestamp: r.created_at,
+        action: r.action_type || "",
+        table: r.table_name || "",
+        recordId: r.record_id == null ? null : Number(r.record_id),
+        userId: r.performed_by == null ? null : Number(r.performed_by),
+      }))
+    );
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load audit logs" });
+  }
+});
+
+const SETTING_KEYS = [
+  "shop_name",
+  "shop_address",
+  "shop_phone",
+  "shop_email",
+  "currency",
+  "timezone",
+  "tax_rate",
+  "commission_rate",
+] as const;
+
+app.get("/api/settings", requireAuth, allow("admin"), async (_req, res) => {
+  try {
+    const rows = await query<{ setting_key: string; setting_value: string | null }>(
+      `SELECT setting_key, setting_value FROM system_settings`
+    );
+    const map: Record<string, string> = {
+      shop_name: "The Barbazza",
+      shop_address: "Kigali, Rwanda",
+      shop_phone: "",
+      shop_email: "",
+      currency: "RWF",
+      timezone: "Africa/Kigali",
+      tax_rate: "18",
+      commission_rate: "40",
+    };
+    for (const row of rows) {
+      if (row.setting_key in map) map[row.setting_key] = row.setting_value || "";
+    }
+    res.json(map);
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load settings" });
+  }
+});
+
+app.put("/api/settings", requireAuth, allow("admin"), async (req, res) => {
+  const parsed = z
+    .object({
+      shop_name: z.string().max(160).optional(),
+      shop_address: z.string().max(240).optional(),
+      shop_phone: z.string().max(60).optional(),
+      shop_email: z.string().max(160).optional(),
+      currency: z.string().max(20).optional(),
+      timezone: z.string().max(60).optional(),
+      tax_rate: z.union([z.string(), z.number()]).optional(),
+      commission_rate: z.union([z.string(), z.number()]).optional(),
+    })
+    .safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid settings payload" });
+    return;
+  }
+  try {
+    for (const key of SETTING_KEYS) {
+      if (parsed.data[key] === undefined) continue;
+      const value = String(parsed.data[key] ?? "");
+      const exists = await query<{ count: string }>(
+        `SELECT COUNT(*)::int AS count FROM system_settings WHERE setting_key = $1`,
+        [key]
+      );
+      if (num(exists[0]?.count) > 0) {
+        await query(
+          `UPDATE system_settings
+           SET setting_value = $1, updated_by = $2, updated_at = CURRENT_TIMESTAMP
+           WHERE setting_key = $3`,
+          [value, req.user!.userId, key]
+        );
+      } else {
+        await query(
+          `INSERT INTO system_settings (setting_key, setting_value, updated_by, updated_at)
+           VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
+          [key, value, req.user!.userId]
+        );
+      }
+    }
+    void query(
+      `INSERT INTO audit_logs (action_type, table_name, record_id, performed_by, created_at)
+       VALUES ('UPDATE', 'system_settings', NULL, $1, CURRENT_TIMESTAMP)`,
+      [req.user!.userId]
+    ).catch(() => undefined);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not save settings" });
+  }
+});
+
+app.get("/api/locked-days", requireAuth, allow("admin"), async (_req, res) => {
+  try {
+    const rows = await query<{
+      report_date: string;
+      total_income: string;
+      total_expenses: string;
+      net_profit: string;
+    }>(
+      `SELECT TO_CHAR(report_date, 'YYYY-MM-DD') AS report_date,
+              total_income, total_expenses, net_profit
+       FROM daily_reports
+       WHERE is_locked = TRUE
+       ORDER BY report_date DESC
+       LIMIT 30`
+    );
+    res.json(
+      rows.map((r) => ({
+        date: r.report_date,
+        income: num(r.total_income),
+        expenses: num(r.total_expenses),
+        profit: num(r.net_profit),
+        status: "Locked",
+      }))
+    );
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load locked days" });
+  }
+});
+
+app.post("/api/days/lock", requireAuth, allow("admin"), async (req, res) => {
+  const date = String(req.body?.date || "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    res.status(400).json({ error: "Valid date required" });
+    return;
+  }
+  try {
+    const existing = await query<{ is_locked: boolean }>(`SELECT is_locked FROM daily_reports WHERE report_date = $1`, [date]);
+    if (!existing[0]) {
+      res.status(400).json({ error: "No report exists for this date. Close the day first in Manager portal." });
+      return;
+    }
+    if (existing[0].is_locked) {
+      res.status(400).json({ error: "This day is already locked" });
+      return;
+    }
+    await query(
+      `UPDATE daily_reports
+       SET is_locked = TRUE, locked_by = $1, locked_at = CURRENT_TIMESTAMP
+       WHERE report_date = $2`,
+      [req.user!.userId, date]
+    );
+    void query(
+      `INSERT INTO audit_logs (action_type, table_name, record_id, performed_by, created_at)
+       VALUES ('LOCK_DAY', 'daily_reports', NULL, $1, CURRENT_TIMESTAMP)`,
+      [req.user!.userId]
+    ).catch(() => undefined);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not lock day" });
+  }
+});
+
+app.post("/api/days/unlock", requireAuth, allow("admin"), async (req, res) => {
+  const date = String(req.body?.date || "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    res.status(400).json({ error: "Valid date required" });
+    return;
+  }
+  try {
+    const existing = await query<{ is_locked: boolean }>(`SELECT is_locked FROM daily_reports WHERE report_date = $1`, [date]);
+    if (!existing[0]) {
+      res.status(400).json({ error: "No report exists for this date" });
+      return;
+    }
+    if (!existing[0].is_locked) {
+      res.status(400).json({ error: "This day is not locked" });
+      return;
+    }
+    await query(
+      `UPDATE daily_reports
+       SET is_locked = FALSE, locked_by = NULL, locked_at = NULL
+       WHERE report_date = $1`,
+      [date]
+    );
+    void query(
+      `INSERT INTO audit_logs (action_type, table_name, record_id, performed_by, created_at)
+       VALUES ('UNLOCK_DAY', 'daily_reports', NULL, $1, CURRENT_TIMESTAMP)`,
+      [req.user!.userId]
+    ).catch(() => undefined);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not unlock day" });
+  }
+});
+
+/** Daily report snapshot — creates/updates daily_reports like Shiny close-day / generate */
+app.post("/api/reports/generate", requireAuth, allow("admin", "manager"), async (req, res) => {
+  const date = String(req.body?.date || new Date().toISOString().slice(0, 10));
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    res.status(400).json({ error: "Valid date required" });
+    return;
+  }
+  try {
+    const locked = await query<{ is_locked: boolean }>(`SELECT is_locked FROM daily_reports WHERE report_date = $1`, [date]);
+    if (locked[0]?.is_locked) {
+      res.status(400).json({ error: "This day is locked and cannot be regenerated" });
+      return;
+    }
+    const [income, expenses] = await Promise.all([
+      query<{ income: string; customers: string }>(
+        `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers
+         FROM transactions WHERE transaction_date = $1`,
+        [date]
+      ),
+      query<{ expenses: string }>(
+        `SELECT COALESCE(SUM(amount),0) AS expenses FROM expenses WHERE expense_date = $1`,
+        [date]
+      ),
+    ]);
+    const totalIncome = num(income[0]?.income);
+    const totalCustomers = num(income[0]?.customers);
+    const totalExpenses = num(expenses[0]?.expenses);
+    const netProfit = totalIncome - totalExpenses;
+    if (locked[0]) {
+      await query(
+        `UPDATE daily_reports
+         SET total_customers = $2, total_income = $3, total_expenses = $4, net_profit = $5
+         WHERE report_date = $1 AND is_locked = FALSE`,
+        [date, totalCustomers, totalIncome, totalExpenses, netProfit]
+      );
+    } else {
+      await query(
+        `INSERT INTO daily_reports (report_date, total_customers, total_income, total_expenses, net_profit, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [date, totalCustomers, totalIncome, totalExpenses, netProfit, req.user!.userId]
+      );
+    }
+    const day = await query<{
+      barber_code: string;
+      full_name: string | null;
+      clients: string;
+      earned: string;
+    }>(
+      `SELECT b.barber_code, u.full_name,
+              COUNT(t.transaction_id)::int AS clients,
+              COALESCE(SUM(t.amount),0) AS earned
+       FROM barbers b
+       LEFT JOIN users u ON b.user_id = u.user_id
+       LEFT JOIN transactions t ON b.barber_id = t.barber_id AND t.transaction_date = $1
+       WHERE b.is_active = TRUE
+       GROUP BY b.barber_id, b.barber_code, u.full_name
+       ORDER BY earned DESC`,
+      [date]
+    );
+    res.json({
+      ok: true,
+      date,
+      customers: totalCustomers,
+      income: totalIncome,
+      expenses: totalExpenses,
+      profit: netProfit,
+      barbers: day.map((r) => ({
+        code: r.barber_code,
+        name: r.full_name || r.barber_code,
+        clients: num(r.clients),
+        earned: num(r.earned),
+      })),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not generate report" });
+  }
+});
+
 const port = Number(process.env.PORT || 4000);
 
 ensurePublicSchema()
   .then(() => {
-    app.listen(port, () => {
+    app.listen(port, "0.0.0.0", () => {
       console.log(`Barbazza API listening on ${port}`);
     });
   })

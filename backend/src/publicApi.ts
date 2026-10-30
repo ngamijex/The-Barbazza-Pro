@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { isoDate, num, query, cacheGet, cacheSet, cacheDel } from "./db";
+import { FALLBACKS, hostOf, mediaUrl, parseActions, notifyBarberUser } from "./profileRoutes";
 
 export const publicApi = Router();
 
@@ -8,7 +9,7 @@ function publicCache(res: import("express").Response, seconds = 20) {
   res.setHeader("Cache-Control", `public, max-age=${seconds}`);
 }
 
-publicApi.get("/barbers", async (_req, res) => {
+publicApi.get("/barbers", async (req, res) => {
   try {
     const cached = cacheGet<unknown>("public:barbers");
     if (cached) {
@@ -20,36 +21,52 @@ publicApi.get("/barbers", async (_req, res) => {
       barber_id: number;
       barber_code: string;
       full_name: string | null;
-      commission_rate: string;
+      public_name: string | null;
+      slogan: string | null;
+      bio: string | null;
+      actions: string | null;
+      avatar_url: string | null;
+      cover_url: string | null;
       clients: string;
-      earned: string;
       avg_rating: string | null;
       rating_count: string;
     }>(
-      `SELECT b.barber_id, b.barber_code, u.full_name, b.commission_rate,
+      `SELECT b.barber_id, b.barber_code, u.full_name, p.public_name,
+              p.slogan, p.bio, p.actions, p.avatar_url, p.cover_url,
               COUNT(DISTINCT t.transaction_id)::int AS clients,
-              COALESCE(SUM(t.amount), 0) AS earned,
               AVG(r.score)::float AS avg_rating,
               COUNT(DISTINCT r.rating_id)::int AS rating_count
        FROM barbers b
        LEFT JOIN users u ON b.user_id = u.user_id
+       LEFT JOIN barber_profiles p ON p.barber_id = b.barber_id
        LEFT JOIN transactions t
          ON b.barber_id = t.barber_id
         AND t.transaction_date >= CURRENT_DATE - INTERVAL '90 days'
        LEFT JOIN barber_ratings r ON b.barber_id = r.barber_id
        WHERE b.is_active = TRUE
-       GROUP BY b.barber_id, b.barber_code, u.full_name, b.commission_rate
+       GROUP BY b.barber_id, b.barber_code, u.full_name, p.public_name, p.slogan, p.bio, p.actions, p.avatar_url, p.cover_url
        ORDER BY avg_rating DESC NULLS LAST, clients DESC`
     );
-    const payload = rows.map((row, index) => ({
-      id: Number(row.barber_id),
-      code: row.barber_code,
-      name: row.full_name || row.barber_code,
-      specialty: index % 3 === 0 ? "Precision cuts" : index % 3 === 1 ? "Classic fades" : "Beard & finish",
-      clients90d: num(row.clients),
-      rating: row.avg_rating ? Math.round(num(row.avg_rating) * 10) / 10 : null,
-      reviews: num(row.rating_count),
-    }));
+    const payload = rows.map((row, index) => {
+      const defaults = ["Precision cuts", "Classic fades", "Beard & finish"];
+      const actions = parseActions(row.actions);
+      const publicName = (row.public_name || "").trim();
+      return {
+        id: Number(row.barber_id),
+        code: row.barber_code,
+        name: publicName || row.full_name || row.barber_code,
+        publicName: publicName || row.full_name || row.barber_code,
+        slogan: row.slogan || "Cut with intention.",
+        bio: row.bio || "",
+        specialty: actions[0] || defaults[index % defaults.length],
+        actions: actions.length ? actions : [defaults[index % defaults.length]],
+        avatarUrl: mediaUrl(hostOf(req), row.avatar_url, FALLBACKS[index % FALLBACKS.length]),
+        coverUrl: mediaUrl(hostOf(req), row.cover_url, FALLBACKS[(index + 1) % FALLBACKS.length]),
+        clients90d: num(row.clients),
+        rating: row.avg_rating ? Math.round(num(row.avg_rating) * 10) / 10 : null,
+        reviews: num(row.rating_count),
+      };
+    });
     cacheSet("public:barbers", payload, 30_000);
     publicCache(res, 30);
     res.json(payload);
@@ -65,26 +82,34 @@ publicApi.get("/barbers/:id", async (req, res) => {
     return;
   }
   try {
-    const [barber, ratings, services, recent] = await Promise.all([
+    const [barber, ratings, services, recent, portfolio] = await Promise.all([
       query<{
         barber_id: number;
         barber_code: string;
         full_name: string | null;
+        public_name: string | null;
+        slogan: string | null;
+        bio: string | null;
+        actions: string | null;
+        avatar_url: string | null;
+        cover_url: string | null;
         clients: string;
         earned: string;
         days: string;
       }>(
-        `SELECT b.barber_id, b.barber_code, u.full_name,
+        `SELECT b.barber_id, b.barber_code, u.full_name, p.public_name,
+                p.slogan, p.bio, p.actions, p.avatar_url, p.cover_url,
                 COUNT(t.transaction_id)::int AS clients,
                 COALESCE(SUM(t.amount),0) AS earned,
                 COUNT(DISTINCT t.transaction_date)::int AS days
          FROM barbers b
          LEFT JOIN users u ON b.user_id = u.user_id
+         LEFT JOIN barber_profiles p ON p.barber_id = b.barber_id
          LEFT JOIN transactions t
            ON b.barber_id = t.barber_id
           AND t.transaction_date >= CURRENT_DATE - INTERVAL '90 days'
          WHERE b.barber_id = $1 AND b.is_active = TRUE
-         GROUP BY b.barber_id, b.barber_code, u.full_name`,
+         GROUP BY b.barber_id, b.barber_code, u.full_name, p.public_name, p.slogan, p.bio, p.actions, p.avatar_url, p.cover_url`,
         [id]
       ),
       query<{
@@ -115,6 +140,13 @@ publicApi.get("/barbers/:id", async (req, res) => {
          ORDER BY transaction_date`,
         [id]
       ),
+      query<{ item_id: number; image_url: string; caption: string | null }>(
+        `SELECT item_id, image_url, caption
+         FROM barber_portfolio WHERE barber_id = $1
+         ORDER BY sort_order, item_id DESC
+         LIMIT 24`,
+        [id]
+      ),
     ]);
     if (!barber[0]) {
       res.status(404).json({ error: "Barber not found" });
@@ -122,10 +154,18 @@ publicApi.get("/barbers/:id", async (req, res) => {
     }
     const avg =
       ratings.length > 0 ? Math.round((ratings.reduce((s, r) => s + Number(r.score), 0) / ratings.length) * 10) / 10 : null;
+    const actions = parseActions(barber[0].actions);
+    const publicName = (barber[0].public_name || "").trim();
     res.json({
       id: Number(barber[0].barber_id),
       code: barber[0].barber_code,
-      name: barber[0].full_name || barber[0].barber_code,
+      name: publicName || barber[0].full_name || barber[0].barber_code,
+      publicName: publicName || barber[0].full_name || barber[0].barber_code,
+      slogan: barber[0].slogan || "Cut with intention.",
+      bio: barber[0].bio || "A chair built on patience, precision, and presence.",
+      actions: actions.length ? actions : ["Precision cuts", "Fades", "Beard work"],
+      avatarUrl: mediaUrl(hostOf(req), barber[0].avatar_url, FALLBACKS[id % FALLBACKS.length]),
+      coverUrl: mediaUrl(hostOf(req), barber[0].cover_url, FALLBACKS[(id + 1) % FALLBACKS.length]),
       clients90d: num(barber[0].clients),
       daysActive: num(barber[0].days),
       rating: avg,
@@ -143,6 +183,11 @@ publicApi.get("/barbers/:id", async (req, res) => {
         price: num(s.base_price),
       })),
       activity: recent.map((r) => ({ date: isoDate(r.day), cuts: num(r.total) })),
+      portfolio: portfolio.map((item) => ({
+        id: Number(item.item_id),
+        imageUrl: mediaUrl(hostOf(req), item.image_url, FALLBACKS[0]),
+        caption: item.caption || "",
+      })),
     });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load profile" });
@@ -250,6 +295,12 @@ publicApi.post("/bookings", async (req, res) => {
         data.notes || null,
       ]
     );
+    await notifyBarberUser(
+      data.barberId,
+      "New booking request",
+      `${data.clientName} booked ${data.date} at ${data.time}`,
+      "/calendar"
+    ).catch(() => undefined);
     cacheDel("public:");
     res.json({ ok: true, bookingId: Number(inserted[0]?.booking_id) });
   } catch (error) {
@@ -276,6 +327,12 @@ publicApi.post("/ratings", async (req, res) => {
        VALUES ($1, $2, $3, $4)`,
       [parsed.data.barberId, parsed.data.clientName, parsed.data.score, parsed.data.comment || null]
     );
+    await notifyBarberUser(
+      parsed.data.barberId,
+      "New client rating",
+      `${parsed.data.clientName} left a ${parsed.data.score}/5 rating`,
+      "/calendar"
+    ).catch(() => undefined);
     cacheDel("public:");
     res.json({ ok: true });
   } catch (error) {

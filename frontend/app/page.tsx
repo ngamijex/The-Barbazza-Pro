@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { BookingModal } from "@/components/public/BookingModal";
 import { PublicShell, Stars } from "@/components/public/PublicShell";
-import { PublicBarber, publicApi } from "@/lib/publicApi";
-
-const BRAND = "BARBAZZA";
+import { mediaSrc, PublicBarber, publicApi } from "@/lib/publicApi";
 
 export default function PublicHomePage() {
   const [barbers, setBarbers] = useState<PublicBarber[]>([]);
+  const [bookBarber, setBookBarber] = useState<PublicBarber | null>(null);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -18,9 +18,6 @@ export default function PublicHomePage() {
       .catch(() => setBarbers([]));
   }, []);
 
-  const letterStagger = reduceMotion ? 0 : 0.055;
-  const letterDuration = reduceMotion ? 0.01 : 0.55;
-
   return (
     <PublicShell>
       <section className="public-hero">
@@ -28,9 +25,9 @@ export default function PublicHomePage() {
           className="public-hero-media"
           style={{ backgroundImage: "url(/public-art/hero-shop.jpg)" }}
           aria-hidden
-          initial={reduceMotion ? false : { scale: 1.18, x: "2%" }}
-          animate={reduceMotion ? undefined : { scale: 1.04, x: "-1%" }}
-          transition={{ duration: 14, ease: [0.22, 1, 0.36, 1] }}
+          initial={reduceMotion ? false : { scale: 1.12 }}
+          animate={reduceMotion ? undefined : { scale: 1 }}
+          transition={{ duration: 12, ease: [0.22, 1, 0.36, 1] }}
         />
         <div className="public-hero-veil" aria-hidden />
         <div className="public-hero-grain" aria-hidden />
@@ -45,57 +42,29 @@ export default function PublicHomePage() {
         <div className="public-hero-copy">
           <motion.h1
             className="public-hero-brand"
-            aria-label="BARBAZZA"
-            initial="hidden"
-            animate="show"
-            variants={{
-              hidden: {},
-              show: { transition: { staggerChildren: letterStagger, delayChildren: 0.12 } },
-            }}
+            initial={reduceMotion ? false : { opacity: 0, y: 24, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            {BRAND.split("").map((letter, i) => (
-              <motion.span
-                key={`${letter}-${i}`}
-                className="public-hero-letter"
-                variants={{
-                  hidden: { opacity: 0, y: reduceMotion ? 0 : 42, rotateX: reduceMotion ? 0 : 55 },
-                  show: {
-                    opacity: 1,
-                    y: 0,
-                    rotateX: 0,
-                    transition: { duration: letterDuration, ease: [0.16, 1, 0.3, 1] },
-                  },
-                }}
-              >
-                {letter}
-              </motion.span>
-            ))}
+            <img src="/logo.png" alt="Barbazza" className="public-logo public-logo--hero" />
           </motion.h1>
 
-          <motion.div
-            className="public-hero-rule"
-            initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ duration: reduceMotion ? 0.01 : 0.9, delay: reduceMotion ? 0 : 0.75, ease: [0.22, 1, 0.36, 1] }}
-            aria-hidden
-          />
-
           <motion.p
-            initial={{ opacity: 0, y: reduceMotion ? 0 : 18 }}
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: reduceMotion ? 0 : 0.85, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.65, delay: reduceMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
-            A house of quiet craft. Choose your barber, book the chair, and leave sharper than you arrived.
+            A house of quiet craft. Choose your barber, book them in, and leave sharper than you arrived.
           </motion.p>
 
           <motion.div
             className="public-cta-row"
-            initial={{ opacity: 0, y: reduceMotion ? 0 : 16 }}
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, delay: reduceMotion ? 0 : 1.05, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.6, delay: reduceMotion ? 0 : 0.48, ease: [0.22, 1, 0.36, 1] }}
           >
             <Link href="/book" className="btn-ink">
-              Book a chair
+              Book a barber
             </Link>
             <Link href="/team" className="btn-ghost-light">
               Meet the barbers
@@ -103,15 +72,6 @@ export default function PublicHomePage() {
           </motion.div>
         </div>
 
-        <motion.div
-          className="public-hero-scroll"
-          aria-hidden
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: reduceMotion ? 0 : 1.4, duration: 0.6 }}
-        >
-          <span />
-        </motion.div>
       </section>
 
       <section className="public-section">
@@ -132,31 +92,48 @@ export default function PublicHomePage() {
 
       <section className="public-section" style={{ paddingTop: 0 }}>
         <h2>Featured chairs</h2>
-        <p className="lede">Rated by clients. Proven on the floor.</p>
+        <p className="lede">Slogans, crafts, and live ratings — open a profile or book straight away.</p>
         <div className="barber-grid">
-          {barbers.map((barber, index) => (
-            <Link key={barber.id} href={`/team/${barber.id}`} className="barber-card">
-              <div
-                className="barber-card-media"
-                style={{
-                  backgroundImage: `url(/public-art/${index % 2 === 0 ? "barber-craft.jpg" : "hero-shop.jpg"})`,
-                }}
-              />
+          {barbers.map((barber) => (
+            <article key={barber.id} className="barber-card barber-card--rich">
+              <div className="barber-card-media" style={{ backgroundImage: `url(${mediaSrc(barber.coverUrl)})` }}>
+                <div className="barber-card-avatar" style={{ backgroundImage: `url(${mediaSrc(barber.avatarUrl)})` }} />
+              </div>
               <div className="barber-card-body">
                 <h3>{barber.name}</h3>
-                <p style={{ margin: 0, color: "var(--mute)", fontSize: "0.92rem" }}>{barber.specialty}</p>
+                <p className="barber-slogan">{barber.slogan}</p>
+                <div className="action-chips">
+                  {barber.actions.slice(0, 3).map((action) => (
+                    <span key={action}>{action}</span>
+                  ))}
+                </div>
                 <div className="barber-meta">
                   <Stars value={barber.rating} />
                   <span>{barber.clients90d} clients · 90d</span>
                 </div>
+                <div className="barber-card-actions">
+                  <Link href={`/team/${barber.id}`} className="btn-ghost-dark">
+                    View details
+                  </Link>
+                  <button
+                    type="button"
+                    className="btn-ink"
+                    style={{ background: "var(--ink)", color: "#fff", border: "none" }}
+                    onClick={() => setBookBarber(barber)}
+                  >
+                    Book
+                  </button>
+                </div>
               </div>
-            </Link>
+            </article>
           ))}
         </div>
         {barbers.length === 0 ? (
           <p style={{ color: "var(--mute)" }}>Barbers will appear here once the shop roster is active.</p>
         ) : null}
       </section>
+
+      <BookingModal barber={bookBarber} open={Boolean(bookBarber)} onClose={() => setBookBarber(null)} />
     </PublicShell>
   );
 }

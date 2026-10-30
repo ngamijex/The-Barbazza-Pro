@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
+  Bell,
   CalendarDays,
   ChartColumn,
   ClipboardList,
@@ -12,6 +13,7 @@ import {
   Scissors,
   Settings,
   Shield,
+  UserRound,
   Users,
   Wallet,
 } from "lucide-react";
@@ -31,6 +33,7 @@ const NAV: Record<Role, NavItem[]> = {
     { href: "/home", label: "Dashboard", short: "Home", icon: Home },
     { href: "/performance", label: "Performance Dashboard", short: "Perf", icon: ChartColumn },
     { href: "/people", label: "User Management", short: "Users", icon: Users },
+    { href: "/profile", label: "Public Profiles", short: "Profiles", icon: UserRound },
     { href: "/services", label: "Service Management", short: "Services", icon: Scissors },
     { href: "/expense-categories", label: "Expense Categories", short: "Cats", icon: Wallet },
     { href: "/reports", label: "Reports & Analytics", short: "Reports", icon: ClipboardList },
@@ -42,6 +45,7 @@ const NAV: Record<Role, NavItem[]> = {
     { href: "/home", label: "Daily Operations", short: "Ops", icon: Home },
     { href: "/expenses", label: "Expenses", short: "Spend", icon: Wallet },
     { href: "/barbers", label: "Barbers", short: "Barbers", icon: Users },
+    { href: "/profile", label: "Public Profiles", short: "Profiles", icon: UserRound },
     { href: "/daily-report", label: "Daily Report", short: "Report", icon: ClipboardList },
     { href: "/credits", label: "Credit Approvals", short: "Credits", icon: CreditCard },
     { href: "/daily-records", label: "Daily Records", short: "Records", icon: CalendarDays },
@@ -50,6 +54,8 @@ const NAV: Record<Role, NavItem[]> = {
   supervisor: [{ href: "/home", label: "Today's Barber Performance", short: "Today", icon: Home }],
   barber: [
     { href: "/home", label: "Dashboard", short: "Home", icon: Home },
+    { href: "/calendar", label: "Bookings & Calendar", short: "Bookings", icon: Bell },
+    { href: "/profile", label: "My Public Profile", short: "Profile", icon: UserRound },
     { href: "/history", label: "History", short: "History", icon: CalendarDays },
     { href: "/credit", label: "Request Credit", short: "Credit", icon: CreditCard },
   ],
@@ -63,7 +69,7 @@ export function useSession() {
   useEffect(() => {
     const session = readSession();
     if (!session) {
-      router.replace("/");
+      router.replace("/staff");
       return;
     }
     setUser(session);
@@ -103,7 +109,7 @@ export function Shell({
   function signOut() {
     clearApiCache();
     localStorage.clear();
-    router.replace("/");
+    router.replace("/staff");
   }
 
   return (

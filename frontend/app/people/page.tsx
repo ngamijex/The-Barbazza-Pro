@@ -92,6 +92,18 @@ export default function PeoplePage() {
     setMessage(`Recovered ${result.updated} balance${result.updated === 1 ? "" : "s"}.`);
   }
 
+  async function deleteUser(person: UserRow) {
+    if (!confirm(`Delete / deactivate ${person.fullName}? They will no longer be able to sign in.`)) return;
+    try {
+      await api(`/api/users/${person.id}`, { method: "DELETE" });
+      if (editing?.id === person.id) setEditing(null);
+      await load();
+      setMessage("User deactivated.");
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Could not delete user");
+    }
+  }
+
   return (
     <Shell>
       {message ? <p style={{ marginBottom: "var(--space-3)", color: "var(--barbazza-gold)" }}>{message}</p> : null}
@@ -200,10 +212,15 @@ export default function PeoplePage() {
                   {person.barberCode ? ` · ${person.barberCode}` : ""}
                 </td>
                 <td>{person.active ? "Active" : "Off"}</td>
-                <td>
-                  <button type="button" className="btn-action" style={{ width: "auto" }} onClick={() => setEditing(person)}>
+                <td style={{ whiteSpace: "nowrap" }}>
+                  <button type="button" className="btn-action" style={{ width: "auto", marginRight: 6 }} onClick={() => setEditing(person)}>
                     Edit
                   </button>
+                  {person.active ? (
+                    <button type="button" className="btn-logout" onClick={() => deleteUser(person)}>
+                      Delete
+                    </button>
+                  ) : null}
                 </td>
               </tr>
             ))}

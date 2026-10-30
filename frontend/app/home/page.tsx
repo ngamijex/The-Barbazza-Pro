@@ -20,9 +20,12 @@ type Operations = {
   trend: { date: string; total: number }[];
   transactions: {
     id: number;
+    barberId: number;
+    serviceId: number | null;
     service: string;
     amount: number;
     customer: string;
+    notes: string;
     barberCode: string;
     barberName: string;
     time: string;
@@ -56,14 +59,20 @@ type BarberHome = {
     gross: number;
     commission: number;
     customers: number;
+    services: number;
     bestDay: number;
+    avgDaily: number;
     recruitmentDeduction: number;
     recruitmentBalance: number;
+    creditBalance: number;
+    creditDeduction: number;
     expectedNet: number;
   };
+  trend: { date: string; total: number }[];
+  todayServices: { service: string; amount: number; customer: string; time: string }[];
 };
 
-type Option = { id: number; name: string; price?: number; code?: string };
+type Option = { id: number; name: string; price?: number; code?: string; active?: boolean };
 
 export default function HomePage() {
   const user = useSession();
@@ -80,8 +89,14 @@ export default function HomePage() {
     amount: "",
     customerName: "",
     notes: "",
+    discountReason: "",
   });
+  const [editingTx, setEditingTx] = useState<number | null>(null);
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+
+  const selectedService = services.find((s) => s.id === Number(form.serviceId));
+  const needsDiscount =
+    selectedService?.price != null && form.amount !== "" && Number(form.amount) < Number(selectedService.price);
 
   async function loadManager() {
     setOps(await api<Operations>("/api/operations"));
@@ -115,21 +130,29 @@ export default function HomePage() {
   async function addService(event: FormEvent) {
     event.preventDefault();
     setError("");
+    if (needsDiscount && !form.discountReason.trim()) {
+      setError("Discount reason is required when amount is below base price");
+      return;
+    }
     try {
-      await api("/api/transactions", {
-        method: "POST",
-        body: JSON.stringify({
-          barberId: Number(form.barberId),
-          serviceId: Number(form.serviceId),
-          amount: Number(form.amount),
-          customerName: form.customerName,
-          notes: form.notes,
-        }),
-      });
-      setForm({ barberId: "", serviceId: "", amount: "", customerName: "", notes: "" });
+      const payload = {
+        barberId: Number(form.barberId),
+        serviceId: Number(form.serviceId),
+        amount: Number(form.amount),
+        customerName: form.customerName,
+        notes: form.notes,
+        discountReason: form.discountReason || undefined,
+      };
+      if (editingTx) {
+        await api(`/api/transactions/${editingTx}`, { method: "PUT", body: JSON.stringify(payload) });
+      } else {
+        await api("/api/transactions", { method: "POST", body: JSON.stringify(payload) });
+      }
+      setForm({ barberId: "", serviceId: "", amount: "", customerName: "", notes: "", discountReason: "" });
+      setEditingTx(null);
       await loadManager();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not add service");
+      setError(err instanceof Error ? err.message : "Could not save service");
     }
   }
 
@@ -137,6 +160,18 @@ export default function HomePage() {
     if (!confirm("Delete this transaction?")) return;
     await api(`/api/transactions/${id}`, { method: "DELETE" });
     await loadManager();
+  }
+
+  function startEditTx(tx: Operations["transactions"][number]) {
+    setEditingTx(tx.id);
+    setForm({
+      barberId: String(tx.barberId),
+      serviceId: tx.serviceId ? String(tx.serviceId) : "",
+      amount: String(tx.amount),
+      customerName: tx.customer || "",
+      notes: tx.notes?.replace(/\s*\|\s*Discount:.*$/, "") || "",
+      discountReason: tx.notes?.match(/Discount:\s*(.*)$/)?.[1] || "",
+    });
   }
 
   const cardClass =
@@ -199,7 +234,7 @@ export default function HomePage() {
             </div>
           </Panel>
 
-          <Panel title="Add Service Transaction" className="manager-card">
+          <Panel title={editingTx ? "Edit Service Transaction" : "Add Service Transaction"} className="manager-card">
             <form onSubmit={addService} className="service-form">
               <div className="form-grid form-grid-3">
                 <div className="form-group">
@@ -228,11 +263,12 @@ export default function HomePage() {
                         ...form,
                         serviceId: e.target.value,
                         amount: service?.price != null ? String(service.price) : form.amount,
+                        discountReason: "",
                       });
                     }}
                   >
                     <option value="">Select...</option>
-                    {services.map((s) => (
+                    {services.filter((s) => s.active !== false).map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.name}
                       </option>
@@ -249,8 +285,23 @@ export default function HomePage() {
                     value={form.amount}
                     onChange={(e) => setForm({ ...form, amount: e.target.value })}
                   />
+                  {selectedService?.price != null ? (
+                    <small style={{ color: "var(--barbazza-cream)" }}>Base Price: {money(selectedService.price)}</small>
+                  ) : null}
                 </div>
               </div>
+              {needsDiscount ? (
+                <div className="form-group">
+                  <label>Discount Reason *</label>
+                  <textarea
+                    required
+                    rows={2}
+                    value={form.discountReason}
+                    onChange={(e) => setForm({ ...form, discountReason: e.target.value })}
+                    placeholder="Required when price is less than base price"
+                  />
+                </div>
+              ) : null}
               <div className="form-grid form-grid-2">
                 <div className="form-group">
                   <label>Customer Name (Optional)</label>
@@ -269,8 +320,21 @@ export default function HomePage() {
                 </div>
               </div>
               <button type="submit" className="btn-action">
-                Add Service
+                {editingTx ? "Save Transaction" : "Add Service"}
               </button>
+              {editingTx ? (
+                <button
+                  type="button"
+                  className="btn-logout"
+                  style={{ marginLeft: 12 }}
+                  onClick={() => {
+                    setEditingTx(null);
+                    setForm({ barberId: "", serviceId: "", amount: "", customerName: "", notes: "", discountReason: "" });
+                  }}
+                >
+                  Cancel
+                </button>
+              ) : null}
             </form>
           </Panel>
 
@@ -302,7 +366,10 @@ export default function HomePage() {
                         <td>{tx.service}</td>
                         <td>{tx.customer || "-"}</td>
                         <td>{money(tx.amount)}</td>
-                        <td>
+                        <td style={{ whiteSpace: "nowrap" }}>
+                          <button type="button" className="btn-action" style={{ width: "auto", marginRight: 6 }} onClick={() => startEditTx(tx)}>
+                            Edit
+                          </button>
                           <button type="button" className="btn-logout" onClick={() => removeTx(tx.id)}>
                             Delete
                           </button>
@@ -501,13 +568,71 @@ export default function HomePage() {
           </Panel>
           <Panel title="This Month's Performance" className={cardClass}>
             <div className="earnings-grid daily-summary">
+              <Kpi label="Total Services" value={String(chair.month.services)} />
+              <Kpi label="Total Customers" value={String(chair.month.customers)} />
               <Kpi label="Gross Income" value={money(chair.month.gross)} />
-              <Kpi label="Your Commission" value={money(chair.month.commission)} />
+              <Kpi label={`Your Commission (${chair.commissionRate}%)`} value={money(chair.month.commission)} />
+              <Kpi label="Average Daily Income" value={money(chair.month.avgDaily)} />
               <Kpi label="Best Day Income" value={money(chair.month.bestDay)} />
+            </div>
+          </Panel>
+          <Panel title="Expected Monthly Income" className={cardClass}>
+            <div className="earnings-grid daily-summary">
+              <Kpi label={`Monthly Commission (${chair.commissionRate}%)`} value={money(chair.month.commission)} />
+              <Kpi label="Recruitment Deduction" value={money(chair.month.recruitmentDeduction)} />
+              <Kpi label="Credit Deductions" value={money(chair.month.creditDeduction)} />
               <Kpi label="Expected Net Income" value={money(chair.month.expectedNet)} />
+            </div>
+          </Panel>
+          <Panel title="Outstanding Balances" className={cardClass}>
+            <div className="earnings-grid daily-summary">
               <Kpi label="Recruitment Balance" value={money(chair.month.recruitmentBalance)} />
               <Kpi label="Monthly Deduction" value={money(chair.month.recruitmentDeduction)} />
+              <Kpi label="Credit Balance" value={money(chair.month.creditBalance)} />
+              <Kpi
+                label="Total Pending"
+                value={money(chair.month.recruitmentBalance + chair.month.creditBalance)}
+              />
             </div>
+          </Panel>
+          <Panel title="Income Trend - This Month" className={cardClass}>
+            <div style={{ height: 260 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chair.trend}>
+                  <XAxis dataKey="date" hide />
+                  <Tooltip formatter={(value: number | string) => money(Number(value))} />
+                  <Area type="monotone" dataKey="total" stroke="var(--barbazza-gold)" fill="rgba(212,175,55,0.25)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </Panel>
+          <Panel title="Today's Services" className={cardClass}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Service</th>
+                  <th>Amount</th>
+                  <th>Customer</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {chair.todayServices.length === 0 ? (
+                  <tr>
+                    <td colSpan={4}>No services today.</td>
+                  </tr>
+                ) : (
+                  chair.todayServices.map((s, i) => (
+                    <tr key={`${s.time}-${i}`}>
+                      <td>{s.service}</td>
+                      <td>{money(s.amount)}</td>
+                      <td>{s.customer}</td>
+                      <td>{s.time}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </Panel>
         </>
       ) : null}

@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { BookingModal } from "@/components/public/BookingModal";
 import { PublicShell, Stars } from "@/components/public/PublicShell";
 import { PageSkeleton } from "@/components/Skeleton";
-import { BarberProfile, money, publicApi } from "@/lib/publicApi";
+import { BarberProfile, mediaSrc, money, PublicBarber, publicApi } from "@/lib/publicApi";
 
 export default function BarberProfilePage() {
   const params = useParams();
@@ -17,6 +18,8 @@ export default function BarberProfilePage() {
   const [comment, setComment] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [bookOpen, setBookOpen] = useState(false);
+  const [bookServiceId, setBookServiceId] = useState<number | null>(null);
 
   async function load() {
     setProfile(await publicApi<BarberProfile>(`/barbers/${id}`));
@@ -47,6 +50,24 @@ export default function BarberProfilePage() {
     }
   }
 
+  const bookBarber: PublicBarber | null = useMemo(() => {
+    if (!profile) return null;
+    return {
+      id: profile.id,
+      code: profile.code,
+      name: profile.name,
+      slogan: profile.slogan,
+      bio: profile.bio,
+      specialty: profile.actions[0] || "",
+      actions: profile.actions,
+      avatarUrl: profile.avatarUrl,
+      coverUrl: profile.coverUrl,
+      clients90d: profile.clients90d,
+      rating: profile.rating,
+      reviews: profile.reviews,
+    };
+  }, [profile]);
+
   if (!profile && !error) {
     return (
       <PublicShell>
@@ -70,31 +91,64 @@ export default function BarberProfilePage() {
 
   return (
     <PublicShell>
-      <section className="public-section">
-        <div className="public-split">
-          <div
-            style={{
-              minHeight: 360,
-              background: `url(/public-art/barber-craft.jpg) center/cover`,
-              filter: "grayscale(1)",
-            }}
-          />
+      <section className="profile-hero" style={{ backgroundImage: `url(${mediaSrc(profile.coverUrl)})` }}>
+        <div className="profile-hero-veil" />
+        <div className="profile-hero-inner">
+          <div className="profile-avatar" style={{ backgroundImage: `url(${mediaSrc(profile.avatarUrl)})` }} />
           <div>
-            <p style={{ letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--mute)", fontSize: 12 }}>
-              Chair {profile.code}
-            </p>
-            <h2 style={{ marginTop: 8 }}>{profile.name}</h2>
-            <div className="barber-meta" style={{ marginBottom: "1.25rem" }}>
+            <p className="profile-kicker">Chair {profile.code}</p>
+            <h1>{profile.name}</h1>
+            <p className="profile-slogan">{profile.slogan}</p>
+            <div className="barber-meta" style={{ marginBottom: "1rem", color: "rgba(255,255,255,0.85)" }}>
               <Stars value={profile.rating} />
               <span>{profile.reviews} reviews</span>
-              <span>{profile.clients90d} clients · 90 days</span>
-              <span>{profile.daysActive} active days</span>
+              <span>{profile.clients90d} clients · 90d</span>
             </div>
-            <Link href={`/book?barber=${profile.id}`} className="btn-ink" style={{ background: "var(--ink)", color: "#fff" }}>
-              Book {profile.name.split(" ")[0]}
-            </Link>
+            <div className="action-chips action-chips--light">
+              {profile.actions.map((action) => (
+                <span key={action}>{action}</span>
+              ))}
+            </div>
+            <div className="public-cta-row" style={{ marginTop: "1.25rem" }}>
+              <button
+                type="button"
+                className="btn-ink"
+                style={{ border: "none", cursor: "pointer" }}
+                onClick={() => {
+                  setBookServiceId(null);
+                  setBookOpen(true);
+                }}
+              >
+                Book this barber
+              </button>
+              <Link href="/team" className="btn-ghost-light">
+                All barbers
+              </Link>
+            </div>
           </div>
         </div>
+      </section>
+
+      <section className="public-section">
+        <h2>About</h2>
+        <p className="lede" style={{ marginBottom: "1.5rem" }}>
+          {profile.bio}
+        </p>
+
+        <h2>Work</h2>
+        <p className="lede">Cuts and finishes from this chair.</p>
+        {profile.portfolio.length === 0 ? (
+          <p style={{ color: "var(--mute)" }}>Portfolio photos will appear once uploaded by the barber or admin.</p>
+        ) : (
+          <div className="portfolio-grid">
+            {profile.portfolio.map((item) => (
+              <figure key={item.id} className="portfolio-item">
+                <div style={{ backgroundImage: `url(${mediaSrc(item.imageUrl)})` }} />
+                {item.caption ? <figcaption>{item.caption}</figcaption> : null}
+              </figure>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="public-section" style={{ paddingTop: 0 }}>
@@ -102,8 +156,19 @@ export default function BarberProfilePage() {
         <div className="barber-grid">
           {profile.services.map((service) => (
             <div key={service.id} className="barber-card-body" style={{ border: "1px solid var(--line)", background: "#fff" }}>
-              <h3 style={{ fontSize: "1.35rem" }}>{service.name}</h3>
-              <p style={{ margin: "0.35rem 0 0", color: "var(--mute)" }}>{money(service.price)}</p>
+              <h3 style={{ fontSize: "1.25rem" }}>{service.name}</h3>
+              <p style={{ margin: "0.35rem 0 0.85rem", color: "var(--mute)" }}>{money(service.price)}</p>
+              <button
+                type="button"
+                className="btn-ink"
+                style={{ background: "var(--ink)", color: "#fff", minHeight: 38, fontSize: "0.8rem", border: "none", cursor: "pointer" }}
+                onClick={() => {
+                  setBookServiceId(service.id);
+                  setBookOpen(true);
+                }}
+              >
+                Book
+              </button>
             </div>
           ))}
         </div>
@@ -126,18 +191,24 @@ export default function BarberProfilePage() {
         </div>
 
         <h2>Rate this barber</h2>
-        <p className="lede">Honest notes help the next client choose well.</p>
         <form className="public-form" onSubmit={submitRating}>
           <label>
             Your name
             <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="How should we show you?" />
           </label>
           <div>
-            <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 8 }}>Score</div>
-            <div className="rating-row">
+            <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 8 }}>Rating</div>
+            <div className="rating-row rating-row--stars" role="group" aria-label={`${score} out of 5 stars`}>
               {[1, 2, 3, 4, 5].map((n) => (
-                <button key={n} type="button" className={score === n ? "active" : ""} onClick={() => setScore(n)}>
-                  {n}
+                <button
+                  key={n}
+                  type="button"
+                  className={n <= score ? "active" : ""}
+                  onClick={() => setScore(n)}
+                  aria-label={`${n} star${n === 1 ? "" : "s"}`}
+                  aria-pressed={n <= score}
+                >
+                  ★
                 </button>
               ))}
             </div>
@@ -152,6 +223,16 @@ export default function BarberProfilePage() {
           {message ? <p style={{ margin: 0 }}>{message}</p> : null}
         </form>
       </section>
+
+      <BookingModal
+        barber={bookBarber}
+        open={bookOpen}
+        presetServiceId={bookServiceId}
+        onClose={() => {
+          setBookOpen(false);
+          setBookServiceId(null);
+        }}
+      />
     </PublicShell>
   );
 }

@@ -13,4 +13,5 @@ rsconnect
 *.xlsx
 ~$*.xlsx
 backend/.env
+backend/uploads/
 frontend/.env.local

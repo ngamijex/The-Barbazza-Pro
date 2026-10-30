@@ -6,30 +6,22 @@ import "@/app/public.css";
 
 export function PublicShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const onHero = pathname === "/";
 
   return (
-    <div className="public-shell public-body">
-      <header className="public-nav">
-        <Link href="/" className="public-brand">
-          <img src="/logo.png" alt="Barbazza" />
-          <span>BARBAZZA</span>
+    <div className={`public-shell public-body${onHero ? " public-shell--home" : " public-shell--inner"}`}>
+      <header className={`public-nav${onHero ? " public-nav--hero" : " public-nav--inner"}`}>
+        <Link href="/" className="public-brand" aria-label="Barbazza home">
+          <img src="/logo.png" alt="Barbazza" className="public-logo public-logo--nav" />
         </Link>
-        <nav className="public-nav-links" aria-label="Public">
-          <Link href="/team" className={pathname.startsWith("/team") ? "active" : undefined}>
-            Barbers
-          </Link>
-          <Link href="/book" className={pathname.startsWith("/book") ? "active" : undefined}>
-            Book
-          </Link>
-          <Link href="/staff" className="public-nav-cta">
-            Staff
-          </Link>
-        </nav>
+        <Link href="/staff" className="public-nav-cta">
+          Staff
+        </Link>
       </header>
       {children}
       <footer className="public-footer">
-        <strong>BARBAZZA</strong>
-        Craft in black &amp; white. Book your chair.
+        <img src="/logo.png" alt="Barbazza" className="public-logo public-logo--footer" />
+        <p>Craft in black &amp; white. Book a barber.</p>
       </footer>
     </div>
   );

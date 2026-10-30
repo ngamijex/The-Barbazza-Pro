@@ -1,6 +1,6 @@
 import { pool } from "./db";
 
-/** Ensure public booking / ratings tables exist (safe to run on every boot). */
+/** Ensure public booking / ratings / profile tables exist (safe to run on every boot). */
 export async function ensurePublicSchema() {
   const client = await pool.connect();
   try {
@@ -28,11 +28,52 @@ export async function ensurePublicSchema() {
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS barber_profiles (
+        barber_id INTEGER PRIMARY KEY REFERENCES barbers(barber_id) ON DELETE CASCADE,
+        public_name VARCHAR(120),
+        slogan VARCHAR(200),
+        bio TEXT,
+        actions TEXT,
+        avatar_url TEXT,
+        cover_url TEXT,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_by INTEGER REFERENCES users(user_id)
+      );
+
+      ALTER TABLE barber_profiles
+        ADD COLUMN IF NOT EXISTS public_name VARCHAR(120);
+
+      CREATE TABLE IF NOT EXISTS barber_portfolio (
+        item_id SERIAL PRIMARY KEY,
+        barber_id INTEGER NOT NULL REFERENCES barbers(barber_id) ON DELETE CASCADE,
+        image_url TEXT NOT NULL,
+        caption VARCHAR(240),
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        created_by INTEGER REFERENCES users(user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS notifications (
+        notification_id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+        title VARCHAR(160) NOT NULL,
+        body TEXT,
+        link VARCHAR(240),
+        is_read BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE INDEX IF NOT EXISTS idx_bookings_barber_date
         ON client_bookings (barber_id, booking_date);
 
       CREATE INDEX IF NOT EXISTS idx_ratings_barber
         ON barber_ratings (barber_id);
+
+      CREATE INDEX IF NOT EXISTS idx_portfolio_barber
+        ON barber_portfolio (barber_id, sort_order, item_id);
+
+      CREATE INDEX IF NOT EXISTS idx_notifications_user
+        ON notifications (user_id, is_read, created_at DESC);
     `);
   } finally {
     client.release();
