@@ -15,8 +15,8 @@ app.set("etag", false);
 const corsOrigins = new Set(
   [
     "http://localhost:3000",
-    "https://thebarbazza.co",
-    "https://www.thebarbazza.co",
+    "https://thebarbazza.com",
+    "https://www.thebarbazza.com",
     process.env.CORS_ORIGIN,
     ...(process.env.CORS_ORIGINS || "").split(","),
   ]

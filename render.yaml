@@ -15,8 +15,8 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGIN
-        value: https://thebarbazza.co
+        value: https://thebarbazza.com
       - key: CORS_ORIGINS
-        value: https://thebarbazza.co,https://www.thebarbazza.co
+        value: https://thebarbazza.com,https://www.thebarbazza.com
       - key: PUBLIC_API_URL
-        value: https://api.thebarbazza.co
+        value: https://api.thebarbazza.com
