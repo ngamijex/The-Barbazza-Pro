@@ -5,13 +5,9 @@ dist
 .env
 .env.local
 .env.*.local
-.Rproj.user
-.Rhistory
-/reports/
-the-barbazza-*.json
-rsconnect
 *.xlsx
 ~$*.xlsx
 backend/.env
 backend/uploads/
 frontend/.env.local
+.vscode/
