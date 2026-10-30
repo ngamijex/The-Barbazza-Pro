@@ -38,6 +38,8 @@ export type BarberProfile = {
   id: number;
   code: string;
   name: string;
+  phone: string;
+  whatsappUrl: string;
   slogan: string;
   bio: string;
   actions: string[];

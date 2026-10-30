@@ -825,8 +825,72 @@ body:has(.public-shell) {
   font-size: 0.85rem;
 }
 
-.public-footer p {
-  margin: 0;
+.public-footer-tag {
+  margin: 0 0 0.85rem;
+}
+
+.public-footer-contact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem 1.1rem;
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.public-footer-contact a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.public-footer-contact a:hover {
+  border-bottom-color: var(--ink);
+}
+
+.shop-contact {
+  display: grid;
+  gap: 0.85rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.shop-contact--compact {
+  margin-bottom: 2rem;
+}
+
+.shop-contact-card {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.shop-contact-card:hover {
+  border-color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.shop-contact-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.shop-contact-card strong {
+  font-family: var(--font-display, inherit);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.shop-contact-action {
+  font-size: 0.8rem;
+  color: var(--mute);
 }
 
 @media (min-width: 768px) {
@@ -855,6 +919,14 @@ body:has(.public-shell) {
 
   .barber-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .shop-contact {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .shop-contact--compact {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .profile-hero-inner {

@@ -9,6 +9,8 @@ type Settings = {
   shop_address: string;
   shop_phone: string;
   shop_email: string;
+  shop_maps_url: string;
+  shop_whatsapp: string;
   currency: string;
   timezone: string;
   tax_rate: string;
@@ -114,6 +116,14 @@ export default function SettingsPage() {
               <div className="form-group">
                 <label>Shop Email</label>
                 <input value={settings.shop_email} onChange={(e) => setSettings({ ...settings, shop_email: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>Google Maps URL</label>
+                <input value={settings.shop_maps_url || ""} onChange={(e) => setSettings({ ...settings, shop_maps_url: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>WhatsApp link</label>
+                <input value={settings.shop_whatsapp || ""} onChange={(e) => setSettings({ ...settings, shop_whatsapp: e.target.value })} />
               </div>
               <div className="form-group">
                 <label>Currency</label>

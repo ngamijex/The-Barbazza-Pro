@@ -7,6 +7,7 @@ import { BookingModal } from "@/components/public/BookingModal";
 import { PublicShell, Stars } from "@/components/public/PublicShell";
 import { PageSkeleton } from "@/components/Skeleton";
 import { BarberProfile, mediaSrc, money, PublicBarber, publicApi } from "@/lib/publicApi";
+import { telHref } from "@/lib/shop";
 
 export default function BarberProfilePage() {
   const params = useParams();
@@ -130,6 +131,28 @@ export default function BarberProfilePage() {
       </section>
 
       <section className="public-section">
+        <h2>Contact</h2>
+        {profile.phone ? (
+          <div className="shop-contact shop-contact--compact">
+            <a className="shop-contact-card" href={telHref(profile.phone)}>
+              <span className="shop-contact-label">Phone</span>
+              <strong>{profile.phone}</strong>
+              <span className="shop-contact-action">Call this barber</span>
+            </a>
+            {profile.whatsappUrl ? (
+              <a className="shop-contact-card" href={profile.whatsappUrl} target="_blank" rel="noreferrer">
+                <span className="shop-contact-label">WhatsApp</span>
+                <strong>{profile.phone}</strong>
+                <span className="shop-contact-action">Message</span>
+              </a>
+            ) : null}
+          </div>
+        ) : (
+          <p className="lede" style={{ marginBottom: "1.5rem" }}>
+            Contact for this chair will appear once their phone is set in staff People.
+          </p>
+        )}
+
         <h2>About</h2>
         <p className="lede" style={{ marginBottom: "1.5rem" }}>
           {profile.bio}

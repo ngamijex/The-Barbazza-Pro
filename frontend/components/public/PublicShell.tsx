@@ -1,12 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import "@/app/public.css";
+import { publicApi } from "@/lib/publicApi";
+import { PublicShop, SHOP_FALLBACK, telHref } from "@/lib/shop";
 
 export function PublicShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const onHero = pathname === "/";
+  const [shop, setShop] = useState<PublicShop>(SHOP_FALLBACK);
+
+  useEffect(() => {
+    publicApi<PublicShop>("/shop")
+      .then(setShop)
+      .catch(() => setShop(SHOP_FALLBACK));
+  }, []);
+
+  const call = telHref(shop.phone);
 
   return (
     <div className={`public-shell public-body${onHero ? " public-shell--home" : " public-shell--inner"}`}>
@@ -21,7 +33,22 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
       {children}
       <footer className="public-footer">
         <img src="/logo.png" alt="Barbazza" className="public-logo public-logo--footer" />
-        <p>Craft in black &amp; white. Book a barber.</p>
+        <p className="public-footer-tag">Craft in black &amp; white. Book a barber.</p>
+        <div className="public-footer-contact">
+          <a href={shop.mapsUrl} target="_blank" rel="noreferrer">
+            {shop.address}
+          </a>
+          {call ? (
+            <a href={call}>{shop.phone}</a>
+          ) : (
+            <span>{shop.phone}</span>
+          )}
+          {shop.whatsappUrl ? (
+            <a href={shop.whatsappUrl} target="_blank" rel="noreferrer">
+              WhatsApp
+            </a>
+          ) : null}
+        </div>
       </footer>
     </div>
   );

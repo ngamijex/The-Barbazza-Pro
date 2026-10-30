@@ -6,9 +6,11 @@ import { motion, useReducedMotion } from "framer-motion";
 import { BookingModal } from "@/components/public/BookingModal";
 import { PublicShell, Stars } from "@/components/public/PublicShell";
 import { mediaSrc, PublicBarber, publicApi } from "@/lib/publicApi";
+import { PublicShop, SHOP_FALLBACK, telHref } from "@/lib/shop";
 
 export default function PublicHomePage() {
   const [barbers, setBarbers] = useState<PublicBarber[]>([]);
+  const [shop, setShop] = useState<PublicShop>(SHOP_FALLBACK);
   const [bookBarber, setBookBarber] = useState<PublicBarber | null>(null);
   const reduceMotion = useReducedMotion();
 
@@ -16,6 +18,9 @@ export default function PublicHomePage() {
     publicApi<PublicBarber[]>("/barbers")
       .then((rows) => setBarbers(rows.slice(0, 3)))
       .catch(() => setBarbers([]));
+    publicApi<PublicShop>("/shop")
+      .then(setShop)
+      .catch(() => setShop(SHOP_FALLBACK));
   }, []);
 
   return (
@@ -87,6 +92,28 @@ export default function PublicHomePage() {
             </Link>
           </div>
           <img src="/public-art/tools.jpg" alt="Client in the chair after a precise cut" />
+        </div>
+      </section>
+
+      <section className="public-section" style={{ paddingTop: 0 }}>
+        <h2>Visit the shop</h2>
+        <p className="lede">Find us in Ubutare — call, WhatsApp, or walk in for a chair.</p>
+        <div className="shop-contact">
+          <a className="shop-contact-card" href={shop.mapsUrl} target="_blank" rel="noreferrer">
+            <span className="shop-contact-label">Location</span>
+            <strong>{shop.address}</strong>
+            <span className="shop-contact-action">Open in Maps</span>
+          </a>
+          <a className="shop-contact-card" href={telHref(shop.phone) || undefined}>
+            <span className="shop-contact-label">Phone</span>
+            <strong>{shop.phone}</strong>
+            <span className="shop-contact-action">Call the shop</span>
+          </a>
+          <a className="shop-contact-card" href={shop.whatsappUrl} target="_blank" rel="noreferrer">
+            <span className="shop-contact-label">WhatsApp</span>
+            <strong>{shop.phone}</strong>
+            <span className="shop-contact-action">Message us</span>
+          </a>
         </div>
       </section>
 

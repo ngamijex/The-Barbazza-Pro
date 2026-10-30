@@ -1,4 +1,5 @@
 import { pool } from "./db";
+import { SHOP_DEFAULTS } from "./shop";
 
 /** Ensure public booking / ratings / profile tables exist (safe to run on every boot). */
 export async function ensurePublicSchema() {
@@ -75,6 +76,22 @@ export async function ensurePublicSchema() {
       CREATE INDEX IF NOT EXISTS idx_notifications_user
         ON notifications (user_id, is_read, created_at DESC);
     `);
+
+    // Seed shop contact from Google Business if settings rows are missing/empty.
+    for (const [key, value] of Object.entries(SHOP_DEFAULTS)) {
+      await client.query(
+        `INSERT INTO system_settings (setting_key, setting_value, updated_at)
+         VALUES ($1, $2, CURRENT_TIMESTAMP)
+         ON CONFLICT (setting_key) DO UPDATE
+           SET setting_value = EXCLUDED.setting_value,
+               updated_at = CURRENT_TIMESTAMP
+         WHERE system_settings.setting_value IS NULL
+            OR TRIM(system_settings.setting_value) = ''
+            OR (system_settings.setting_key = 'shop_address'
+                AND system_settings.setting_value IN ('Kigali, Rwanda', 'Kigali'))`,
+        [key, value]
+      );
+    }
   } finally {
     client.release();
   }

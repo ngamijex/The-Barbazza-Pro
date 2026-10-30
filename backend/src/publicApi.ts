@@ -2,12 +2,46 @@ import { Router } from "express";
 import { z } from "zod";
 import { isoDate, num, query, cacheGet, cacheSet, cacheDel } from "./db";
 import { FALLBACKS, hostOf, mediaUrl, parseActions, notifyBarberUser } from "./profileRoutes";
+import { SHOP_DEFAULTS, whatsappUrl } from "./shop";
 
 export const publicApi = Router();
 
 function publicCache(res: import("express").Response, seconds = 20) {
   res.setHeader("Cache-Control", `public, max-age=${seconds}`);
 }
+
+publicApi.get("/shop", async (_req, res) => {
+  try {
+    const cached = cacheGet<unknown>("public:shop");
+    if (cached) {
+      publicCache(res, 120);
+      res.json(cached);
+      return;
+    }
+    const rows = await query<{ setting_key: string; setting_value: string | null }>(
+      `SELECT setting_key, setting_value FROM system_settings
+       WHERE setting_key IN ('shop_name','shop_address','shop_phone','shop_email','shop_maps_url','shop_whatsapp')`
+    );
+    const map: Record<string, string> = { ...SHOP_DEFAULTS };
+    for (const row of rows) {
+      if (row.setting_value && row.setting_value.trim()) map[row.setting_key] = row.setting_value.trim();
+    }
+    const phone = map.shop_phone || SHOP_DEFAULTS.shop_phone;
+    const payload = {
+      name: map.shop_name || SHOP_DEFAULTS.shop_name,
+      address: map.shop_address || SHOP_DEFAULTS.shop_address,
+      phone,
+      email: map.shop_email || "",
+      mapsUrl: map.shop_maps_url || SHOP_DEFAULTS.shop_maps_url,
+      whatsappUrl: map.shop_whatsapp || whatsappUrl(phone) || SHOP_DEFAULTS.shop_whatsapp,
+    };
+    cacheSet("public:shop", payload, 120_000);
+    publicCache(res, 120);
+    res.json(payload);
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load shop info" });
+  }
+});
 
 publicApi.get("/barbers", async (req, res) => {
   try {
@@ -88,6 +122,7 @@ publicApi.get("/barbers/:id", async (req, res) => {
         barber_code: string;
         full_name: string | null;
         public_name: string | null;
+        phone: string | null;
         slogan: string | null;
         bio: string | null;
         actions: string | null;
@@ -97,7 +132,7 @@ publicApi.get("/barbers/:id", async (req, res) => {
         earned: string;
         days: string;
       }>(
-        `SELECT b.barber_id, b.barber_code, u.full_name, p.public_name,
+        `SELECT b.barber_id, b.barber_code, u.full_name, p.public_name, u.phone,
                 p.slogan, p.bio, p.actions, p.avatar_url, p.cover_url,
                 COUNT(t.transaction_id)::int AS clients,
                 COALESCE(SUM(t.amount),0) AS earned,
@@ -109,7 +144,7 @@ publicApi.get("/barbers/:id", async (req, res) => {
            ON b.barber_id = t.barber_id
           AND t.transaction_date >= CURRENT_DATE - INTERVAL '90 days'
          WHERE b.barber_id = $1 AND b.is_active = TRUE
-         GROUP BY b.barber_id, b.barber_code, u.full_name, p.public_name, p.slogan, p.bio, p.actions, p.avatar_url, p.cover_url`,
+         GROUP BY b.barber_id, b.barber_code, u.full_name, p.public_name, u.phone, p.slogan, p.bio, p.actions, p.avatar_url, p.cover_url`,
         [id]
       ),
       query<{
@@ -156,11 +191,14 @@ publicApi.get("/barbers/:id", async (req, res) => {
       ratings.length > 0 ? Math.round((ratings.reduce((s, r) => s + Number(r.score), 0) / ratings.length) * 10) / 10 : null;
     const actions = parseActions(barber[0].actions);
     const publicName = (barber[0].public_name || "").trim();
+    const phone = (barber[0].phone || "").trim();
     res.json({
       id: Number(barber[0].barber_id),
       code: barber[0].barber_code,
       name: publicName || barber[0].full_name || barber[0].barber_code,
       publicName: publicName || barber[0].full_name || barber[0].barber_code,
+      phone,
+      whatsappUrl: whatsappUrl(phone),
       slogan: barber[0].slogan || "Cut with intention.",
       bio: barber[0].bio || "A chair built on patience, precision, and presence.",
       actions: actions.length ? actions : ["Precision cuts", "Fades", "Beard work"],
