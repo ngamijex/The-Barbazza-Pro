@@ -51,17 +51,7 @@ export default function LoginPage() {
         <div className="login-logo">
           <img src="/logo.png" alt="Barbazza Logo" />
         </div>
-        <h2
-          style={{
-            textAlign: "center",
-            color: "var(--barbazza-cream)",
-            fontSize: "var(--text-lg)",
-            marginBottom: "var(--space-6)",
-            fontWeight: 400,
-          }}
-        >
-          Barbershop Management System
-        </h2>
+        <h2 className="login-subtitle">Barbershop Management System</h2>
 
         {error ? <div className="alert alert-danger">{error}</div> : null}
 

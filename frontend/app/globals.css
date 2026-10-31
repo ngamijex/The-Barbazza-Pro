@@ -28,7 +28,9 @@ body {
   align-items: center;
   justify-content: center;
   background: var(--barbazza-black);
-  padding: var(--space-4);
+  padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .login-box {
@@ -39,6 +41,7 @@ body {
   padding: var(--space-6);
   max-width: 350px;
   width: 100%;
+  box-sizing: border-box;
   box-shadow: var(--shadow-2xl), var(--glow-gold-strong);
 }
 
@@ -86,6 +89,15 @@ body {
   letter-spacing: var(--tracking-wide);
 }
 
+.login-subtitle {
+  text-align: center;
+  color: var(--barbazza-cream);
+  font-size: var(--text-lg);
+  margin: 0 0 var(--space-6);
+  font-weight: 400;
+  line-height: 1.35;
+}
+
 .form-group {
   margin-bottom: var(--space-4);
 }
@@ -127,36 +139,61 @@ select.form-control,
 
 .password-field {
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
+  box-sizing: border-box;
+  background: var(--barbazza-slate);
+  border: 1px solid var(--barbazza-graphite);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.password-field:focus-within {
+  border-color: var(--barbazza-gold);
+  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.1);
 }
 
 .password-field input {
-  width: 100%;
-  padding-right: 2.75rem !important;
+  flex: 1 1 auto;
+  width: auto !important;
+  min-width: 0;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4) !important;
+  margin: 0 !important;
 }
 
 .password-toggle {
-  position: absolute;
-  top: 50%;
-  right: 0.55rem;
-  transform: translateY(-50%);
+  position: static;
+  flex: 0 0 2.75rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: none;
-  background: transparent;
+  width: 2.75rem !important;
+  min-width: 2.75rem !important;
+  max-width: 2.75rem !important;
+  height: 100%;
+  min-height: 2.75rem !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
   color: var(--barbazza-cream);
   opacity: 0.75;
   cursor: pointer;
-  padding: 0;
+  padding: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.password-toggle:hover {
+.password-toggle:hover,
+.password-toggle:focus-visible {
   opacity: 1;
   color: var(--barbazza-gold);
+  outline: none;
 }
 
 .form-control:focus,

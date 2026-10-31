@@ -1025,7 +1025,7 @@ input:disabled {
   .btn,
   .btn-primary,
   .btn-action,
-  button {
+  button:not(.password-toggle):not(.login-back) {
     min-height: 44px !important; /* Touch-friendly */
     padding: var(--space-3) var(--space-5) !important;
     font-size: 1rem !important;
@@ -1034,6 +1034,38 @@ input:disabled {
     margin-bottom: var(--space-3) !important;
     border-radius: var(--radius-md) !important;
     touch-action: manipulation; /* Better touch response */
+  }
+
+  .password-field {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .password-field input {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    padding-right: 0.5rem !important;
+  }
+
+  .password-toggle {
+    position: static !important;
+    flex: 0 0 2.75rem !important;
+    width: 2.75rem !important;
+    min-width: 2.75rem !important;
+    max-width: 2.75rem !important;
+    height: auto !important;
+    min-height: 44px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
   }
   
   /* Button groups - stack vertically */
@@ -1131,21 +1163,53 @@ input:disabled {
   
   /* --- LOGIN PAGE --- */
   .login-container {
-    padding: var(--space-4) !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: max(1rem, env(safe-area-inset-top)) 1rem max(1.25rem, env(safe-area-inset-bottom)) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
   }
   
   .login-box {
     max-width: 100% !important;
-    padding: var(--space-5) var(--space-4) !important;
-    margin: var(--space-4) auto !important;
+    width: 100% !important;
+    margin: 1rem 0 !important;
+    padding: 1.15rem 0.95rem !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .login-box h2,
+  .login-box .login-subtitle {
+    font-size: 1rem !important;
+    line-height: 1.35 !important;
+    margin-bottom: 1rem !important;
+    padding: 0 !important;
+    word-wrap: break-word !important;
+  }
+
+  .login-box .form-group {
+    margin-bottom: 0.9rem !important;
+  }
+
+  .login-box input {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .login-box .password-field input {
+    padding-right: 3rem !important;
   }
   
   .login-logo img {
-    max-width: 120px !important;
+    max-width: 110px !important;
+    width: 110px !important;
   }
   
   .login-title {
-    font-size: 1.5rem !important;
+    font-size: 1.25rem !important;
   }
   
   /* --- MODALS --- */
