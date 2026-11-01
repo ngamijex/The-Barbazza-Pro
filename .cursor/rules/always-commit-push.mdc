@@ -1,0 +1,14 @@
+---
+description: After finishing code changes, always commit and push to origin
+alwaysApply: true
+---
+
+# Always commit and push
+
+When you finish a task that changes project files:
+
+1. **Commit** the relevant changes (do not wait to be asked).
+2. **Push** to `origin` on the current branch so Vercel/Render can deploy.
+3. Use the existing git author identity (Didier Ngamije / ngamijex repo). Do not change git config.
+4. If HTTPS push fails with connection reset, retry with `gh auth token` in the remote URL, then confirm via `gh api` that remote HEAD matches.
+5. Skip commit only for pure Q&A, exploration, or when the user explicitly says not to commit.

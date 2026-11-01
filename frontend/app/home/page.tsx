@@ -118,16 +118,14 @@ export default function HomePage() {
       try {
         if (user.role === "admin") setOverview(await api<Overview>("/api/dashboard/overview"));
         else if (user.role === "manager") {
-          const [opsData, b, s, pay] = await Promise.all([
+          const [opsData, b, s] = await Promise.all([
             api<Operations>("/api/operations"),
             api<{ id: number; name: string; code: string }[]>("/api/barbers"),
             api<Option[]>("/api/services"),
-            api<StaffHome>("/api/staff/home"),
           ]);
           setOps(opsData);
           setBarbers(b.map((row) => ({ id: row.id, name: `${row.name} (${row.code})`, code: row.code })));
           setServices(s);
-          setStaffPay(pay);
         } else if (user.role === "supervisor") {
           setDay(await api<Day>(`/api/day?date=${date}`));
         } else if (user.role === "barber") {
@@ -200,7 +198,7 @@ export default function HomePage() {
   const loading =
     !!user &&
     !error &&
-    ((user.role === "manager" && (!ops || !staffPay)) ||
+    ((user.role === "manager" && !ops) ||
       (user.role === "admin" && !overview) ||
       (user.role === "supervisor" && !day) ||
       (user.role === "barber" && !chair) ||
@@ -228,61 +226,15 @@ export default function HomePage() {
         </>
       ) : null}
 
-      {/* ===== MANAGER: Daily Operations (exact Shiny sections) ===== */}
+      {/* ===== MANAGER: Daily Operations ===== */}
       {user?.role === "manager" && ops ? (
         <>
-          {staffPay ? (
-            <Panel title="My Salary" className="manager-card">
-              <div className="earnings-grid daily-summary">
-                <Kpi label="Monthly Salary" value={money(staffPay.monthlySalary)} />
-                <Kpi label="Credit Deductions" value={money(staffPay.creditDeduction)} />
-                <Kpi label="Expected Net Pay" value={money(staffPay.expectedNet)} />
-                <Kpi label="Credit Balance" value={money(staffPay.creditBalance)} />
-              </div>
-              <p style={{ marginTop: "1rem", color: "var(--barbazza-cream)", fontSize: "0.9rem" }}>
-                Request credit from the Credit tab — only admin can approve manager credits.
-              </p>
-            </Panel>
-          ) : null}
-
           <Panel title="Today's Summary" className="manager-card">
             <div className="daily-summary">
               <Kpi label="Total Income" value={money(ops.today.income)} />
               <Kpi label="Total Customers" value={String(ops.today.customers)} />
               <Kpi label="Total Expenses" value={money(ops.today.expenses)} />
               <Kpi label="Net Profit" value={money(ops.today.profit)} />
-            </div>
-          </Panel>
-
-          <Panel title="This Month's Summary" className="manager-card">
-            <p style={{ fontSize: "0.9rem", color: "var(--barbazza-cream)", marginBottom: "var(--space-4)" }}>
-              Month of {ops.month.label}
-            </p>
-            <div className="daily-summary">
-              <Kpi label="Total Income" value={money(ops.month.income)} />
-              <Kpi label="Total Customers" value={String(ops.month.customers)} />
-              <Kpi label="Total Expenses" value={money(ops.month.expenses)} />
-              <Kpi label="Net Profit" value={money(ops.month.profit)} />
-              <Kpi label="Total Services" value={String(ops.month.services)} />
-              <Kpi label="Average Daily Income" value={money(ops.month.avgDaily)} />
-            </div>
-          </Panel>
-
-          <Panel title="Income Trend - This Month" className="manager-card">
-            <p style={{ fontSize: "0.9rem", color: "var(--barbazza-cream)", marginBottom: "var(--space-4)" }}>
-              Total barbershop income performance this month
-            </p>
-            <div style={{ height: 300, position: "relative" }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={ops.trend}>
-                  <XAxis dataKey="date" hide />
-                  <Tooltip
-                    formatter={(value) => money(Number(value))}
-                    contentStyle={{ background: "#fff", border: "1px solid #e8e8e8", color: "#0a0a0a" }}
-                  />
-                  <Area dataKey="total" stroke="#0a0a0a" fill="rgba(10,10,10,0.08)" strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
             </div>
           </Panel>
 

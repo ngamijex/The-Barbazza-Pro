@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Panel, Shell, useSession } from "@/components/Shell";
 import { api, money } from "@/lib/api";
 
@@ -14,6 +15,7 @@ type Credit = {
 
 export default function CreditRequestPage() {
   const user = useSession();
+  const router = useRouter();
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [rows, setRows] = useState<Credit[]>([]);
@@ -28,8 +30,12 @@ export default function CreditRequestPage() {
 
   useEffect(() => {
     if (!user) return;
+    if (user.role === "manager") {
+      router.replace("/me");
+      return;
+    }
     load().catch((err) => setMessage(err.message));
-  }, [user]);
+  }, [user, router]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();

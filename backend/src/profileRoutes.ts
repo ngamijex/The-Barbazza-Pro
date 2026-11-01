@@ -23,15 +23,15 @@ function parseActions(raw: string | null | undefined): string[] {
 
 async function resolveTargetBarberId(req: import("express").Request, requested?: number | null) {
   const user = req.user!;
-  if (user.role === "admin" || user.role === "manager") {
+  if (user.role === "admin") {
     if (requested) return requested;
   }
   if (user.role === "barber" && user.barberId) return user.barberId;
-  if (requested && (user.role === "admin" || user.role === "manager")) return requested;
+  if (requested && user.role === "admin") return requested;
   return user.barberId;
 }
 
-profileRoutes.get("/profiles", requireAuth, allow("admin", "manager"), async (req, res) => {
+profileRoutes.get("/profiles", requireAuth, allow("admin"), async (req, res) => {
   try {
     const rows = await query<{
       barber_id: number;
@@ -67,7 +67,7 @@ profileRoutes.get("/profiles", requireAuth, allow("admin", "manager"), async (re
   }
 });
 
-profileRoutes.get("/profile", requireAuth, allow("admin", "manager", "barber"), async (req, res) => {
+profileRoutes.get("/profile", requireAuth, allow("admin", "barber"), async (req, res) => {
   const requested = req.query.barberId ? Number(req.query.barberId) : null;
   const barberId = await resolveTargetBarberId(req, requested);
   if (!barberId) {
@@ -138,7 +138,7 @@ profileRoutes.get("/profile", requireAuth, allow("admin", "manager", "barber"), 
   }
 });
 
-profileRoutes.put("/profile", requireAuth, allow("admin", "manager", "barber"), async (req, res) => {
+profileRoutes.put("/profile", requireAuth, allow("admin", "barber"), async (req, res) => {
   const parsed = z
     .object({
       barberId: z.number().int().optional().nullable(),
@@ -203,7 +203,7 @@ profileRoutes.put("/profile", requireAuth, allow("admin", "manager", "barber"), 
   }
 });
 
-profileRoutes.post("/portfolio", requireAuth, allow("admin", "manager", "barber"), async (req, res) => {
+profileRoutes.post("/portfolio", requireAuth, allow("admin", "barber"), async (req, res) => {
   const parsed = z
     .object({
       barberId: z.number().int().optional().nullable(),
@@ -245,7 +245,7 @@ profileRoutes.post("/portfolio", requireAuth, allow("admin", "manager", "barber"
   }
 });
 
-profileRoutes.delete("/portfolio/:id", requireAuth, allow("admin", "manager", "barber"), async (req, res) => {
+profileRoutes.delete("/portfolio/:id", requireAuth, allow("admin", "barber"), async (req, res) => {
   const itemId = Number(req.params.id);
   if (!itemId) {
     res.status(400).json({ error: "Invalid item" });

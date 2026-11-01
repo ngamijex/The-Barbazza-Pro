@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Panel, Shell, useSession } from "@/components/Shell";
 import { PageSkeleton } from "@/components/Skeleton";
 import { api } from "@/lib/api";
@@ -32,7 +33,8 @@ function readFileAsDataUrl(file: File) {
 
 export default function ProfileStudioPage() {
   const user = useSession();
-  const canPick = user?.role === "admin" || user?.role === "manager";
+  const router = useRouter();
+  const canPick = user?.role === "admin";
   const [list, setList] = useState<Listed[]>([]);
   const [barberId, setBarberId] = useState<number | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -59,6 +61,10 @@ export default function ProfileStudioPage() {
 
   useEffect(() => {
     if (!user) return;
+    if (user.role === "manager" || user.role === "cleaner" || user.role === "supervisor") {
+      router.replace("/home");
+      return;
+    }
     (async () => {
       try {
         if (canPick) {
@@ -76,7 +82,7 @@ export default function ProfileStudioPage() {
         setLoading(false);
       }
     })();
-  }, [user, canPick]);
+  }, [user, canPick, router]);
 
   async function saveProfile(event: FormEvent) {
     event.preventDefault();
