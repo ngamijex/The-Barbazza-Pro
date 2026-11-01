@@ -36,11 +36,30 @@ export function clearApiCache(prefix?: string) {
   }
 }
 
+let redirectingToLogin = false;
+
+/** Clear session and send the user to login (no "Session expired" flash). */
+export function forceLogin() {
+  if (typeof window === "undefined") return;
+  if (redirectingToLogin) return;
+  if (window.location.pathname === "/staff") return;
+  redirectingToLogin = true;
+  clearApiCache();
+  try {
+    localStorage.removeItem("barbazza_token");
+    localStorage.removeItem("barbazza_user");
+  } catch {
+    /* ignore */
+  }
+  window.location.replace("/staff");
+}
+
 /** Fast GET with short cache + request dedupe; mutations clear related cache */
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const method = (init.method || "GET").toUpperCase();
   const token = typeof window !== "undefined" ? localStorage.getItem("barbazza_token") || "" : "";
   const key = cacheKey(path, token);
+  const isLoginCall = path.includes("/api/auth/login");
 
   if (method === "GET") {
     const hit = getCache.get(key);
@@ -70,6 +89,11 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
+        if (response.status === 401 && !isLoginCall) {
+          forceLogin();
+          // Never resolve with a "Session expired" message — navigation is in progress
+          return new Promise<T>(() => undefined);
+        }
         throw new Error((data as { error?: string }).error || "Request failed");
       }
 
