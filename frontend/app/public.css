@@ -20,7 +20,7 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* Keep public site on a compact scale (no staff zoom tricks) */
+/* Keep public site on a compact scale (no staff zoom tricks / staff theme bleed) */
 html:has(.public-shell) {
   font-size: 14px !important;
 }
@@ -32,6 +32,16 @@ body:has(.public-shell) {
   color: var(--ink) !important;
   overflow-x: hidden;
   font-size: 1rem;
+  font-family: var(--font-ui) !important;
+  line-height: 1.5 !important;
+}
+
+body:has(.public-shell) h1,
+body:has(.public-shell) h2,
+body:has(.public-shell) h3,
+body:has(.public-shell) h4 {
+  color: inherit;
+  font-family: var(--font-display);
 }
 
 .public-shell {
