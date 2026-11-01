@@ -18,6 +18,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { clearApiCache, readSession, Role, SessionUser } from "@/lib/api";
+import { wakeApi } from "@/lib/wakeApi";
 import { AppBootSkeleton, PageSkeleton } from "@/components/Skeleton";
 
 type NavItem = {
@@ -73,6 +74,7 @@ export function useSession() {
   const [user, setUser] = useState<SessionUser | null>(null);
 
   useEffect(() => {
+    wakeApi();
     const session = readSession();
     if (!session) {
       router.replace("/staff");

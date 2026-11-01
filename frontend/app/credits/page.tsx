@@ -60,11 +60,18 @@ export default function CreditsPage() {
   }
 
   async function decide(row: Credit, decision: "approved" | "rejected") {
-    await api(`/api/credits/${row.id}/decide`, {
-      method: "POST",
-      body: JSON.stringify({ decision, kind: row.kind }),
-    });
-    await load();
+    // Optimistic UI — move row out of pending immediately
+    setPending((prev) => prev.filter((r) => !(r.id === row.id && r.kind === row.kind)));
+    try {
+      await api(`/api/credits/${row.id}/decide`, {
+        method: "POST",
+        body: JSON.stringify({ decision, kind: row.kind }),
+      });
+      void load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not update credit");
+      void load();
+    }
   }
 
   const title =

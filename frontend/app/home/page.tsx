@@ -164,7 +164,7 @@ export default function HomePage() {
       }
       setForm({ barberId: "", serviceId: "", amount: "", customerName: "", notes: "", discountReason: "" });
       setEditingTx(null);
-      await loadManager();
+      void loadManager();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save service");
     }
@@ -173,7 +173,7 @@ export default function HomePage() {
   async function removeTx(id: number) {
     if (!confirm("Delete this transaction?")) return;
     await api(`/api/transactions/${id}`, { method: "DELETE" });
-    await loadManager();
+    void loadManager();
   }
 
   function startEditTx(tx: Operations["transactions"][number]) {

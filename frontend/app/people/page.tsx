@@ -64,8 +64,8 @@ export default function PeoplePage() {
     try {
       await api("/api/users", { method: "POST", body: JSON.stringify(form) });
       setForm(empty);
-      await load();
       setMessage("User created.");
+      void load();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not create user");
     }
@@ -96,8 +96,8 @@ export default function PeoplePage() {
       });
       setEditing(null);
       setForm(empty);
-      await load();
       setMessage("Saved. Amount already paid was kept.");
+      void load();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not save");
     }
@@ -105,8 +105,8 @@ export default function PeoplePage() {
 
   async function recover() {
     const result = await api<{ updated: number }>("/api/users/recover-advances", { method: "POST" });
-    await load();
     setMessage(`Recovered ${result.updated} balance${result.updated === 1 ? "" : "s"}.`);
+    void load();
   }
 
   async function deleteUser(person: UserRow) {
@@ -114,8 +114,8 @@ export default function PeoplePage() {
     try {
       await api(`/api/users/${person.id}`, { method: "DELETE" });
       if (editing?.id === person.id) setEditing(null);
-      await load();
       setMessage("User deactivated.");
+      void load();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not delete user");
     }

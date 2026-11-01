@@ -47,27 +47,38 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     if (pending) return pending as Promise<T>;
   }
 
-  const request = (async () => {
-    const response = await fetch(`${API}${path}`, {
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(init.headers || {}),
-      },
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error((data as { error?: string }).error || "Request failed");
-    }
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timeoutMs = method === "GET" ? 20_000 : 25_000;
+  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
 
-    if (method === "GET") {
-      getCache.set(key, { data, expires: Date.now() + 12_000 });
-    } else {
-      // After writes, drop caches so next screen load is fresh
-      clearApiCache();
+  const request = (async () => {
+    try {
+      const response = await fetch(`${API}${path}`, {
+        ...init,
+        signal: init.signal || controller?.signal,
+        cache: method === "GET" ? "no-store" : init.cache,
+        keepalive: true,
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(init.headers || {}),
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error((data as { error?: string }).error || "Request failed");
+      }
+
+      if (method === "GET") {
+        // Cache reads a bit longer so tab switches / revisits feel instant
+        getCache.set(key, { data, expires: Date.now() + 25_000 });
+      } else {
+        clearApiCache();
+      }
+      return data as T;
+    } finally {
+      if (timer) clearTimeout(timer);
     }
-    return data as T;
   })();
 
   if (method === "GET") {

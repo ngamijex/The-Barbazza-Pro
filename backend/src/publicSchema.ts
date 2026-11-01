@@ -1,10 +1,28 @@
 import { pool } from "./db";
 import { SHOP_DEFAULTS } from "./shop";
 
+const SCHEMA_VERSION = 3;
+
 /** Ensure public booking / ratings / profile tables exist (safe to run on every boot). */
 export async function ensurePublicSchema() {
   const client = await pool.connect();
   try {
+    // Fast path: skip heavy DDL once this version has already been applied.
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS app_meta (
+        meta_key VARCHAR(64) PRIMARY KEY,
+        meta_value TEXT NOT NULL,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    const versionRows = await client.query<{ meta_value: string }>(
+      `SELECT meta_value FROM app_meta WHERE meta_key = 'schema_version'`
+    );
+    const current = Number(versionRows.rows[0]?.meta_value || 0);
+    if (current >= SCHEMA_VERSION) {
+      return;
+    }
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS client_bookings (
         booking_id SERIAL PRIMARY KEY,
@@ -100,6 +118,10 @@ export async function ensurePublicSchema() {
 
       CREATE INDEX IF NOT EXISTS idx_staff_credits_user
         ON staff_credits (user_id, status, request_date DESC);
+
+      CREATE INDEX IF NOT EXISTS idx_users_username_active
+        ON users (username)
+        WHERE is_active = TRUE;
     `);
 
     // Allow cleaner role on users.role check constraint.
@@ -125,6 +147,14 @@ export async function ensurePublicSchema() {
         [key, value]
       );
     }
+
+    await client.query(
+      `INSERT INTO app_meta (meta_key, meta_value, updated_at)
+       VALUES ('schema_version', $1, CURRENT_TIMESTAMP)
+       ON CONFLICT (meta_key) DO UPDATE
+         SET meta_value = EXCLUDED.meta_value, updated_at = CURRENT_TIMESTAMP`,
+      [String(SCHEMA_VERSION)]
+    );
   } finally {
     client.release();
   }

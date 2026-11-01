@@ -65,48 +65,44 @@ app.post("/api/auth/login", async (req, res) => {
     return;
   }
   try {
+    // One round-trip: verify password + resolve barber id together
     const rows = await query<{
       user_id: number;
       username: string;
       full_name: string;
       role: AuthUser["role"];
       verified: boolean;
+      barber_id: number | null;
     }>(
-      `SELECT user_id, username, full_name, role,
-              (crypt($2, password_hash) = password_hash) AS verified
-       FROM users
-       WHERE username = $1 AND is_active = TRUE`,
+      `SELECT u.user_id, u.username, u.full_name, u.role,
+              (crypt($2, u.password_hash) = u.password_hash) AS verified,
+              b.barber_id
+       FROM users u
+       LEFT JOIN barbers b ON b.user_id = u.user_id AND b.is_active = TRUE
+       WHERE u.username = $1 AND u.is_active = TRUE
+       LIMIT 1`,
       [parsed.data.username, parsed.data.password]
     );
     const user = rows[0];
     if (!user || !user.verified) {
-      void query(
-        `INSERT INTO audit_logs (action_type, table_name, record_id, performed_by, created_at)
-         VALUES ('LOGIN', 'users', NULL, NULL, CURRENT_TIMESTAMP)`
-      ).catch(() => undefined);
       res.status(401).json({ error: "Invalid username or password" });
       return;
     }
-    const barberPromise = query<{ barber_id: number }>(
-      `SELECT barber_id FROM barbers WHERE user_id = $1 LIMIT 1`,
-      [user.user_id]
-    );
-    // Don't block login on last_login write
-    void query(`UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = $1`, [user.user_id]);
-    void query(
-      `INSERT INTO audit_logs (action_type, table_name, record_id, performed_by, created_at)
-       VALUES ('LOGIN', 'users', $1, $1, CURRENT_TIMESTAMP)`,
-      [user.user_id]
-    ).catch(() => undefined);
-    const barber = await barberPromise;
     const authUser: AuthUser = {
       userId: Number(user.user_id),
       username: user.username,
       fullName: user.full_name,
       role: user.role,
-      barberId: barber[0] ? Number(barber[0].barber_id) : null,
+      barberId: user.barber_id != null ? Number(user.barber_id) : null,
     };
+    // Respond first — side effects must not delay login
     res.json({ token: signToken(authUser), user: authUser });
+    void query(`UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = $1`, [user.user_id]).catch(() => undefined);
+    void query(
+      `INSERT INTO audit_logs (action_type, table_name, record_id, performed_by, created_at)
+       VALUES ('LOGIN', 'users', $1, $1, CURRENT_TIMESTAMP)`,
+      [user.user_id]
+    ).catch(() => undefined);
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Login failed" });
   }
@@ -2181,13 +2177,16 @@ app.post("/api/reports/generate", requireAuth, allow("admin", "manager"), async 
 
 const port = Number(process.env.PORT || 4000);
 
-ensurePublicSchema()
-  .then(() => {
-    app.listen(port, "0.0.0.0", () => {
-      console.log(`Barbazza API listening on ${port}`);
-    });
-  })
-  .catch((error) => {
-    console.error("Failed to prepare public booking schema:", error);
-    process.exit(1);
+async function boot() {
+  // Warm one DB connection before accepting traffic (cuts first-request latency).
+  await pool.query("SELECT 1");
+  await ensurePublicSchema();
+  app.listen(port, "0.0.0.0", () => {
+    console.log(`Barbazza API listening on ${port}`);
   });
+}
+
+boot().catch((error) => {
+  console.error("Failed to start API:", error);
+  process.exit(1);
+});

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { api, SessionUser } from "@/lib/api";
+import { wakeApi } from "@/lib/wakeApi";
 
 /** Exact Shiny login layout from app.R */
 export default function LoginPage() {
@@ -16,7 +17,11 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("barbazza_token")) router.replace("/home");
+    wakeApi();
+    router.prefetch("/home");
+    if (localStorage.getItem("barbazza_token")) {
+      window.location.replace("/home");
+    }
   }, [router]);
 
   async function onSubmit(event: FormEvent) {
@@ -28,17 +33,18 @@ export default function LoginPage() {
     setBusy(true);
     setError("");
     try {
+      await wakeApi();
       const result = await api<{ token: string; user: SessionUser }>("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ username, password }),
       });
       localStorage.setItem("barbazza_token", result.token);
       localStorage.setItem("barbazza_user", JSON.stringify(result.user));
-      router.replace("/home");
+      // Hard navigation is faster than waiting on soft route transition + home data gate
+      window.location.href = "/home";
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid username or password");
-    } finally {
       setBusy(false);
+      setError(err instanceof Error ? err.message : "Invalid username or password");
     }
   }
 
@@ -88,7 +94,7 @@ export default function LoginPage() {
         </div>
         <div className="form-group">
           <button type="submit" className="btn-primary" disabled={busy}>
-            {busy ? "Processing..." : "Login"}
+            {busy ? "Signing in…" : "Login"}
           </button>
         </div>
       </form>

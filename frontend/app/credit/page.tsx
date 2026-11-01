@@ -42,7 +42,7 @@ export default function CreditRequestPage() {
       setAmount("");
       setReason("");
       setMessage("Request submitted.");
-      await load();
+      void load();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not submit");
     }
