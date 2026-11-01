@@ -38,6 +38,7 @@ const NAV: Record<Role, NavItem[]> = {
     { href: "/services", label: "Service Management", short: "Services", icon: Scissors },
     { href: "/expense-categories", label: "Expense Categories", short: "Cats", icon: Wallet },
     { href: "/credits", label: "Credit Approvals", short: "Credits", icon: CreditCard },
+    { href: "/monthly-closing", label: "Monthly Closing", short: "Closing", icon: ChartColumn },
     { href: "/reports", label: "Reports & Analytics", short: "Reports", icon: ClipboardList },
     { href: "/audit", label: "Audit Logs", short: "Audit", icon: Shield },
     { href: "/settings", label: "System Settings", short: "Settings", icon: Settings },

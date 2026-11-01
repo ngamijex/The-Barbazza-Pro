@@ -101,10 +101,11 @@ export default function MonthlyClosingPage() {
     return month < currentKey;
   }, [month]);
 
-  const canProcess = Boolean(month) && summary.length > 0 && monthHasEnded && !busy;
+  const isAdmin = user?.role === "admin";
+  const canProcess = Boolean(isAdmin && month) && summary.length > 0 && monthHasEnded && !busy;
 
   async function processPayments() {
-    if (!month || !monthHasEnded) return;
+    if (!isAdmin || !month || !monthHasEnded) return;
     setBusy(true);
     setError("");
     setMessage("");
@@ -124,6 +125,11 @@ export default function MonthlyClosingPage() {
     }
   }
 
+  function netStyle(value: number) {
+    if (value < 0) return { fontWeight: 700 as const, color: "var(--barbazza-error)" };
+    return { fontWeight: 700 as const, color: "var(--barbazza-gold)" };
+  }
+
   return (
     <Shell loading={!booted && !error}>
       {error ? <div className="alert alert-danger">{error}</div> : null}
@@ -136,7 +142,9 @@ export default function MonthlyClosingPage() {
       <div className="manager-card">
         <h3>Close Month & Process Payments</h3>
         <p style={{ fontSize: "0.9rem", color: "var(--barbazza-cream)", marginBottom: "var(--space-4)" }}>
-          Calculate and pay barber salaries for the month
+          {isAdmin
+            ? "Calculate and pay barber salaries for the month"
+            : "Preview barber salaries for the month. Only admin can process payments and close the month."}
         </p>
 
         <div style={{ maxWidth: 300, marginBottom: "var(--space-6)" }}>
@@ -206,39 +214,52 @@ export default function MonthlyClosingPage() {
                     <td>{money(row.recruitmentDeduction)}</td>
                     <td>{money(row.creditDeduction)}</td>
                     <td>{money(row.totalDeductions)}</td>
-                    <td style={{ fontWeight: 700, color: "var(--barbazza-gold)" }}>{money(row.netSalary)}</td>
+                    <td style={netStyle(row.netSalary)}>{money(row.netSalary)}</td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
+        {summary.some((row) => row.netSalary < 0) ? (
+          <p style={{ marginTop: "var(--space-3)", color: "var(--barbazza-error)", fontSize: "0.9rem" }}>
+            Negative net salary means deductions exceeded commission for that barber — they owe the shop.
+          </p>
+        ) : null}
       </div>
 
       <div className="manager-card" style={{ textAlign: "center" }}>
-        {month && !monthHasEnded ? (
-          <p style={{ color: "var(--barbazza-cream)", marginBottom: "var(--space-4)" }}>
-            This month is still in progress. You can process payments only after the month has ended on the calendar.
+        {!isAdmin ? (
+          <p style={{ color: "var(--barbazza-cream)", marginBottom: 0 }}>
+            View only. Ask an admin to process payments and close the month.
           </p>
-        ) : null}
-        <button
-          type="button"
-          disabled={!canProcess}
-          onClick={() => setConfirmOpen(true)}
-          style={{
-            background: "var(--barbazza-gold)",
-            color: "white",
-            border: "none",
-            padding: "var(--space-5) var(--space-8)",
-            borderRadius: "var(--radius-md)",
-            fontWeight: "bold",
-            fontSize: "var(--text-xl)",
-            cursor: canProcess ? "pointer" : "not-allowed",
-            opacity: canProcess ? 1 : 0.6,
-          }}
-        >
-          Process All Payments & Close Month
-        </button>
+        ) : (
+          <>
+            {month && !monthHasEnded ? (
+              <p style={{ color: "var(--barbazza-cream)", marginBottom: "var(--space-4)" }}>
+                This month is still in progress. You can process payments only after the month has ended on the calendar.
+              </p>
+            ) : null}
+            <button
+              type="button"
+              disabled={!canProcess}
+              onClick={() => setConfirmOpen(true)}
+              style={{
+                background: "var(--barbazza-gold)",
+                color: "white",
+                border: "none",
+                padding: "var(--space-5) var(--space-8)",
+                borderRadius: "var(--radius-md)",
+                fontWeight: "bold",
+                fontSize: "var(--text-xl)",
+                cursor: canProcess ? "pointer" : "not-allowed",
+                opacity: canProcess ? 1 : 0.6,
+              }}
+            >
+              Process All Payments & Close Month
+            </button>
+          </>
+        )}
       </div>
 
       <div className="manager-card">
@@ -276,7 +297,7 @@ export default function MonthlyClosingPage() {
                     <td>{money(row.commission)}</td>
                     <td>{money(row.recruitmentDeduction)}</td>
                     <td>{money(row.creditDeduction)}</td>
-                    <td>{money(row.netSalary)}</td>
+                    <td style={netStyle(row.netSalary)}>{money(row.netSalary)}</td>
                     <td>{row.paidDate}</td>
                     <td>{row.status}</td>
                   </tr>
@@ -287,7 +308,7 @@ export default function MonthlyClosingPage() {
         </div>
       </div>
 
-      {confirmOpen ? (
+      {confirmOpen && isAdmin ? (
         <div
           style={{
             position: "fixed",

@@ -11,7 +11,11 @@ export type SessionUser = {
 };
 
 export function money(value: number) {
-  return `RWF ${Math.round(value || 0).toLocaleString()}`;
+  const amount = Math.round(Number(value) || 0);
+  if (amount < 0) {
+    return `RWF -${Math.abs(amount).toLocaleString()}`;
+  }
+  return `RWF ${amount.toLocaleString()}`;
 }
 
 type CacheEntry = { expires: number; data: unknown };

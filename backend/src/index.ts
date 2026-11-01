@@ -1612,7 +1612,8 @@ async function closingSummary(monthKey: string): Promise<ClosingRow[]> {
     const creditDeduction = num(row.credit_deduction);
     const commissionEarned = grossIncome * (ratePct / 100);
     const totalDeductions = recruitmentDeduction + creditDeduction;
-    const netSalary = Math.max(commissionEarned - totalDeductions, 0);
+    // Allow negative net when deductions exceed commission (barber owes the shop)
+    const netSalary = commissionEarned - totalDeductions;
     return {
       barberId: Number(row.barber_id),
       barberCode: row.barber_code,
@@ -1736,7 +1737,7 @@ app.get("/api/monthly-closing/history", requireAuth, allow("manager", "admin"), 
   }
 });
 
-app.post("/api/monthly-closing/process", requireAuth, allow("manager", "admin"), async (req, res) => {
+app.post("/api/monthly-closing/process", requireAuth, allow("admin"), async (req, res) => {
   const parsed = z.object({ month: z.string().regex(/^\d{4}-\d{2}$/) }).safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Month is required" });
