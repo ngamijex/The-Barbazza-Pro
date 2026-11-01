@@ -75,6 +75,39 @@ export async function ensurePublicSchema() {
 
       CREATE INDEX IF NOT EXISTS idx_notifications_user
         ON notifications (user_id, is_read, created_at DESC);
+
+      CREATE TABLE IF NOT EXISTS staff_profiles (
+        user_id INTEGER PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+        monthly_salary NUMERIC(12,2) NOT NULL DEFAULT 0,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_by INTEGER REFERENCES users(user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS staff_credits (
+        credit_id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+        amount NUMERIC(12,2) NOT NULL,
+        reason TEXT,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        remaining_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
+        monthly_deduction NUMERIC(12,2) NOT NULL DEFAULT 0,
+        request_date DATE NOT NULL DEFAULT CURRENT_DATE,
+        approved_by INTEGER REFERENCES users(user_id),
+        approved_date TIMESTAMP,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_staff_credits_user
+        ON staff_credits (user_id, status, request_date DESC);
+    `);
+
+    // Allow cleaner role on users.role check constraint.
+    await client.query(`ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check`);
+    await client.query(`
+      ALTER TABLE users
+      ADD CONSTRAINT users_role_check
+      CHECK (role::text = ANY (ARRAY['admin','manager','supervisor','barber','cleaner']::text[]))
     `);
 
     // Seed shop contact from Google Business if settings rows are missing/empty.

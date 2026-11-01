@@ -1,6 +1,6 @@
 export const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-export type Role = "admin" | "manager" | "supervisor" | "barber";
+export type Role = "admin" | "manager" | "supervisor" | "barber" | "cleaner";
 
 export type SessionUser = {
   userId: number;

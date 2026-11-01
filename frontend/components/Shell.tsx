@@ -36,6 +36,7 @@ const NAV: Record<Role, NavItem[]> = {
     { href: "/profile", label: "Public Profiles", short: "Profiles", icon: UserRound },
     { href: "/services", label: "Service Management", short: "Services", icon: Scissors },
     { href: "/expense-categories", label: "Expense Categories", short: "Cats", icon: Wallet },
+    { href: "/credits", label: "Credit Approvals", short: "Credits", icon: CreditCard },
     { href: "/reports", label: "Reports & Analytics", short: "Reports", icon: ClipboardList },
     { href: "/audit", label: "Audit Logs", short: "Audit", icon: Shield },
     { href: "/settings", label: "System Settings", short: "Settings", icon: Settings },
@@ -48,6 +49,7 @@ const NAV: Record<Role, NavItem[]> = {
     { href: "/profile", label: "Public Profiles", short: "Profiles", icon: UserRound },
     { href: "/daily-report", label: "Daily Report", short: "Report", icon: ClipboardList },
     { href: "/credits", label: "Credit Approvals", short: "Credits", icon: CreditCard },
+    { href: "/credit", label: "Request Credit", short: "Credit", icon: CreditCard },
     { href: "/daily-records", label: "Daily Records", short: "Records", icon: CalendarDays },
     { href: "/monthly-closing", label: "Monthly Closing", short: "Closing", icon: ChartColumn },
   ],
@@ -57,6 +59,10 @@ const NAV: Record<Role, NavItem[]> = {
     { href: "/calendar", label: "Bookings & Calendar", short: "Bookings", icon: Bell },
     { href: "/profile", label: "My Public Profile", short: "Profile", icon: UserRound },
     { href: "/history", label: "History", short: "History", icon: CalendarDays },
+    { href: "/credit", label: "Request Credit", short: "Credit", icon: CreditCard },
+  ],
+  cleaner: [
+    { href: "/home", label: "Dashboard", short: "Home", icon: Home },
     { href: "/credit", label: "Request Credit", short: "Credit", icon: CreditCard },
   ],
 };

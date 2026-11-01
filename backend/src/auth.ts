@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 
-export type Role = "admin" | "manager" | "supervisor" | "barber";
+export type Role = "admin" | "manager" | "supervisor" | "barber" | "cleaner";
 
 export type AuthUser = {
   userId: number;

@@ -19,8 +19,11 @@ export default function CreditRequestPage() {
   const [rows, setRows] = useState<Credit[]>([]);
   const [message, setMessage] = useState("");
 
+  const approver =
+    user?.role === "manager" ? "Admin" : user?.role === "cleaner" ? "Manager" : "Manager";
+
   async function load() {
-    setRows(await api<Credit[]>("/api/credits"));
+    setRows(await api<Credit[]>("/api/credits?mine=1"));
   }
 
   useEffect(() => {
@@ -48,7 +51,10 @@ export default function CreditRequestPage() {
   return (
     <Shell>
       <Panel title="Request Emergency Credit" className="barber-card">
-        <p>You can request an advance for emergencies. Manager approval required.</p>
+        <p>
+          Request an advance against your salary. {approver} approval is required. Approved credits are deducted from
+          your salary.
+        </p>
         <form onSubmit={onSubmit} style={{ maxWidth: 500 }}>
           <div className="form-group">
             <label>Amount Needed (RWF)</label>

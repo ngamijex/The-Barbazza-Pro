@@ -18,6 +18,7 @@ type UserRow = {
   advanceRemaining: number;
   alreadyPaid: number;
   monthlyDeduction: number;
+  monthlySalary: number;
 };
 
 const empty = {
@@ -30,7 +31,14 @@ const empty = {
   commissionRate: 40,
   recruitmentAdvance: 0,
   monthlyDeduction: 0,
+  monthlySalary: 0,
 };
+
+const ROLES = ["admin", "manager", "supervisor", "barber", "cleaner"] as const;
+
+function needsSalary(role: string) {
+  return role === "manager" || role === "cleaner";
+}
 
 export default function PeoplePage() {
   const [users, setUsers] = useState<UserRow[]>([]);
@@ -49,6 +57,10 @@ export default function PeoplePage() {
   async function createUser(event: FormEvent) {
     event.preventDefault();
     setMessage("");
+    if (needsSalary(form.role) && !(Number(form.monthlySalary) > 0)) {
+      setMessage("Monthly salary is required for managers and cleaners.");
+      return;
+    }
     try {
       await api("/api/users", { method: "POST", body: JSON.stringify(form) });
       setForm(empty);
@@ -62,6 +74,10 @@ export default function PeoplePage() {
   async function saveEdit(event: FormEvent) {
     event.preventDefault();
     if (!editing) return;
+    if (needsSalary(editing.role) && !(Number(editing.monthlySalary) >= 0)) {
+      setMessage("Monthly salary must be set for managers and cleaners.");
+      return;
+    }
     try {
       await api(`/api/users/${editing.id}`, {
         method: "PUT",
@@ -75,6 +91,7 @@ export default function PeoplePage() {
           commissionRate: editing.commissionRate,
           recruitmentAdvance: editing.recruitmentAdvance,
           monthlyDeduction: editing.monthlyDeduction,
+          monthlySalary: editing.monthlySalary,
         }),
       });
       setEditing(null);
@@ -103,6 +120,8 @@ export default function PeoplePage() {
       setMessage(err instanceof Error ? err.message : "Could not delete user");
     }
   }
+
+  const role = editing ? editing.role : form.role;
 
   return (
     <Shell>
@@ -136,17 +155,19 @@ export default function PeoplePage() {
             <div className="form-group">
               <label>Role</label>
               <select
-                value={editing ? editing.role : form.role}
+                value={role}
                 onChange={(e) =>
                   editing ? setEditing({ ...editing, role: e.target.value }) : setForm({ ...form, role: e.target.value })
                 }
               >
-                {["admin", "manager", "supervisor", "barber"].map((role) => (
-                  <option key={role}>{role}</option>
+                {ROLES.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
                 ))}
               </select>
             </div>
-            {(editing ? editing.role : form.role) === "barber" ? (
+            {role === "barber" ? (
               <>
                 <div className="form-group">
                   <label>Commission %</label>
@@ -180,6 +201,22 @@ export default function PeoplePage() {
                 ) : null}
               </>
             ) : null}
+            {needsSalary(role) ? (
+              <div className="form-group">
+                <label>Monthly salary (RWF)</label>
+                <input
+                  required
+                  type="number"
+                  min={0}
+                  step={1000}
+                  value={editing ? editing.monthlySalary : form.monthlySalary}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    editing ? setEditing({ ...editing, monthlySalary: value }) : setForm({ ...form, monthlySalary: value });
+                  }}
+                />
+              </div>
+            ) : null}
           </div>
           <button type="submit" className="btn-action">
             {editing ? "Save changes" : "Create"}
@@ -198,6 +235,7 @@ export default function PeoplePage() {
               <th>Name</th>
               <th>Username</th>
               <th>Role</th>
+              <th>Salary</th>
               <th>Status</th>
               <th></th>
             </tr>
@@ -211,6 +249,7 @@ export default function PeoplePage() {
                   {person.role}
                   {person.barberCode ? ` · ${person.barberCode}` : ""}
                 </td>
+                <td>{needsSalary(person.role) ? money(person.monthlySalary) : "—"}</td>
                 <td>{person.active ? "Active" : "Off"}</td>
                 <td style={{ whiteSpace: "nowrap" }}>
                   <button type="button" className="btn-action" style={{ width: "auto", marginRight: 6 }} onClick={() => setEditing(person)}>

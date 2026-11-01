@@ -6,12 +6,14 @@ import { api, money } from "@/lib/api";
 
 type Credit = {
   id: number;
+  kind: "barber" | "staff";
   amount: number;
   reason: string;
   status: string;
   remaining: number;
   barberCode: string;
   barberName: string;
+  personRole: string;
   requestedAt: string;
   approvedBy: string;
 };
@@ -43,10 +45,32 @@ export default function CreditsPage() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  async function decide(id: number, decision: "approved" | "rejected") {
-    await api(`/api/credits/${id}/decide`, { method: "POST", body: JSON.stringify({ decision }) });
+  function canDecide(row: Credit) {
+    if (!user || row.status !== "pending") return false;
+    if (user.role === "admin") {
+      // Admin approves manager credits; can also decide barber/cleaner if needed
+      return true;
+    }
+    if (user.role === "manager") {
+      if (row.kind === "barber") return true;
+      if (row.kind === "staff" && row.personRole === "cleaner") return true;
+      return false;
+    }
+    return false;
+  }
+
+  async function decide(row: Credit, decision: "approved" | "rejected") {
+    await api(`/api/credits/${row.id}/decide`, {
+      method: "POST",
+      body: JSON.stringify({ decision, kind: row.kind }),
+    });
     await load();
   }
+
+  const title =
+    user?.role === "admin"
+      ? "Review and approve/reject manager credit requests"
+      : "Review and approve/reject barber and cleaner credit requests";
 
   return (
     <Shell loading={loading && !error}>
@@ -54,13 +78,13 @@ export default function CreditsPage() {
 
       <div className="manager-card">
         <h3>Pending Credit Requests</h3>
-        <p>Review and approve/reject barber credit requests</p>
+        <p>{title}</p>
         <div style={{ overflowX: "auto" }}>
           <table className="data-table">
             <thead>
               <tr>
-                <th>Barber Code</th>
-                <th>Barber Name</th>
+                <th>Role</th>
+                <th>Name</th>
                 <th>Request Date</th>
                 <th>Amount</th>
                 <th>Reason</th>
@@ -74,24 +98,33 @@ export default function CreditsPage() {
                 </tr>
               ) : (
                 pending.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.barberCode}</td>
+                  <tr key={`${row.kind}-${row.id}`}>
+                    <td>
+                      {row.personRole}
+                      {row.kind === "barber" ? ` · ${row.barberCode}` : ""}
+                    </td>
                     <td>{row.barberName}</td>
                     <td>{row.requestedAt}</td>
                     <td>{money(row.amount)}</td>
                     <td>{row.reason}</td>
                     <td>
-                      <button
-                        type="button"
-                        className="btn-action"
-                        style={{ width: "auto", marginRight: 8 }}
-                        onClick={() => decide(row.id, "approved")}
-                      >
-                        Approve
-                      </button>
-                      <button type="button" className="btn-logout" onClick={() => decide(row.id, "rejected")}>
-                        Reject
-                      </button>
+                      {canDecide(row) ? (
+                        <>
+                          <button
+                            type="button"
+                            className="btn-action"
+                            style={{ width: "auto", marginRight: 8 }}
+                            onClick={() => decide(row, "approved")}
+                          >
+                            Approve
+                          </button>
+                          <button type="button" className="btn-logout" onClick={() => decide(row, "rejected")}>
+                            Reject
+                          </button>
+                        </>
+                      ) : (
+                        <span style={{ opacity: 0.7 }}>Waiting</span>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -103,13 +136,13 @@ export default function CreditsPage() {
 
       <div className="manager-card">
         <h3>Active Credits</h3>
-        <p>Credits that have been approved and are being deducted</p>
+        <p>Credits that have been approved and are being deducted from salary</p>
         <div style={{ overflowX: "auto" }}>
           <table className="data-table">
             <thead>
               <tr>
-                <th>Barber Code</th>
-                <th>Barber Name</th>
+                <th>Role</th>
+                <th>Name</th>
                 <th>Amount</th>
                 <th>Remaining</th>
                 <th>Reason</th>
@@ -123,8 +156,11 @@ export default function CreditsPage() {
                 </tr>
               ) : (
                 active.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.barberCode}</td>
+                  <tr key={`a-${row.kind}-${row.id}`}>
+                    <td>
+                      {row.personRole}
+                      {row.kind === "barber" ? ` · ${row.barberCode}` : ""}
+                    </td>
                     <td>{row.barberName}</td>
                     <td>{money(row.amount)}</td>
                     <td>{money(row.remaining)}</td>
@@ -144,8 +180,8 @@ export default function CreditsPage() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Barber Code</th>
-                <th>Barber Name</th>
+                <th>Role</th>
+                <th>Name</th>
                 <th>Request Date</th>
                 <th>Amount</th>
                 <th>Status</th>
@@ -160,8 +196,11 @@ export default function CreditsPage() {
                 </tr>
               ) : (
                 history.map((row) => (
-                  <tr key={`h-${row.id}`}>
-                    <td>{row.barberCode}</td>
+                  <tr key={`h-${row.kind}-${row.id}`}>
+                    <td>
+                      {row.personRole}
+                      {row.kind === "barber" ? ` · ${row.barberCode}` : ""}
+                    </td>
                     <td>{row.barberName}</td>
                     <td>{row.requestedAt}</td>
                     <td>{money(row.amount)}</td>

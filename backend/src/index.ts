@@ -800,11 +800,14 @@ app.get("/api/users", requireAuth, allow("admin"), async (_req, res) => {
       recruitment_advance: string | null;
       advance_remaining: string | null;
       advance_monthly_deduction: string | null;
+      monthly_salary: string | null;
     }>(
       `SELECT u.user_id, u.username, u.full_name, u.role, u.email, u.phone, u.is_active,
-              b.barber_code, b.commission_rate, b.recruitment_advance, b.advance_remaining, b.advance_monthly_deduction
+              b.barber_code, b.commission_rate, b.recruitment_advance, b.advance_remaining, b.advance_monthly_deduction,
+              sp.monthly_salary
        FROM users u
        LEFT JOIN barbers b ON u.user_id = b.user_id
+       LEFT JOIN staff_profiles sp ON sp.user_id = u.user_id
        ORDER BY u.created_at DESC`
     );
     res.json(
@@ -825,6 +828,7 @@ app.get("/api/users", requireAuth, allow("admin"), async (_req, res) => {
           advanceRemaining: remaining,
           alreadyPaid: Math.max(0, advance - remaining),
           monthlyDeduction: num(row.advance_monthly_deduction),
+          monthlySalary: num(row.monthly_salary),
         };
       })
     );
@@ -839,17 +843,25 @@ app.post("/api/users", requireAuth, allow("admin"), async (req, res) => {
       username: z.string().min(2),
       fullName: z.string().min(2),
       password: z.string().min(6),
-      role: z.enum(["admin", "manager", "supervisor", "barber"]),
+      role: z.enum(["admin", "manager", "supervisor", "barber", "cleaner"]),
       email: z.string().optional(),
       phone: z.string().optional(),
       active: z.boolean().optional(),
       commissionRate: z.number().optional(),
       recruitmentAdvance: z.number().optional(),
       monthlyDeduction: z.number().optional(),
+      monthlySalary: z.number().optional(),
     })
     .safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Check the user details. Password must be at least 6 characters." });
+    return;
+  }
+  if (
+    (parsed.data.role === "manager" || parsed.data.role === "cleaner") &&
+    !(Number(parsed.data.monthlySalary) > 0)
+  ) {
+    res.status(400).json({ error: "Monthly salary is required for managers and cleaners" });
     return;
   }
   try {
@@ -877,6 +889,17 @@ app.post("/api/users", requireAuth, allow("admin"), async (req, res) => {
         [created[0].user_id, code, parsed.data.commissionRate ?? 40, parsed.data.active ?? true, advance, parsed.data.monthlyDeduction || 0]
       );
     }
+    if (parsed.data.role === "manager" || parsed.data.role === "cleaner") {
+      await query(
+        `INSERT INTO staff_profiles (user_id, monthly_salary, updated_at, updated_by)
+         VALUES ($1, $2, CURRENT_TIMESTAMP, $3)
+         ON CONFLICT (user_id) DO UPDATE
+           SET monthly_salary = EXCLUDED.monthly_salary,
+               updated_at = CURRENT_TIMESTAMP,
+               updated_by = EXCLUDED.updated_by`,
+        [created[0].user_id, parsed.data.monthlySalary || 0, req.user!.userId]
+      );
+    }
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Could not create user" });
@@ -888,7 +911,7 @@ app.put("/api/users/:id", requireAuth, allow("admin"), async (req, res) => {
   const parsed = z
     .object({
       fullName: z.string().min(2),
-      role: z.enum(["admin", "manager", "supervisor", "barber"]),
+      role: z.enum(["admin", "manager", "supervisor", "barber", "cleaner"]),
       email: z.string().optional(),
       phone: z.string().optional(),
       active: z.boolean(),
@@ -896,10 +919,19 @@ app.put("/api/users/:id", requireAuth, allow("admin"), async (req, res) => {
       commissionRate: z.number().optional(),
       recruitmentAdvance: z.number().optional(),
       monthlyDeduction: z.number().optional(),
+      monthlySalary: z.number().optional(),
     })
     .safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid user details" });
+    return;
+  }
+  if (
+    (parsed.data.role === "manager" || parsed.data.role === "cleaner") &&
+    parsed.data.monthlySalary !== undefined &&
+    !(Number(parsed.data.monthlySalary) >= 0)
+  ) {
+    res.status(400).json({ error: "Monthly salary must be a valid amount" });
     return;
   }
   try {
@@ -940,6 +972,17 @@ app.put("/api/users/:id", requireAuth, allow("admin"), async (req, res) => {
           [userId, code, rate, parsed.data.active, advance, deduction]
         );
       }
+    }
+    if (parsed.data.role === "manager" || parsed.data.role === "cleaner") {
+      await query(
+        `INSERT INTO staff_profiles (user_id, monthly_salary, updated_at, updated_by)
+         VALUES ($1, $2, CURRENT_TIMESTAMP, $3)
+         ON CONFLICT (user_id) DO UPDATE
+           SET monthly_salary = EXCLUDED.monthly_salary,
+               updated_at = CURRENT_TIMESTAMP,
+               updated_by = EXCLUDED.updated_by`,
+        [userId, parsed.data.monthlySalary ?? 0, req.user!.userId]
+      );
     }
     res.json({ ok: true });
   } catch (error) {
@@ -1246,50 +1289,131 @@ app.get("/api/operations", requireAuth, allow("admin", "manager"), async (_req, 
   }
 });
 
-app.get("/api/credits", requireAuth, allow("admin", "manager", "barber"), async (req, res) => {
-  const status = String(req.query.status || "all");
+app.get("/api/staff/home", requireAuth, allow("manager", "cleaner"), async (req, res) => {
   try {
-    const params: unknown[] = [];
-    let where = "WHERE 1=1";
-    if (req.user!.role === "barber") {
-      params.push(req.user!.barberId);
-      where += ` AND c.barber_id = $${params.length}`;
-    }
-    if (status !== "all") {
-      params.push(status);
-      where += ` AND c.status = $${params.length}`;
-    }
-    const rows = await query<{
+    const [profile, credits] = await Promise.all([
+      query<{ monthly_salary: string }>(
+        `SELECT monthly_salary FROM staff_profiles WHERE user_id = $1`,
+        [req.user!.userId]
+      ),
+      query<{ remaining: string; month_deduction: string }>(
+        `SELECT COALESCE(SUM(remaining_balance),0) AS remaining,
+                COALESCE(SUM(monthly_deduction),0) AS month_deduction
+         FROM staff_credits
+         WHERE user_id = $1 AND status = 'approved' AND remaining_balance > 0`,
+        [req.user!.userId]
+      ),
+    ]);
+    const salary = num(profile[0]?.monthly_salary);
+    const creditBalance = num(credits[0]?.remaining);
+    const creditDeduction = Math.min(salary, num(credits[0]?.month_deduction) || creditBalance);
+    res.json({
+      role: req.user!.role,
+      fullName: req.user!.fullName,
+      monthlySalary: salary,
+      creditBalance,
+      creditDeduction,
+      expectedNet: Math.max(0, salary - creditDeduction),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load staff home" });
+  }
+});
+
+app.get("/api/credits", requireAuth, allow("admin", "manager", "barber", "cleaner"), async (req, res) => {
+  const status = String(req.query.status || "all");
+  const mineOnly = String(req.query.mine || "") === "1";
+  const role = req.user!.role;
+  try {
+    type CreditRow = {
+      kind: "barber" | "staff";
       credit_id: number;
       amount: string;
       reason: string | null;
       status: string;
       remaining_balance: string | null;
-      barber_code: string;
-      full_name: string | null;
+      person_code: string;
+      person_name: string | null;
+      person_role: string;
       request_date: string;
       approved_by_name: string | null;
-    }>(
-      `SELECT c.credit_id, c.amount, c.reason, c.status, c.remaining_balance,
-              b.barber_code, u.full_name, TO_CHAR(c.request_date, 'YYYY-MM-DD') AS request_date,
-              u2.full_name AS approved_by_name
-       FROM barber_credits c
-       JOIN barbers b ON c.barber_id = b.barber_id
-       LEFT JOIN users u ON b.user_id = u.user_id
-       LEFT JOIN users u2 ON c.approved_by = u2.user_id
-       ${where}
-       ORDER BY c.request_date DESC`,
-      params
-    );
+    };
+
+    const barberParams: unknown[] = [];
+    let barberWhere = "WHERE 1=1";
+    const staffParams: unknown[] = [];
+    let staffWhere = "WHERE 1=1";
+
+    if (role === "barber" || mineOnly) {
+      if (role === "barber") {
+        barberParams.push(req.user!.barberId);
+        barberWhere += ` AND c.barber_id = $${barberParams.length}`;
+        staffWhere += " AND FALSE";
+      } else {
+        staffParams.push(req.user!.userId);
+        staffWhere += ` AND c.user_id = $${staffParams.length}`;
+        barberWhere += " AND FALSE";
+      }
+    } else if (role === "cleaner") {
+      staffParams.push(req.user!.userId);
+      staffWhere += ` AND c.user_id = $${staffParams.length}`;
+      barberWhere += " AND FALSE";
+    } else if (role === "manager") {
+      // Barber + cleaner requests they can approve, plus own staff requests
+      staffParams.push(req.user!.userId);
+      staffWhere += ` AND (u.role = 'cleaner' OR c.user_id = $${staffParams.length})`;
+    } else if (role === "admin") {
+      // Manager staff credits (for approval) + all barber credits (visibility)
+      staffWhere += " AND u.role = 'manager'";
+    }
+
+    if (status !== "all") {
+      barberParams.push(status);
+      barberWhere += ` AND c.status = $${barberParams.length}`;
+      staffParams.push(status);
+      staffWhere += ` AND c.status = $${staffParams.length}`;
+    }
+
+    const [barberRows, staffRows] = await Promise.all([
+      query<CreditRow>(
+        `SELECT 'barber'::text AS kind, c.credit_id, c.amount, c.reason, c.status, c.remaining_balance,
+                b.barber_code AS person_code, u.full_name AS person_name, 'barber'::text AS person_role,
+                TO_CHAR(c.request_date, 'YYYY-MM-DD') AS request_date,
+                u2.full_name AS approved_by_name
+         FROM barber_credits c
+         JOIN barbers b ON c.barber_id = b.barber_id
+         LEFT JOIN users u ON b.user_id = u.user_id
+         LEFT JOIN users u2 ON c.approved_by = u2.user_id
+         ${barberWhere}
+         ORDER BY c.request_date DESC`,
+        barberParams
+      ).catch(() => [] as CreditRow[]),
+      query<CreditRow>(
+        `SELECT 'staff'::text AS kind, c.credit_id, c.amount, c.reason, c.status, c.remaining_balance,
+                UPPER(u.role) AS person_code, u.full_name AS person_name, u.role AS person_role,
+                TO_CHAR(c.request_date, 'YYYY-MM-DD') AS request_date,
+                u2.full_name AS approved_by_name
+         FROM staff_credits c
+         JOIN users u ON c.user_id = u.user_id
+         LEFT JOIN users u2 ON c.approved_by = u2.user_id
+         ${staffWhere}
+         ORDER BY c.request_date DESC`,
+        staffParams
+      ).catch(() => [] as CreditRow[]),
+    ]);
+
+    const rows = [...barberRows, ...staffRows].sort((a, b) => String(b.request_date).localeCompare(String(a.request_date)));
     res.json(
       rows.map((row) => ({
         id: Number(row.credit_id),
+        kind: row.kind,
         amount: num(row.amount),
         reason: row.reason || "",
         status: row.status,
         remaining: num(row.remaining_balance),
-        barberCode: row.barber_code,
-        barberName: row.full_name || row.barber_code,
+        barberCode: row.person_code,
+        barberName: row.person_name || row.person_code,
+        personRole: row.person_role,
         requestedAt: row.request_date,
         approvedBy: row.approved_by_name || "",
       }))
@@ -1299,20 +1423,32 @@ app.get("/api/credits", requireAuth, allow("admin", "manager", "barber"), async 
   }
 });
 
-app.post("/api/credits", requireAuth, allow("barber"), async (req, res) => {
+app.post("/api/credits", requireAuth, allow("barber", "manager", "cleaner"), async (req, res) => {
   const parsed = z
     .object({ amount: z.number().positive(), reason: z.string().min(1) })
     .safeParse(req.body);
-  if (!parsed.success || !req.user!.barberId) {
+  if (!parsed.success) {
     res.status(400).json({ error: "Amount and reason are required" });
     return;
   }
   try {
-    await query(
-      `INSERT INTO barber_credits (barber_id, amount, reason, status, remaining_balance)
-       VALUES ($1, $2, $3, 'pending', $2)`,
-      [req.user!.barberId, parsed.data.amount, parsed.data.reason]
-    );
+    if (req.user!.role === "barber") {
+      if (!req.user!.barberId) {
+        res.status(400).json({ error: "No barber profile linked" });
+        return;
+      }
+      await query(
+        `INSERT INTO barber_credits (barber_id, amount, reason, status, remaining_balance, monthly_deduction)
+         VALUES ($1, $2, $3, 'pending', $2, $2)`,
+        [req.user!.barberId, parsed.data.amount, parsed.data.reason]
+      );
+    } else {
+      await query(
+        `INSERT INTO staff_credits (user_id, amount, reason, status, remaining_balance, monthly_deduction)
+         VALUES ($1, $2, $3, 'pending', $2, $2)`,
+        [req.user!.userId, parsed.data.amount, parsed.data.reason]
+      );
+    }
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Could not submit credit request" });
@@ -1320,18 +1456,61 @@ app.post("/api/credits", requireAuth, allow("barber"), async (req, res) => {
 });
 
 app.post("/api/credits/:id/decide", requireAuth, allow("manager", "admin"), async (req, res) => {
-  const parsed = z.object({ decision: z.enum(["approved", "rejected"]) }).safeParse(req.body);
+  const parsed = z
+    .object({
+      decision: z.enum(["approved", "rejected"]),
+      kind: z.enum(["barber", "staff"]).default("barber"),
+    })
+    .safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Decision required" });
     return;
   }
+  const creditId = Number(req.params.id);
+  const { decision, kind } = parsed.data;
   try {
-    await query(
-      `UPDATE barber_credits
-       SET status = $1, approved_by = $2, approved_date = CURRENT_TIMESTAMP
-       WHERE credit_id = $3 AND status = 'pending'`,
-      [parsed.data.decision, req.user!.userId, Number(req.params.id)]
-    );
+    if (kind === "barber") {
+      if (req.user!.role !== "manager" && req.user!.role !== "admin") {
+        res.status(403).json({ error: "Managers approve barber credits" });
+        return;
+      }
+      await query(
+        `UPDATE barber_credits
+         SET status = $1, approved_by = $2, approved_date = CURRENT_TIMESTAMP,
+             monthly_deduction = CASE WHEN COALESCE(monthly_deduction,0) = 0 THEN amount ELSE monthly_deduction END
+         WHERE credit_id = $3 AND status = 'pending'`,
+        [decision, req.user!.userId, creditId]
+      );
+    } else {
+      const rows = await query<{ role: string }>(
+        `SELECT u.role
+         FROM staff_credits c
+         JOIN users u ON c.user_id = u.user_id
+         WHERE c.credit_id = $1 AND c.status = 'pending'`,
+        [creditId]
+      );
+      if (!rows[0]) {
+        res.status(404).json({ error: "Credit request not found" });
+        return;
+      }
+      const requesterRole = rows[0].role;
+      if (requesterRole === "cleaner" && req.user!.role !== "manager" && req.user!.role !== "admin") {
+        res.status(403).json({ error: "Managers approve cleaner credits" });
+        return;
+      }
+      if (requesterRole === "manager" && req.user!.role !== "admin") {
+        res.status(403).json({ error: "Only admin can approve manager credits" });
+        return;
+      }
+      await query(
+        `UPDATE staff_credits
+         SET status = $1, approved_by = $2, approved_date = CURRENT_TIMESTAMP,
+             monthly_deduction = CASE WHEN COALESCE(monthly_deduction,0) = 0 THEN amount ELSE monthly_deduction END,
+             updated_at = CURRENT_TIMESTAMP
+         WHERE credit_id = $3 AND status = 'pending'`,
+        [decision, req.user!.userId, creditId]
+      );
+    }
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Could not update credit" });

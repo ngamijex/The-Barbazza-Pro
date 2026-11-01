@@ -72,6 +72,15 @@ type BarberHome = {
   todayServices: { service: string; amount: number; customer: string; time: string }[];
 };
 
+type StaffHome = {
+  role: string;
+  fullName: string;
+  monthlySalary: number;
+  creditBalance: number;
+  creditDeduction: number;
+  expectedNet: number;
+};
+
 type Option = { id: number; name: string; price?: number; code?: string; active?: boolean };
 
 export default function HomePage() {
@@ -80,6 +89,7 @@ export default function HomePage() {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [day, setDay] = useState<Day | null>(null);
   const [chair, setChair] = useState<BarberHome | null>(null);
+  const [staffPay, setStaffPay] = useState<StaffHome | null>(null);
   const [error, setError] = useState("");
   const [barbers, setBarbers] = useState<Option[]>([]);
   const [services, setServices] = useState<Option[]>([]);
@@ -108,18 +118,22 @@ export default function HomePage() {
       try {
         if (user.role === "admin") setOverview(await api<Overview>("/api/dashboard/overview"));
         else if (user.role === "manager") {
-          const [opsData, b, s] = await Promise.all([
+          const [opsData, b, s, pay] = await Promise.all([
             api<Operations>("/api/operations"),
             api<{ id: number; name: string; code: string }[]>("/api/barbers"),
             api<Option[]>("/api/services"),
+            api<StaffHome>("/api/staff/home"),
           ]);
           setOps(opsData);
           setBarbers(b.map((row) => ({ id: row.id, name: `${row.name} (${row.code})`, code: row.code })));
           setServices(s);
+          setStaffPay(pay);
         } else if (user.role === "supervisor") {
           setDay(await api<Day>(`/api/day?date=${date}`));
         } else if (user.role === "barber") {
           setChair(await api<BarberHome>("/api/barber/home"));
+        } else if (user.role === "cleaner") {
+          setStaffPay(await api<StaffHome>("/api/staff/home"));
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not load");
@@ -175,24 +189,62 @@ export default function HomePage() {
   }
 
   const cardClass =
-    user?.role === "admin" ? "admin-card" : user?.role === "barber" ? "barber-card" : user?.role === "supervisor" ? "supervisor-card" : "manager-card";
+    user?.role === "admin"
+      ? "admin-card"
+      : user?.role === "barber" || user?.role === "cleaner"
+        ? "barber-card"
+        : user?.role === "supervisor"
+          ? "supervisor-card"
+          : "manager-card";
 
   const loading =
     !!user &&
     !error &&
-    ((user.role === "manager" && !ops) ||
+    ((user.role === "manager" && (!ops || !staffPay)) ||
       (user.role === "admin" && !overview) ||
       (user.role === "supervisor" && !day) ||
-      (user.role === "barber" && !chair));
+      (user.role === "barber" && !chair) ||
+      (user.role === "cleaner" && !staffPay));
 
   return (
     <Shell loading={loading}>
       {error ? <div className="alert alert-danger">{error}</div> : null}
       {!user ? <PageSkeleton /> : null}
 
+      {/* ===== CLEANER: Salary dashboard ===== */}
+      {user?.role === "cleaner" && staffPay ? (
+        <>
+          <Panel title="My Salary" className={cardClass}>
+            <div className="earnings-grid daily-summary">
+              <Kpi label="Monthly Salary" value={money(staffPay.monthlySalary)} />
+              <Kpi label="Credit Deductions" value={money(staffPay.creditDeduction)} />
+              <Kpi label="Expected Net Pay" value={money(staffPay.expectedNet)} />
+              <Kpi label="Credit Balance" value={money(staffPay.creditBalance)} />
+            </div>
+            <p style={{ marginTop: "1rem", color: "var(--barbazza-cream)", fontSize: "0.9rem" }}>
+              Approved credits are deducted from your salary. Request credit from the Credit tab — your manager approves.
+            </p>
+          </Panel>
+        </>
+      ) : null}
+
       {/* ===== MANAGER: Daily Operations (exact Shiny sections) ===== */}
       {user?.role === "manager" && ops ? (
         <>
+          {staffPay ? (
+            <Panel title="My Salary" className="manager-card">
+              <div className="earnings-grid daily-summary">
+                <Kpi label="Monthly Salary" value={money(staffPay.monthlySalary)} />
+                <Kpi label="Credit Deductions" value={money(staffPay.creditDeduction)} />
+                <Kpi label="Expected Net Pay" value={money(staffPay.expectedNet)} />
+                <Kpi label="Credit Balance" value={money(staffPay.creditBalance)} />
+              </div>
+              <p style={{ marginTop: "1rem", color: "var(--barbazza-cream)", fontSize: "0.9rem" }}>
+                Request credit from the Credit tab — only admin can approve manager credits.
+              </p>
+            </Panel>
+          ) : null}
+
           <Panel title="Today's Summary" className="manager-card">
             <div className="daily-summary">
               <Kpi label="Total Income" value={money(ops.today.income)} />
