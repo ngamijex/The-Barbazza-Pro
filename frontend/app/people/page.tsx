@@ -54,6 +54,19 @@ export default function PeoplePage() {
     load().catch((err) => setMessage(err.message));
   }, []);
 
+  // Browser password managers autofill this create form (looks like "edit"). Clear after mount.
+  useEffect(() => {
+    if (editing) return;
+    const clear = () => setForm(empty);
+    clear();
+    const t = window.setTimeout(clear, 50);
+    const t2 = window.setTimeout(clear, 300);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(t2);
+    };
+  }, [editing]);
+
   async function createUser(event: FormEvent) {
     event.preventDefault();
     setMessage("");
@@ -129,19 +142,42 @@ export default function PeoplePage() {
       <button type="button" onClick={recover} className="btn-action" style={{ width: "auto", marginBottom: "var(--space-4)" }}>
         Recover advance balances
       </button>
-      <Panel title={editing ? `Edit ${editing.username}` : "User Management"} className="admin-card">
-        <form onSubmit={editing ? saveEdit : createUser} className="service-form">
+      <Panel title={editing ? `Edit ${editing.username}` : "Add new user"} className="admin-card">
+        <form
+          onSubmit={editing ? saveEdit : createUser}
+          className="service-form"
+          autoComplete="off"
+          data-lpignore="true"
+          data-1p-ignore="true"
+        >
+          {/* Absorb browser autofill so create fields stay blank */}
+          {!editing ? (
+            <div aria-hidden style={{ position: "absolute", left: -9999, width: 1, height: 1, overflow: "hidden" }}>
+              <input type="text" name="prevent_autofill_user" autoComplete="username" tabIndex={-1} />
+              <input type="password" name="prevent_autofill_pass" autoComplete="current-password" tabIndex={-1} />
+            </div>
+          ) : null}
           <div className="form-grid form-grid-2">
             {!editing ? (
               <div className="form-group">
                 <label>Username</label>
-                <input required value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+                <input
+                  required
+                  name="barbazza_new_username"
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  value={form.username}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                />
               </div>
             ) : null}
             <div className="form-group">
               <label>Full name</label>
               <input
                 required
+                name="barbazza_full_name"
+                autoComplete="off"
                 value={editing ? editing.fullName : form.fullName}
                 onChange={(e) =>
                   editing ? setEditing({ ...editing, fullName: e.target.value }) : setForm({ ...form, fullName: e.target.value })
@@ -150,7 +186,13 @@ export default function PeoplePage() {
             </div>
             <div className="form-group">
               <label>{editing ? "New password (optional)" : "Password"}</label>
-              <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+              <input
+                type="password"
+                name="barbazza_new_password"
+                autoComplete="new-password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+              />
             </div>
             <div className="form-group">
               <label>Role</label>
@@ -222,7 +264,14 @@ export default function PeoplePage() {
             {editing ? "Save changes" : "Create"}
           </button>
           {editing ? (
-            <button type="button" onClick={() => setEditing(null)} style={{ marginLeft: 12 }}>
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(null);
+                setForm(empty);
+              }}
+              style={{ marginLeft: 12 }}
+            >
               Cancel
             </button>
           ) : null}
@@ -252,7 +301,15 @@ export default function PeoplePage() {
                 <td>{needsSalary(person.role) ? money(person.monthlySalary) : "—"}</td>
                 <td>{person.active ? "Active" : "Off"}</td>
                 <td style={{ whiteSpace: "nowrap" }}>
-                  <button type="button" className="btn-action" style={{ width: "auto", marginRight: 6 }} onClick={() => setEditing(person)}>
+                  <button
+                    type="button"
+                    className="btn-action"
+                    style={{ width: "auto", marginRight: 6 }}
+                    onClick={() => {
+                      setForm({ ...empty, password: "" });
+                      setEditing(person);
+                    }}
+                  >
                     Edit
                   </button>
                   {person.active ? (
