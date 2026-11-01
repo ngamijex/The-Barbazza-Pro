@@ -55,7 +55,7 @@ export default function LoginPage() {
           ← Back
         </Link>
         <div className="login-logo">
-          <img src="/logo.png" alt="Barbazza Logo" />
+          <img src="/logo.png" alt="Barbazza Logo" width={150} height={150} />
         </div>
         <h2 className="login-subtitle">Barbershop Management System</h2>
 

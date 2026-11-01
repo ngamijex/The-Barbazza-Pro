@@ -3,7 +3,8 @@
    Professional, Light, Classic Aesthetic
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
+/* Fonts are loaded from app/layout.tsx — do not @import here
+   (blocks the rest of this file and causes login/layout resize on open). */
 
 :root {
   /* ==================== COLORS ==================== */
@@ -925,7 +926,6 @@ input:disabled {
   }
   
   body {
-    zoom: 1 !important;
     font-size: 1rem;
     line-height: 1.5;
     -webkit-text-size-adjust: 100%;
@@ -1341,14 +1341,12 @@ input:disabled {
   }
 }
 
-/* Desktop Optimizations (1025px+) */
+/* Desktop Optimizations (1025px+)
+   Keep html font-size / zoom in sync with globals.css so first paint
+   matches — never apply body zoom late (that visibly rescales the page). */
 @media (min-width: 1025px) {
   html {
     font-size: 12px;
-  }
-  
-  body {
-    zoom: 0.9;
   }
   
   .daily-summary,
