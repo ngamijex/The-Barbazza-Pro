@@ -1099,9 +1099,14 @@ app.get("/api/barber/home", requireAuth, allow("barber"), async (req, res) => {
     const grossToday = num(today[0]?.income);
     const grossWeek = num(weekIncome[0]?.income);
     const grossMonth = num(monthIncome[0]?.income);
-    const recruitmentDeduction = num(profile[0]?.advance_monthly_deduction);
+    const recruitmentBalance = Math.max(0, num(profile[0]?.advance_remaining));
+    // Never deduct recruitment when balance/configured amount is zero
+    const recruitmentDeduction = Math.min(
+      Math.max(0, num(profile[0]?.advance_monthly_deduction)),
+      recruitmentBalance
+    );
     const creditBalance = num(credits[0]?.remaining);
-    const creditDeduction = num(credits[0]?.month_deduction);
+    const creditDeduction = Math.min(Math.max(0, num(credits[0]?.month_deduction)), Math.max(0, creditBalance));
     const commission = grossMonth * rate;
     res.json({
       commissionRate: Math.round(rate * 100),
@@ -1124,7 +1129,7 @@ app.get("/api/barber/home", requireAuth, allow("barber"), async (req, res) => {
         bestDay: num(best[0]?.best),
         avgDaily: commission / Math.max(1, new Date().getDate()),
         recruitmentDeduction,
-        recruitmentBalance: num(profile[0]?.advance_remaining),
+        recruitmentBalance,
         creditBalance,
         creditDeduction,
         expectedNet: commission - recruitmentDeduction - creditDeduction,
@@ -1608,8 +1613,10 @@ async function closingSummary(monthKey: string): Promise<ClosingRow[]> {
     const rateRaw = num(row.commission_rate);
     const ratePct = rateRaw > 0 && rateRaw <= 1 ? rateRaw * 100 : rateRaw;
     const grossIncome = num(row.gross_income);
-    const recruitmentDeduction = num(row.recruitment_deduction);
-    const creditDeduction = num(row.credit_deduction);
+    const recruitmentBalance = Math.max(0, num(row.recruitment_balance));
+    // If remaining advance is 0 (or monthly reduction is 0), do not deduct recruitment
+    const recruitmentDeduction = Math.min(Math.max(0, num(row.recruitment_deduction)), recruitmentBalance);
+    const creditDeduction = Math.max(0, num(row.credit_deduction));
     const commissionEarned = grossIncome * (ratePct / 100);
     const totalDeductions = recruitmentDeduction + creditDeduction;
     // Allow negative net when deductions exceed commission (barber owes the shop)
@@ -1620,7 +1627,7 @@ async function closingSummary(monthKey: string): Promise<ClosingRow[]> {
       fullName: row.full_name || row.barber_code,
       commissionRate: ratePct,
       recruitmentDeduction,
-      recruitmentBalance: num(row.recruitment_balance),
+      recruitmentBalance,
       grossIncome,
       creditDeduction,
       commissionEarned,
