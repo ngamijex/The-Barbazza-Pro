@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Kpi, Panel, Shell, useSession } from "@/components/Shell";
 import { api, money } from "@/lib/api";
 
@@ -25,6 +26,7 @@ type Tx = {
 
 export default function DailyRecordsPage() {
   const user = useSession();
+  const router = useRouter();
   const monthStart = new Date();
   monthStart.setDate(1);
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -35,6 +37,10 @@ export default function DailyRecordsPage() {
 
   useEffect(() => {
     if (!user) return;
+    if (user.role !== "admin") {
+      router.replace("/home");
+      return;
+    }
     setLoading(true);
     Promise.all([api<Day>(`/api/day?date=${date}`), api<Tx[]>(`/api/transactions?date=${date}`)])
       .then(([d, t]) => {
@@ -43,7 +49,7 @@ export default function DailyRecordsPage() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [user, date]);
+  }, [user, date, router]);
 
   return (
     <Shell loading={loading && !error}>

@@ -1637,7 +1637,7 @@ async function closingSummary(monthKey: string): Promise<ClosingRow[]> {
   });
 }
 
-app.get("/api/monthly-closing/months", requireAuth, allow("manager", "admin"), async (_req, res) => {
+app.get("/api/monthly-closing/months", requireAuth, allow("admin"), async (_req, res) => {
   try {
     const rows = await query<{ month_key: string; month_label: string }>(
       `SELECT DISTINCT
@@ -1678,7 +1678,7 @@ app.get("/api/monthly-closing/months", requireAuth, allow("manager", "admin"), a
   }
 });
 
-app.get("/api/monthly-closing/summary", requireAuth, allow("manager", "admin"), async (req, res) => {
+app.get("/api/monthly-closing/summary", requireAuth, allow("admin"), async (req, res) => {
   const month = String(req.query.month || "");
   if (!/^\d{4}-\d{2}$/.test(month)) {
     res.status(400).json({ error: "Select a month" });
@@ -1691,7 +1691,7 @@ app.get("/api/monthly-closing/summary", requireAuth, allow("manager", "admin"), 
   }
 });
 
-app.get("/api/monthly-closing/history", requireAuth, allow("manager", "admin"), async (_req, res) => {
+app.get("/api/monthly-closing/history", requireAuth, allow("admin"), async (_req, res) => {
   try {
     const rows = await query<{
       barber_code: string;

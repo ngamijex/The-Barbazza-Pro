@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Shell, useSession } from "@/components/Shell";
 import { api, money } from "@/lib/api";
 
@@ -36,6 +37,7 @@ type HistoryRow = {
 
 export default function MonthlyClosingPage() {
   const user = useSession();
+  const router = useRouter();
   const [months, setMonths] = useState<MonthOption[]>([]);
   const [month, setMonth] = useState("");
   const [summary, setSummary] = useState<ClosingRow[]>([]);
@@ -62,16 +64,20 @@ export default function MonthlyClosingPage() {
 
   useEffect(() => {
     if (!user) return;
+    if (user.role !== "admin") {
+      router.replace("/home");
+      return;
+    }
     Promise.all([loadMonths(), loadHistory()])
       .then(() => setBooted(true))
       .catch((err) => {
         setError(err.message);
         setBooted(true);
       });
-  }, [user]);
+  }, [user, router]);
 
   useEffect(() => {
-    if (!user || !month) {
+    if (!user || user.role !== "admin" || !month) {
       setSummary([]);
       return;
     }

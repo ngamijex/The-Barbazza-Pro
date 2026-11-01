@@ -49,8 +49,6 @@ const NAV: Record<Role, NavItem[]> = {
     { href: "/expenses", label: "Expenses", short: "Spend", icon: Wallet },
     { href: "/barbers", label: "Barbers", short: "Barbers", icon: Users },
     { href: "/credits", label: "Credit Approvals", short: "Credits", icon: CreditCard },
-    { href: "/daily-records", label: "Daily Records", short: "Records", icon: CalendarDays },
-    { href: "/monthly-closing", label: "Monthly Closing", short: "Closing", icon: ChartColumn },
     { href: "/me", label: "Me", short: "Me", icon: UserRound },
   ],
   supervisor: [{ href: "/home", label: "Today's Barber Performance", short: "Today", icon: Home }],
