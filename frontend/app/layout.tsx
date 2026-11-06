@@ -3,9 +3,39 @@ import { ThemeGate } from "@/components/ThemeGate";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Barbazza — Barbershop Management System",
-  description: "Barbazza barbershop operations, performance, and payroll.",
+  metadataBase: new URL("https://www.thebarbazza.com"),
+  title: {
+    default: "THE BARBAZZA BARBERSHOP LTD | Book a Barber in Kigali",
+    template: "%s | Barbazza",
+  },
+  description:
+    "A house of quiet craft in Ubutare, Kigali. Choose your barber, book online, and leave sharper than you arrived. THE BARBAZZA BARBERSHOP LTD.",
   applicationName: "Barbazza",
+  keywords: [
+    "Barbazza",
+    "barbershop Kigali",
+    "barber Ubutare",
+    "book a barber",
+    "THE BARBAZZA BARBERSHOP LTD",
+  ],
+  authors: [{ name: "THE BARBAZZA BARBERSHOP LTD" }],
+  openGraph: {
+    type: "website",
+    locale: "en_RW",
+    url: "https://www.thebarbazza.com",
+    siteName: "THE BARBAZZA BARBERSHOP LTD",
+    title: "THE BARBAZZA BARBERSHOP LTD | Book a Barber in Kigali",
+    description:
+      "A house of quiet craft in Ubutare, Kigali. Choose your barber, book online, and leave sharper than you arrived.",
+    images: [{ url: "/logo.png", width: 512, height: 512, alt: "Barbazza" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "THE BARBAZZA BARBERSHOP LTD | Book a Barber in Kigali",
+    description:
+      "A house of quiet craft in Ubutare, Kigali. Choose your barber, book online, and leave sharper than you arrived.",
+    images: ["/logo.png"],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -16,6 +46,8 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/favicon.png", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
@@ -45,6 +77,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         {/* Server-rendered so staff/login CSS is present on first paint (no FOUC). */}
         <link rel="stylesheet" href="/styles.css" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="48x48" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

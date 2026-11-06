@@ -20,9 +20,13 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* Keep public site on a compact scale (no staff zoom tricks / staff theme bleed) */
+/* Keep public site on a compact scale (no staff zoom tricks / staff theme bleed).
+   Use overflow-x: clip (not hidden on both html+body) so mouse-wheel scrolling
+   works over page content — Chrome breaks wheel scroll when both use overflow-x:hidden. */
 html:has(.public-shell) {
   font-size: 14px !important;
+  overflow-x: clip;
+  overflow-y: auto;
 }
 
 body:has(.public-shell) {
@@ -30,7 +34,9 @@ body:has(.public-shell) {
   transform: none !important;
   background: var(--paper) !important;
   color: var(--ink) !important;
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
+  overscroll-behavior-y: auto;
   font-size: 1rem;
   font-family: var(--font-ui) !important;
   line-height: 1.5 !important;
@@ -187,6 +193,7 @@ body:has(.public-shell) h4 {
   will-change: transform;
   transform-origin: center center;
   z-index: 0;
+  pointer-events: none;
 }
 
 .public-hero-veil {

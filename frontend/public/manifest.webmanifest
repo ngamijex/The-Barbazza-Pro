@@ -1,13 +1,19 @@
 {
-  "name": "Barbazza",
+  "name": "THE BARBAZZA BARBERSHOP LTD",
   "short_name": "Barbazza",
-  "description": "Barbazza barbershop management",
+  "description": "A house of quiet craft in Ubutare, Kigali. Book your barber online.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
