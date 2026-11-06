@@ -124,8 +124,8 @@ export default function ContractsPage() {
       <Panel title="Employment contracts" className="admin-card">
         <p style={{ marginBottom: "1rem", color: "var(--barbazza-cream)" }}>
           Word contracts match the paper layout: logo cover page, Barbazza header/footer art, and full Kinyarwanda
-          articles. Download a <strong>filled</strong> contract for a new barber, or a <strong>blank dashed template</strong>{" "}
-          to print and complete by hand outside the system.
+          articles. Download a           <strong>filled</strong> contract for a new barber, or a <strong>blank dashed template</strong> to print
+          and complete by hand outside the system. Both types use recruitment money wording.
         </p>
 
         <div className="form-group" style={{ marginBottom: "1.25rem" }}>
@@ -143,7 +143,7 @@ export default function ContractsPage() {
               className={form.type === "retention" ? "btn-primary" : "btn-action"}
               onClick={() => set("type", "retention")}
             >
-              Type B — Retention (stay period / 2× if leave early)
+              Type B — Recruitment (stay period / 2× if leave early)
             </button>
           </div>
         </div>
@@ -280,14 +280,14 @@ export default function ContractsPage() {
             </>
           ) : (
             <>
-              <h3 style={{ margin: "1.25rem 0 0.75rem" }}>Retention support (Ingingo ya 8)</h3>
+              <h3 style={{ margin: "1.25rem 0 0.75rem" }}>Recruitment money — stay period (Ingingo ya 8)</h3>
               <p style={{ color: "var(--barbazza-cream)", fontSize: "0.9rem", marginBottom: "0.75rem" }}>
-                Barber receives support money with no monthly repayment, but must stay for the commitment period. Leaving
-                early means paying back <strong>2×</strong> (RWF {clawback.toLocaleString()}).
+                Barber receives recruitment money with no monthly repayment, but must stay for the commitment period.
+                Leaving early means paying back recruitment money <strong>2×</strong> (RWF {clawback.toLocaleString()}).
               </p>
               <div className="form-grid form-grid-3">
                 <div className="form-group">
-                  <label>Support amount (FRW)</label>
+                  <label>Recruitment amount (FRW)</label>
                   <input
                     type="number"
                     min={0}

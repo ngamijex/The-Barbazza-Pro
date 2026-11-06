@@ -12,7 +12,6 @@ import {
   PageNumber,
   Paragraph,
   TextRun,
-  UnderlineType,
 } from "docx";
 
 export type ContractType = "recruitment" | "retention";
@@ -46,7 +45,6 @@ export type ContractInput = {
   commitmentMonths?: number;
 };
 
-const thinBorder = { style: BorderStyle.SINGLE, size: 6, color: "111111", space: 1 };
 const artBorder = { style: BorderStyle.SINGLE, size: 12, color: "0A0A0A", space: 8 };
 
 function logoBuffer(): Buffer {
@@ -128,21 +126,27 @@ function ornament() {
   );
 }
 
-function article(text: string) {
-  return new Paragraph({
-    spacing: { before: 280, after: 140 },
-    border: { bottom: thinBorder },
-    children: [
-      new TextRun({
-        text,
-        bold: true,
-        size: 22,
-        font: "Calibri",
-        color: "0A0A0A",
-        underline: { type: UnderlineType.SINGLE },
-      }),
-    ],
-  });
+/** Bold Ingingo title (no underline) + horizontal rule separating sections. */
+function articleHeading(text: string): Paragraph[] {
+  return [
+    new Paragraph({
+      spacing: { before: 260, after: 120 },
+      children: [
+        new TextRun({
+          text,
+          bold: true,
+          size: 22,
+          font: "Calibri",
+          color: "0A0A0A",
+        }),
+      ],
+    }),
+    new Paragraph({
+      spacing: { after: 140 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: "0A0A0A", space: 1 } },
+      children: [],
+    }),
+  ];
 }
 
 function bullet(text: string) {
@@ -153,6 +157,30 @@ function bullet(text: string) {
   });
 }
 
+/** Label + bold value (names, IDs, phones, amounts, etc.) */
+function labeledBullet(label: string, value: string) {
+  return new Paragraph({
+    spacing: { after: 70, line: 276 },
+    indent: { left: 420 },
+    children: [
+      new TextRun({ text: `•  ${label}: `, size: 21, font: "Calibri", color: "111111" }),
+      new TextRun({ text: value, bold: true, size: 21, font: "Calibri", color: "0A0A0A" }),
+    ],
+  });
+}
+
+function richP(parts: Array<string | { b: string }>, opts?: { after?: number }) {
+  return new Paragraph({
+    alignment: AlignmentType.BOTH,
+    spacing: { after: opts?.after ?? 140, line: 276 },
+    children: parts.map((part) =>
+      typeof part === "string"
+        ? new TextRun({ text: part, size: 21, font: "Calibri", color: "111111" })
+        : new TextRun({ text: part.b, bold: true, size: 21, font: "Calibri", color: "0A0A0A" })
+    ),
+  });
+}
+
 function blankLine(after = 120) {
   return new Paragraph({ spacing: { after }, children: [] });
 }
@@ -160,7 +188,7 @@ function blankLine(after = 120) {
 function sigBlock(role: string, name: string) {
   return [
     p(role, { bold: true, after: 80 }),
-    p(`Izina: ${name}`, { after: 80 }),
+    richP(["Izina: ", { b: name }], { after: 80 }),
     p("Umukono: ________________________________", { after: 60 }),
     p("Itariki: ____ / ____ / ________", { after: 200 }),
   ];
@@ -173,12 +201,23 @@ function recruitmentArticle8(input: ContractInput) {
   const after = fieldNum(blank, input.recruitmentBonusAfterMonths, 4);
   const monthly = fieldMoney(blank, input.monthlyDeduction);
   return [
-    article("INGINGO YA 8: AMAFARANGA YA RECRUTEMENT (RECRUITMENT MONEY)"),
-    p(
-      `8.1. Umukozi atangira akazi afite amafaranga ya recrutement y’agaciro ka ${advance}. ` +
-        `Izindi ${bonus} azahabwa nyuma y’amezi ${after} yo kwerekana ko ari umukozi wizewe.`
-    ),
-    p(`8.2. Aya mafaranga akatwa ku mushahara buri kwezi ku gaciro ka ${monthly} buri kwezi kugeza aho ashyira.`),
+    ...articleHeading("INGINGO YA 8: AMAFARANGA YA RECRUTEMENT (RECRUITMENT MONEY)"),
+    richP([
+      "8.1. Umukozi atangira akazi afite ",
+      { b: "amafaranga ya recrutement" },
+      " y’agaciro ka ",
+      { b: advance },
+      ". Izindi ",
+      { b: bonus },
+      " azahabwa nyuma y’amezi ",
+      { b: after },
+      " yo kwerekana ko ari umukozi wizewe.",
+    ]),
+    richP([
+      "8.2. Aya mafaranga akatwa ku mushahara buri kwezi ku gaciro ka ",
+      { b: monthly },
+      " buri kwezi kugeza aho ashyira.",
+    ]),
     p(
       "8.3. Niba Umukozi ahagaritse akazi cyangwa agenda gukorera ahandi, agomba kwishyura icyo asigareye cyose ku buryo bwihuse, nta kwirengagiza."
     ),
@@ -192,36 +231,51 @@ function retentionArticle8(input: ContractInput) {
   const months = fieldNum(blank, input.commitmentMonths, 4);
   const clawback =
     blank || input.retentionAmount == null
-      ? `${dash(14)} FRW  (×2)`
-      : `${money((input.retentionAmount || 0) * 2)}  (×2)`;
+      ? `${dash(14)} FRW`
+      : money((input.retentionAmount || 0) * 2);
   return [
-    article("INGINGO YA 8: INKUNGA Y’AKAZI N’IGIHE CY’AKAZI (WORK SUPPORT & COMMITMENT)"),
-    p(
-      `8.1. Umukoresha aha Umukozi inkunga y’agaciro ka ${amount} kugira ngo atangire kandi akomeze akazi muri The Barbazza Barbershop.`
-    ),
-    p(
-      "8.2. Aya mafaranga ntabwo akatwa buri kwezi. Umukozi ntabwo yishyura inkunga nk’idini cyangwa ideni rya buri kwezi."
-    ),
-    p(
-      `8.3. Mu guhabwa iyi nkunga, Umukozi yiyemeje gukorera The Barbazza Barbershop mu gihe kingana na amezi ${months} uhereye umunsi amasezerano ashyiriweho umukono.`
-    ),
-    p(
-      `8.4. Niba Umukozi ahagaritse akazi cyangwa agenda gukorera ahandi mbere y’uko icyo gihe cyuzura, ` +
-        `agomba kwishyura The Barbazza Barbershop amafaranga angana n’inkunga yahawe inshuro ebyiri (${clawback}), ` +
-        `nk’inyungu / indishyi z’igihombo bitewe no kurangiza amasezerano mbere y’igihe.`
-    ),
-    p(
-      `8.5. Iyo Umukozi arangije icyo gihe cyose cy’amezi ${months} nk’uko byemejwe, ntabwo asabwa kwishyura iyi nkunga.`
-    ),
+    ...articleHeading("INGINGO YA 8: AMAFARANGA YA RECRUTEMENT (RECRUITMENT MONEY)"),
+    richP([
+      "8.1. Umukozi ahabwa ",
+      { b: "amafaranga ya recrutement" },
+      " y’agaciro ka ",
+      { b: amount },
+      " kugira ngo atangire kandi akomeze akazi muri ",
+      { b: "The Barbazza Barbershop" },
+      ".",
+    ]),
+    richP([
+      "8.2. Aya ",
+      { b: "amafaranga ya recrutement" },
+      " ",
+      { b: "ntabwo akatwa buri kwezi" },
+      ". Umukozi ntabwo yishyura aya mafaranga nk’ideni rya buri kwezi.",
+    ]),
+    richP([
+      "8.3. Mu guhabwa aya mafaranga ya recrutement, Umukozi yiyemeje gukorera ",
+      { b: "The Barbazza Barbershop" },
+      " mu gihe kingana na ",
+      { b: `amezi ${months}` },
+      " uhereye umunsi amasezerano ashyiriweho umukono.",
+    ]),
+    richP([
+      "8.4. Niba Umukozi ahagaritse akazi cyangwa agenda gukorera ahandi mbere y’uko icyo gihe cyuzura, ",
+      "agomba kwishyura The Barbazza Barbershop amafaranga ya recrutement ",
+      { b: "inshuro ebyiri (×2)" },
+      " — ni ukuvuga ",
+      { b: clawback },
+      " — nk’inyungu / indishyi z’igihombo bitewe no kurangiza amasezerano mbere y’igihe.",
+    ]),
+    richP([
+      "8.5. Iyo Umukozi arangije icyo gihe cyose cy’amezi ",
+      { b: months },
+      " nk’uko byemejwe, ntabwo asabwa kwishyura aya mafaranga ya recrutement.",
+    ]),
   ];
 }
 
 function coverPage(input: ContractInput, logo: Buffer) {
   const date = dateLine(input.blank, input.contractDate);
-  const typeNote =
-    input.type === "retention"
-      ? "Ubwoko B: Inkunga + igihe cy’akazi (nta kwishyura buri kwezi · kuva mbere y’igihe = ×2)"
-      : "Ubwoko A: Amafaranga ya recrutement akatwa buri kwezi";
 
   return [
     blankLine(200),
@@ -265,10 +319,12 @@ function coverPage(input: ContractInput, logo: Buffer) {
     ),
     centerRuns([new TextRun({ text: "Kigali – Rwanda", size: 22, font: "Calibri", color: "222222" })], { after: 220 }),
     centerRuns(
-      [new TextRun({ text: `Ku wa:  ${date}`, bold: true, size: 24, font: "Calibri", color: "0A0A0A" })],
+      [
+        new TextRun({ text: "Ku wa:  ", bold: true, size: 24, font: "Calibri", color: "0A0A0A" }),
+        new TextRun({ text: date, bold: true, size: 24, font: "Calibri", color: "0A0A0A" }),
+      ],
       { after: 160 }
     ),
-    centerRuns([new TextRun({ text: typeNote, size: 16, italics: true, font: "Calibri", color: "555555" })], { after: 80 }),
     blankLine(600),
     ornament(),
     blankLine(200),
@@ -347,7 +403,7 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
     ...coverPage(input, logo),
 
     ornament(),
-    article("IRIBURIRO (PREAMBLE)"),
+    ...articleHeading("IRIBURIRO (PREAMBLE)"),
     p(
       "Aya masezerano y’akazi akozwe ku bushake, mu bwumvikane busesuye kandi butagijwemo igitutu n’impande zombi, " +
         "agamije gushyiraho no kugenga umubano w’akazi hagati y’Umukoresha n’Umukozi, hakurikijwe amategeko y’umurimo " +
@@ -357,45 +413,54 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
       "Aya masezerano agamije kurinda inyungu z’impande zombi, guteza imbere ubunyamwuga, umusaruro, umutekano w’akazi, n’iterambere rya Barbazza Barbershop."
     ),
 
-    article("INGINGO YA 1: IMPANDE ZIRI MURI AMASEZERANO"),
+    ...articleHeading("INGINGO YA 1: IMPANDE ZIRI MURI AMASEZERANO"),
     p("1.1 Umukoresha", { bold: true }),
-    bullet(`Izina: ${employerName}`),
-    bullet(`Indangamuntu (ID): ${employerId}`),
-    bullet(`Aho yatangiwe ID: ${employerIdPlace}`),
-    bullet(`Aderesi: ${employerAddress}`),
-    bullet(`Telefoni: ${employerPhone}`),
-    p("Aha yitwa \"UMUKORESHA\"."),
+    labeledBullet("Izina", employerName),
+    labeledBullet("Indangamuntu (ID)", employerId),
+    labeledBullet("Aho yatangiwe ID", employerIdPlace),
+    labeledBullet("Aderesi", employerAddress),
+    labeledBullet("Telefoni", employerPhone),
+    richP(["Aha yitwa ", { b: '"UMUKORESHA"' }, "."]),
     blankLine(80),
     p("1.2 Umukozi", { bold: true }),
-    bullet(`Izina: ${employeeName}`),
-    bullet(`Indangamuntu (ID): ${employeeId}`),
-    bullet(`Aho yatangiwe ID: ${employeeIdPlace}`),
-    bullet(`Aderesi: ${employeeAddress}`),
-    bullet(`Telefoni: ${employeePhone}`),
-    p("Aha yitwa \"UMUKOZI\"."),
-    p("Umukoresha n’Umukozi bose hamwe bitwa \"IMPANDE ZOMBI\"."),
+    labeledBullet("Izina", employeeName),
+    labeledBullet("Indangamuntu (ID)", employeeId),
+    labeledBullet("Aho yatangiwe ID", employeeIdPlace),
+    labeledBullet("Aderesi", employeeAddress),
+    labeledBullet("Telefoni", employeePhone),
+    richP(["Aha yitwa ", { b: '"UMUKOZI"' }, "."]),
+    richP(["Umukoresha n’Umukozi bose hamwe bitwa ", { b: '"IMPANDE ZOMBI"' }, "."]),
 
-    article("INGINGO YA 2: ICYEREKEZO CY’AMASEZERANO"),
+    ...articleHeading("INGINGO YA 2: ICYEREKEZO CY’AMASEZERANO"),
     p("Aya masezerano agamije:"),
     bullet("Gushyiraho akazi Umukozi azakorera muri The Barbazza Barbershop"),
     bullet("Kugaragaza inshingano, uburenganzira n’ibyo buri ruhande rwiyemeje"),
     bullet("Kugenga umushahara, amasaha y’akazi, ikiruhuko, n’ibihano"),
     bullet("Kurinda izina, umutungo, n’iterambere rya Barbazza Barbershop"),
 
-    article("INGINGO YA 3: UBWO KO N’IMITERERE Y’AKAZI"),
+    ...articleHeading("INGINGO YA 3: UBWO KO N’IMITERERE Y’AKAZI"),
     p("3.1. Umukozi yemeye gukora akazi ko gutunganya imisatsi y’abagabo (kogosha)."),
     p("3.2. Akazi kagomba gukorwa mu buryo bw’umwuga, isuku, icyubahiro, no kubaha abakiriya."),
     p("3.3. Umukozi agomba gukurikiza amabwiriza yose ajyanye n’imikorere ya Barbazza Barbershop."),
 
-    article("INGINGO YA 4: AHO AKAZI GAKORERWA"),
-    p(
-      `Akazi kazakorerwa muri The Barbazza Barbershop, iherereye ${workplace}, ` +
-        "keretse Umukoresha ategetse ahandi hafitanye isano n’akazi."
-    ),
+    ...articleHeading("INGINGO YA 4: AHO AKAZI GAKORERWA"),
+    richP([
+      "Akazi kazakorerwa muri ",
+      { b: "The Barbazza Barbershop" },
+      ", iherereye ",
+      { b: workplace },
+      ", keretse Umukoresha ategetse ahandi hafitanye isano n’akazi.",
+    ]),
 
-    article("INGINGO YA 5: AMASAHA Y’AKAZI"),
+    ...articleHeading("INGINGO YA 5: AMASAHA Y’AKAZI"),
     p("5.1. Umukozi agomba kuba ari ku kazi mu masaha yose yemejwe, yaba afite abakiriya cyangwa adafite."),
-    p("5.2. Amasaha y’akazi ni: Gutangira Saa moya (07:00 za mu gitondo); Kurangiza Saa tanu z’ijoro (23:00)."),
+    richP([
+      "5.2. Amasaha y’akazi ni: Gutangira ",
+      { b: "Saa moya (07:00 za mu gitondo)" },
+      "; Kurangiza ",
+      { b: "Saa tanu z’ijoro (23:00)" },
+      ".",
+    ]),
     p(
       "5.3. Muri ayo masaha harimo isaha imwe (1) yo gufata amafunguro ya sasita, igenwa n’Umukoresha bitewe n’uko akazi kameze."
     ),
@@ -404,32 +469,38 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
       "5.5. Iyo Umukozi atagaragaye aho akazi gakorerwa adafite uruhushya, afatwa nk’uwasibye akazi kandi arabihanirwa."
     ),
 
-    article("INGINGO YA 6: IMPUZANKANO N’IMYITWARIRE"),
+    ...articleHeading("INGINGO YA 6: IMPUZANKANO N’IMYITWARIRE"),
     p("6.1. Abakozi bose bagomba kwambara impuzankano (uniform) ya Barbazza Barbershop mu masaha yose y’akazi."),
     p("6.2. Impuzankano igomba kuba isukuye, imeze neza, kandi igaragaza isura nziza ya Barbazza."),
 
-    article("INGINGO YA 7: UMUSHARA N’UBURYO BWO GUHEMBWA"),
-    p(`7.1. Umukozi ahembwa commission ya ${commission}% y’amafaranga yose yinjiye binyuze ku akazi ye mu kwezi.`),
+    ...articleHeading("INGINGO YA 7: UMUSHARA N’UBURYO BWO GUHEMBWA"),
+    richP([
+      "7.1. Umukozi ahembwa ",
+      { b: "commission" },
+      " ya ",
+      { b: `${commission}%` },
+      " y’amafaranga yose yinjiye binyuze ku akazi ye mu kwezi.",
+    ]),
     p("7.2. Umushahara ubarwa buri kwezi hashingiwe ku akazi gukozwe."),
     p("7.3. Nta mushahara uhagaritswe; kwishyurwa gushingiye ku umusaruro."),
     p("7.4. Umukoresha afite uburenganzira bwo kugenzura no kwemeza inyandiko z’amafaranga yinjiye."),
 
     ...article8,
 
-    article("INGINGO YA 9: IKIRUHUKO CYA BURI CYUMWERU"),
+    ...articleHeading("INGINGO YA 9: IKIRUHUKO CYA BURI CYUMWERU"),
     p("9.1. Umukozi afite uburenganzira ku munsi umwe wo kuruhuka buri cyumweru."),
     p("9.2. Uwo munsi ugena mu bwumvikane n’Umukoresha hashingiwe ku bikenewe n’akazi."),
     p(
       "9.3. Iyo Umukozi asibye umunsi adafite uruhushya, akatirwa agaciro kangana n’umusaruro w’umunsi wapimwe wa Barbazza Barbershop."
     ),
 
-    article("INGINGO YA 10: IKIRUHUKO NGARUKAMWAKA (ANNUAL LEAVE)"),
+    ...articleHeading("INGINGO YA 10: IKIRUHUKO NGARUKAMWAKA (ANNUAL LEAVE)"),
     p("10.1. Umukozi afite iminsi 10 y’ikiruhuko ngarukamwaka."),
     p("10.2. Iyo minsi ishobora gufatwa mu bihe bitandukanye."),
     p("10.3. Umukozi agomba gusaba ikiruhuko byibuze iminsi itatu (3) mbere."),
     p("10.4. Ikiruhuko gitangwa hashingiwe ku gahunda y’akazi n’ibikenewe n’ubucuruzi."),
 
-    article("INGINGO YA 11: INSHINGANO Z’UMUKOZI"),
+    ...articleHeading("INGINGO YA 11: INSHINGANO Z’UMUKOZI"),
     p("Umukozi yiyemeje:"),
     bullet("Gukora akazi neza kandi ku gihe"),
     bullet("Kubahiriza amasaha y’akazi n’amabwiriza"),
@@ -437,7 +508,7 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
     bullet("Kutagira ibikorwa byangiza umutungo cyangwa izina rya Barbazza"),
     bullet("Kudakorera indi salon mu masaha y’akazi"),
 
-    article("INGINGO YA 12: INSHINGANO Z’UMUKORESHA"),
+    ...articleHeading("INGINGO YA 12: INSHINGANO Z’UMUKORESHA"),
     p("Umukoresha yiyemeje:"),
     bullet("Gutanga akazi n’ibikoresho bikenewe"),
     bullet("Guhemba Umukozi ku gihe"),
@@ -445,7 +516,7 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
     bullet("Kurinda umutekano n’icyubahiro by’Umukozi"),
     bullet("Gutanga ubufasha bwose mu gihe Umukozi yahuye n’ikibazo harimo uburwayi n’ibindi"),
 
-    article("INGINGO YA 13: IBIHANO N’IMYITWARIRE MIBI"),
+    ...articleHeading("INGINGO YA 13: IBIHANO N’IMYITWARIRE MIBI"),
     p(
       "13.1. Umukozi ushaka guteza akajagari, kutubahiriza amasaha, gusiba akazi, cyangwa gutesha agaciro Barbazza ashobora:"
     ),
@@ -454,7 +525,7 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
     bullet("Guhagarikwa by’agateganyo"),
     bullet("Guseswa kwamasezerano"),
 
-    article("INGINGO YA 14 / 18: KUBUZWA IKIYOBYABWENGE MU MASAHA Y’AKAZI"),
+    ...articleHeading("INGINGO YA 14 / 18: KUBUZWA IKIYOBYABWENGE MU MASAHA Y’AKAZI"),
     p(
       "Mu masaha yose y’akazi, Umukozi abujijwe burundu gutata, gukoresha, gutunda cyangwa kugaragara akoresheje ikiyobyabwenge icyo ari cyo cyose, harimo ariko bitagarukiye kuri: inzoga; ibiyobyabwenge bitemewe n’amategeko; ibindi byose bishobora guhindura imitekerereze cyangwa imikorere."
     ),
@@ -462,19 +533,19 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
       "Iyo imyitwarire yatewe n’ubusindagizi igize abakiriya, umutekano cyangwa izina rya Barbazza, Umukoresha afite uburenganzira bwo guhagarika cyangwa gusesa amasezerano ako kanya."
     ),
 
-    article("INGINGO YA 19: IMICUNGIRE Y’AMAFARANGA Y’ABAKIRIYA"),
+    ...articleHeading("INGINGO YA 19: IMICUNGIRE Y’AMAFARANGA Y’ABAKIRIYA"),
     p("19.1. Umukozi abujijwe kwakira amafaranga y’abakiriya ku konti ye bwite, yaba cash cyangwa mobile money."),
     p("19.2. Amafaranga yose y’abakiriya agomba kwinjira mu buryo bemewe na Barbazza Barbershop."),
     p(
       "19.3. Kwakira amafaranga y’abakiriya ku giti cye bifata nk’ikosa rikomeye (faute grave) rishobora gukurikirana n’ibihano bikomeye harimo gusesa amasezerano."
     ),
 
-    article("INGINGO YA 20: KUBUNGABUNGA NO KURINDA IBIKORESHO BY’AKAZI"),
+    ...articleHeading("INGINGO YA 20: KUBUNGABUNGA NO KURINDA IBIKORESHO BY’AKAZI"),
     p(
       "20.1–20.3. Umukozi agomba kurinda no kubungabunga ibikoresho byose bya Barbazza. Iyo byangiritse bitewe n’ubwirengagize, ashobora kwishyura gusana cyangwa gusimbura, bishobora gukatwa ku mushahara."
     ),
 
-    article("INGINGO YA 21: IMYITWARIRE IFATWA NK’IKOSA RIKOMEYE (FAUTE GRAVE)"),
+    ...articleHeading("INGINGO YA 21: IMYITWARIRE IFATWA NK’IKOSA RIKOMEYE (FAUTE GRAVE)"),
     p("Bifatwa nk’ikosa rikomeye, mubindi:"),
     bullet("Gukoresha ibiyobyabwenge mu masaha y’akazi"),
     bullet("Kwakira amafaranga y’abakiriya ku giti cye"),
@@ -482,24 +553,24 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
     bullet("Kwiba amafaranga cyangwa umutungo"),
     bullet("Kwangiza izina rya Barbazza imbere y’abakiriya"),
 
-    article("INGINGO YA 22: CCTV, KUGENZURA NO GUKURIKIRANA IMIKORERE"),
+    ...articleHeading("INGINGO YA 22: CCTV, KUGENZURA NO GUKURIKIRANA IMIKORERE"),
     p(
       "22.1–22.4. Umukozi yemera ko Barbazza ikoresha CCTV ku mutekano, kugenzura imikorere, kurinda amafaranga, no kurwanya imyitwarire mibi. Kameras ziri mu nzira z’akazi, abakiriya n’ububiko; si mu nzira zihariye nk’ubwiherero. Guhangana na CCTV bifata nk’ikosa rikomeye."
     ),
 
-    article("INGINGO YA 23: KUTAHANGANA N’UMUKORESHA (NON-COMPETE)"),
+    ...articleHeading("INGINGO YA 23: KUTAHANGANA N’UMUKORESHA (NON-COMPETE)"),
     p("23.1. Mu gihe aya masezerano akiriho, Umukozi ntiyemerewe gukora cyangwa gufasha indi salon yo kogosha."),
     p(
       "23.2. Nyuma yo gusoza amasezerano, Umukozi yemera kutafungura cyangwa gukorera salon iri mu ntera ya km 3–5 uvuye aho Barbazza ikorera, mu gihe cy’amezi 12."
     ),
     p("23.3–23.4. Iyi ngingo irinda abakiriya n’ubucuruzi. Kutayubahiriza bishobora gukurikirana n’indishyi z’igihombo."),
 
-    article("INGINGO YA 24: KUBIKA AMASIRAME N’AMAKURU Y’AKAZI"),
+    ...articleHeading("INGINGO YA 24: KUBIKA AMASIRAME N’AMAKURU Y’AKAZI"),
     p(
       "Amakuru y’abakiriya, amafaranga, imikorere n’amabanga y’ubucuruzi ni ibanga. Gusangiza ayo makuru bifata nk’ikosa rikomeye."
     ),
 
-    article("INGINGO YA 25: EMPLOYEE CODE OF CONDUCT"),
+    ...articleHeading("INGINGO YA 25: EMPLOYEE CODE OF CONDUCT"),
     p("Umukozi yemera gukurikiza Code of Conduct ya The Barbazza Barbershop, harimo:"),
     bullet("Imyitwarire rusange: inyangamugayo, icyubahiro, kudashinyagura cyangwa guhohotera"),
     bullet("Impuzankano n’isuku"),
@@ -507,21 +578,21 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
     bullet("Imyitwarire ku mafaranga"),
     bullet("Imyitwarire ku kazi (nta busindagizi, kubahiriza amasaha)"),
 
-    article("INGINGO YA 26: UBURYO BWO GUHANA (DISCIPLINARY PROCEDURE)"),
+    ...articleHeading("INGINGO YA 26: UBURYO BWO GUHANA (DISCIPLINARY PROCEDURE)"),
     p(
       "Umukoresha ashobora gutanga umuburo wo mu magambo, umuburo wanditse, gukatwa ku mushahara, guhagarikwa by’agateganyo, cyangwa gusesa amasezerano, bitewe n’uburemere bw’ikosa."
     ),
 
-    article("INGINGO YA 27–28: KUGENZURA, KWEMERA NO GUSOBANUKIRWA"),
+    ...articleHeading("INGINGO YA 27–28: KUGENZURA, KWEMERA NO GUSOBANUKIRWA"),
     p(
       "Umukoresha ashobora kuvugurura Code of Conduct n’amabwiriza. Umukozi yemeza ko yasomye kandi yumvise aya masezerano yose."
     ),
 
-    article("INGINGO YA 29: GUSESA AMASEZERANO"),
+    ...articleHeading("INGINGO YA 29: GUSESA AMASEZERANO"),
     p("29.1. Amasezerano ashobora guseswa n’uruhande urwo ari rwose hakoreshejwe itangazo."),
     p("29.2. Mu gihe cy’ikosa rikomeye, Umukoresha ashobora gusesa amasezerano ako kanya."),
 
-    article("INGINGO YA 30–32: AMAKIMBIRANE, ITEGEKO N’ITANGIRA"),
+    ...articleHeading("INGINGO YA 30–32: AMAKIMBIRANE, ITEGEKO N’ITANGIRA"),
     p("Amakimbirane akemurwa mu bwumvikane cyangwa n’inzego zibifitiye ububasha mu Rwanda."),
     p("Aya masezerano agenwa n’amategeko y’umurimo ya Repubulika y’u Rwanda."),
     p("Aya masezerano atangira ku munsi ashyiriweho umukono."),
