@@ -8,6 +8,7 @@ import { ensurePublicSchema } from "./publicSchema";
 import { publicApi } from "./publicApi";
 import { profileRoutes } from "./profileRoutes";
 import { UPLOAD_DIR, ensureUploadDir } from "./uploads";
+import { buildEmploymentContract, contractFilename, ContractInput } from "./contracts";
 
 const app = express();
 app.disable("x-powered-by");
@@ -1033,6 +1034,69 @@ app.post("/api/users/recover-advances", requireAuth, allow("admin"), async (_req
     res.json({ updated });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Recovery failed" });
+  }
+});
+
+app.post("/api/contracts/generate", requireAuth, allow("admin"), async (req, res) => {
+  const parsed = z
+    .object({
+      type: z.enum(["recruitment", "retention"]),
+      contractDate: z.string().min(8),
+      workplace: z.string().min(2),
+      commissionPercent: z.number().min(1).max(100),
+      employerName: z.string().min(2),
+      employerId: z.string().min(2),
+      employerIdPlace: z.string().min(1),
+      employerAddress: z.string().min(2),
+      employerPhone: z.string().min(3),
+      employeeName: z.string().min(2),
+      employeeId: z.string().min(2),
+      employeeIdPlace: z.string().min(1),
+      employeeAddress: z.string().min(2),
+      employeePhone: z.string().min(3),
+      recruitmentAdvance: z.number().optional(),
+      recruitmentBonus: z.number().optional(),
+      recruitmentBonusAfterMonths: z.number().optional(),
+      monthlyDeduction: z.number().optional(),
+      retentionAmount: z.number().optional(),
+      commitmentMonths: z.number().optional(),
+    })
+    .safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid contract fields", details: parsed.error.flatten() });
+    return;
+  }
+  const data = parsed.data as ContractInput;
+  if (data.type === "recruitment") {
+    if (!(data.recruitmentAdvance && data.recruitmentAdvance > 0)) {
+      res.status(400).json({ error: "Recruitment advance amount is required" });
+      return;
+    }
+    if (!(data.monthlyDeduction && data.monthlyDeduction > 0)) {
+      res.status(400).json({ error: "Monthly recruitment deduction is required" });
+      return;
+    }
+  } else {
+    if (!(data.retentionAmount && data.retentionAmount > 0)) {
+      res.status(400).json({ error: "Retention / support amount is required" });
+      return;
+    }
+    if (!(data.commitmentMonths && data.commitmentMonths > 0)) {
+      res.status(400).json({ error: "Commitment period (months) is required" });
+      return;
+    }
+  }
+  try {
+    const buffer = await buildEmploymentContract(data);
+    const filename = contractFilename(data);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.send(Buffer.from(buffer));
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not generate contract" });
   }
 });
 

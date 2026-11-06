@@ -11,3 +11,4 @@ backend/.env
 backend/uploads/
 frontend/.env.local
 .vscode/
+.tmp-contracts/
