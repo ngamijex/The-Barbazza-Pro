@@ -57,7 +57,7 @@ export default function ContractsPage() {
   const user = useSession();
   const router = useRouter();
   const [form, setForm] = useState<FormState>(defaults);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"filled" | "blank" | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -72,9 +72,8 @@ export default function ContractsPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault();
-    setBusy(true);
+  async function download(blank: boolean) {
+    setBusy(blank ? "blank" : "filled");
     setError("");
     setMessage("");
     try {
@@ -85,7 +84,7 @@ export default function ContractsPage() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, blank }),
       });
       if (!response.ok) {
         const data = (await response.json().catch(() => ({}))) as { error?: string };
@@ -103,21 +102,30 @@ export default function ContractsPage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      setMessage(`Downloaded ${filename}`);
+      setMessage(
+        blank
+          ? `Downloaded blank template ${filename} (dashed lines to fill by hand).`
+          : `Downloaded filled contract ${filename}`
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not generate contract");
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
+  }
+
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    await download(false);
   }
 
   return (
     <Shell>
       <Panel title="Employment contracts" className="admin-card">
         <p style={{ marginBottom: "1rem", color: "var(--barbazza-cream)" }}>
-          Fill the barber details and download a Word (.docx) contract. Choose{" "}
-          <strong>Recruitment repayment</strong> (monthly deduction) or{" "}
-          <strong>Retention support</strong> (no monthly repay; leave early = pay 2×).
+          Word contracts match the paper layout: logo cover page, Barbazza header/footer art, and full Kinyarwanda
+          articles. Download a <strong>filled</strong> contract for a new barber, or a <strong>blank dashed template</strong>{" "}
+          to print and complete by hand outside the system.
         </p>
 
         <div className="form-group" style={{ marginBottom: "1.25rem" }}>
@@ -128,14 +136,14 @@ export default function ContractsPage() {
               className={form.type === "recruitment" ? "btn-primary" : "btn-action"}
               onClick={() => set("type", "recruitment")}
             >
-              Recruitment (pay monthly)
+              Type A — Recruitment (pay monthly)
             </button>
             <button
               type="button"
               className={form.type === "retention" ? "btn-primary" : "btn-action"}
               onClick={() => set("type", "retention")}
             >
-              Retention (stay period / 2× if leave early)
+              Type B — Retention (stay period / 2× if leave early)
             </button>
           </div>
         </div>
@@ -223,7 +231,8 @@ export default function ContractsPage() {
             <>
               <h3 style={{ margin: "1.25rem 0 0.75rem" }}>Recruitment money (Ingingo ya 8)</h3>
               <p style={{ color: "var(--barbazza-cream)", fontSize: "0.9rem", marginBottom: "0.75rem" }}>
-                Barber receives recruitment money and pays it back monthly from salary. Leaving early requires paying the remaining balance in full.
+                Barber receives recruitment money and pays it back monthly from salary. Leaving early requires paying the
+                remaining balance in full.
               </p>
               <div className="form-grid form-grid-3">
                 <div className="form-group">
@@ -273,8 +282,8 @@ export default function ContractsPage() {
             <>
               <h3 style={{ margin: "1.25rem 0 0.75rem" }}>Retention support (Ingingo ya 8)</h3>
               <p style={{ color: "var(--barbazza-cream)", fontSize: "0.9rem", marginBottom: "0.75rem" }}>
-                Barber receives support money with no monthly repayment, but must stay for the commitment period. Leaving early means paying back{" "}
-                <strong>2×</strong> the support amount (RWF {clawback.toLocaleString()}).
+                Barber receives support money with no monthly repayment, but must stay for the commitment period. Leaving
+                early means paying back <strong>2×</strong> (RWF {clawback.toLocaleString()}).
               </p>
               <div className="form-grid form-grid-3">
                 <div className="form-group">
@@ -306,11 +315,26 @@ export default function ContractsPage() {
             </>
           )}
 
-          <div className="form-group" style={{ marginTop: "1.25rem" }}>
-            <button type="submit" className="btn-primary" disabled={busy}>
-              {busy ? "Generating…" : "Download Word contract"}
+          <div
+            className="form-group"
+            style={{ marginTop: "1.5rem", display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}
+          >
+            <button type="submit" className="btn-primary" disabled={busy !== null}>
+              {busy === "filled" ? "Generating…" : "Download filled Word contract"}
+            </button>
+            <button
+              type="button"
+              className="btn-action"
+              disabled={busy !== null}
+              onClick={() => void download(true)}
+            >
+              {busy === "blank" ? "Generating…" : "Download blank dashed template"}
             </button>
           </div>
+          <p style={{ marginTop: "0.75rem", fontSize: "0.85rem", color: "var(--barbazza-cream)" }}>
+            Blank template keeps the cover logo and full legal text, with names, IDs, amounts, and dates as{" "}
+            <code>________</code> lines for handwriting.
+          </p>
         </form>
       </Panel>
     </Shell>

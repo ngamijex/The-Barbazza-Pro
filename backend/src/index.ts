@@ -1041,19 +1041,20 @@ app.post("/api/contracts/generate", requireAuth, allow("admin"), async (req, res
   const parsed = z
     .object({
       type: z.enum(["recruitment", "retention"]),
-      contractDate: z.string().min(8),
-      workplace: z.string().min(2),
-      commissionPercent: z.number().min(1).max(100),
-      employerName: z.string().min(2),
-      employerId: z.string().min(2),
-      employerIdPlace: z.string().min(1),
-      employerAddress: z.string().min(2),
-      employerPhone: z.string().min(3),
-      employeeName: z.string().min(2),
-      employeeId: z.string().min(2),
-      employeeIdPlace: z.string().min(1),
-      employeeAddress: z.string().min(2),
-      employeePhone: z.string().min(3),
+      blank: z.boolean().optional(),
+      contractDate: z.string().optional(),
+      workplace: z.string().optional(),
+      commissionPercent: z.number().min(0).max(100).optional(),
+      employerName: z.string().optional(),
+      employerId: z.string().optional(),
+      employerIdPlace: z.string().optional(),
+      employerAddress: z.string().optional(),
+      employerPhone: z.string().optional(),
+      employeeName: z.string().optional(),
+      employeeId: z.string().optional(),
+      employeeIdPlace: z.string().optional(),
+      employeeAddress: z.string().optional(),
+      employeePhone: z.string().optional(),
       recruitmentAdvance: z.number().optional(),
       recruitmentBonus: z.number().optional(),
       recruitmentBonusAfterMonths: z.number().optional(),
@@ -1066,24 +1067,53 @@ app.post("/api/contracts/generate", requireAuth, allow("admin"), async (req, res
     res.status(400).json({ error: "Invalid contract fields", details: parsed.error.flatten() });
     return;
   }
-  const data = parsed.data as ContractInput;
-  if (data.type === "recruitment") {
-    if (!(data.recruitmentAdvance && data.recruitmentAdvance > 0)) {
-      res.status(400).json({ error: "Recruitment advance amount is required" });
+  const blank = !!parsed.data.blank;
+  const data: ContractInput = {
+    type: parsed.data.type,
+    blank,
+    contractDate: parsed.data.contractDate || new Date().toISOString().slice(0, 10),
+    workplace: parsed.data.workplace || "",
+    commissionPercent: parsed.data.commissionPercent ?? 40,
+    employerName: parsed.data.employerName || "",
+    employerId: parsed.data.employerId || "",
+    employerIdPlace: parsed.data.employerIdPlace || "",
+    employerAddress: parsed.data.employerAddress || "",
+    employerPhone: parsed.data.employerPhone || "",
+    employeeName: parsed.data.employeeName || "",
+    employeeId: parsed.data.employeeId || "",
+    employeeIdPlace: parsed.data.employeeIdPlace || "",
+    employeeAddress: parsed.data.employeeAddress || "",
+    employeePhone: parsed.data.employeePhone || "",
+    recruitmentAdvance: parsed.data.recruitmentAdvance,
+    recruitmentBonus: parsed.data.recruitmentBonus,
+    recruitmentBonusAfterMonths: parsed.data.recruitmentBonusAfterMonths,
+    monthlyDeduction: parsed.data.monthlyDeduction,
+    retentionAmount: parsed.data.retentionAmount,
+    commitmentMonths: parsed.data.commitmentMonths,
+  };
+  if (!blank) {
+    if (!data.employeeName.trim() || !data.employeeId.trim()) {
+      res.status(400).json({ error: "Employee name and ID are required for a filled contract" });
       return;
     }
-    if (!(data.monthlyDeduction && data.monthlyDeduction > 0)) {
-      res.status(400).json({ error: "Monthly recruitment deduction is required" });
-      return;
-    }
-  } else {
-    if (!(data.retentionAmount && data.retentionAmount > 0)) {
-      res.status(400).json({ error: "Retention / support amount is required" });
-      return;
-    }
-    if (!(data.commitmentMonths && data.commitmentMonths > 0)) {
-      res.status(400).json({ error: "Commitment period (months) is required" });
-      return;
+    if (data.type === "recruitment") {
+      if (!(data.recruitmentAdvance && data.recruitmentAdvance > 0)) {
+        res.status(400).json({ error: "Recruitment advance amount is required" });
+        return;
+      }
+      if (!(data.monthlyDeduction && data.monthlyDeduction > 0)) {
+        res.status(400).json({ error: "Monthly recruitment deduction is required" });
+        return;
+      }
+    } else {
+      if (!(data.retentionAmount && data.retentionAmount > 0)) {
+        res.status(400).json({ error: "Retention / support amount is required" });
+        return;
+      }
+      if (!(data.commitmentMonths && data.commitmentMonths > 0)) {
+        res.status(400).json({ error: "Commitment period (months) is required" });
+        return;
+      }
     }
   }
   try {
