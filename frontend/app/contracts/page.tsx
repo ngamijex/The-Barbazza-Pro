@@ -12,6 +12,8 @@ type FormState = {
   contractDate: string;
   workplace: string;
   commissionPercent: number;
+  companyName: string;
+  companyTin: string;
   employerName: string;
   employerId: string;
   employerIdPlace: string;
@@ -35,6 +37,8 @@ const defaults: FormState = {
   contractDate: new Date().toISOString().slice(0, 10),
   workplace: "Kigarama / Karugira, Kigali",
   commissionPercent: 40,
+  companyName: "THE BARBAZZA BARBERSHOP LTD",
+  companyTin: "152991357",
   employerName: "NGAMIJE Didier",
   employerId: "1200280228895062",
   employerIdPlace: "Rubavu / Kanzenze",
@@ -179,10 +183,18 @@ export default function ContractsPage() {
             </div>
           </div>
 
-          <h3 style={{ margin: "1.25rem 0 0.75rem" }}>Employer (Umukoresha)</h3>
+          <h3 style={{ margin: "1.25rem 0 0.75rem" }}>Company (RDB) & Employer (Umukoresha)</h3>
           <div className="form-grid form-grid-3">
             <div className="form-group">
-              <label>Full name</label>
+              <label>Registered company name</label>
+              <input required value={form.companyName} onChange={(e) => set("companyName", e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label>TIN</label>
+              <input required value={form.companyTin} onChange={(e) => set("companyTin", e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label>Representative full name</label>
               <input required value={form.employerName} onChange={(e) => set("employerName", e.target.value)} />
             </div>
             <div className="form-group">

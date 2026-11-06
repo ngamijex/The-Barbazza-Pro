@@ -16,6 +16,9 @@ import {
 
 export type ContractType = "recruitment" | "retention";
 
+export const COMPANY_LEGAL_NAME = "THE BARBAZZA BARBERSHOP LTD";
+export const COMPANY_TIN = "152991357";
+
 export type ContractInput = {
   type: ContractType;
   /** When true, fillable fields become dashed blanks for offline handwriting */
@@ -23,6 +26,10 @@ export type ContractInput = {
   contractDate: string; // YYYY-MM-DD
   workplace: string;
   commissionPercent: number;
+
+  /** RDB registered company */
+  companyName?: string;
+  companyTin?: string;
 
   employerName: string;
   employerId: string;
@@ -241,7 +248,7 @@ function retentionArticle8(input: ContractInput) {
       " y’agaciro ka ",
       { b: amount },
       " kugira ngo atangire kandi akomeze akazi muri ",
-      { b: "The Barbazza Barbershop" },
+      { b: COMPANY_LEGAL_NAME },
       ".",
     ]),
     richP([
@@ -253,14 +260,16 @@ function retentionArticle8(input: ContractInput) {
     ]),
     richP([
       "8.3. Mu guhabwa aya mafaranga ya recrutement, Umukozi yiyemeje gukorera ",
-      { b: "The Barbazza Barbershop" },
+      { b: COMPANY_LEGAL_NAME },
       " mu gihe kingana na ",
       { b: `amezi ${months}` },
       " uhereye umunsi amasezerano ashyiriweho umukono.",
     ]),
     richP([
       "8.4. Niba Umukozi ahagaritse akazi cyangwa agenda gukorera ahandi mbere y’uko icyo gihe cyuzura, ",
-      "agomba kwishyura The Barbazza Barbershop amafaranga ya recrutement ",
+      "agomba kwishyura ",
+      { b: COMPANY_LEGAL_NAME },
+      " amafaranga ya recrutement ",
       { b: "inshuro ebyiri (×2)" },
       " — ni ukuvuga ",
       { b: clawback },
@@ -274,8 +283,18 @@ function retentionArticle8(input: ContractInput) {
   ];
 }
 
+function companyNameOf(input: ContractInput) {
+  return (input.companyName || COMPANY_LEGAL_NAME).trim() || COMPANY_LEGAL_NAME;
+}
+
+function companyTinOf(input: ContractInput) {
+  return (input.companyTin || COMPANY_TIN).trim() || COMPANY_TIN;
+}
+
 function coverPage(input: ContractInput, logo: Buffer) {
   const date = dateLine(input.blank, input.contractDate);
+  const company = companyNameOf(input);
+  const tin = field(input.blank, companyTinOf(input), 14);
 
   return [
     blankLine(200),
@@ -287,22 +306,29 @@ function coverPage(input: ContractInput, logo: Buffer) {
           type: "png",
           data: logo,
           transformation: { width: 150, height: 150 },
-          altText: { title: "Barbazza", description: "The Barbazza Barbershop logo", name: "logo" },
+          altText: { title: "Barbazza", description: "THE BARBAZZA BARBERSHOP LTD logo", name: "logo" },
         }),
       ],
     }),
     centerRuns(
-      [new TextRun({ text: "The Barbazza Barbershop", bold: true, size: 36, font: "Georgia", color: "0A0A0A" })],
+      [new TextRun({ text: company, bold: true, size: 32, font: "Georgia", color: "0A0A0A" })],
       { after: 60 }
     ),
     centerRuns(
       [new TextRun({ text: "Professional Grooming & Styling Services", size: 18, italics: true, font: "Georgia", color: "444444" })],
-      { after: 320 }
+      { after: 80 }
+    ),
+    centerRuns(
+      [
+        new TextRun({ text: "TIN: ", bold: true, size: 18, font: "Calibri", color: "222222" }),
+        new TextRun({ text: tin, bold: true, size: 18, font: "Calibri", color: "0A0A0A" }),
+      ],
+      { after: 280 }
     ),
     ornament(),
-    blankLine(400),
+    blankLine(360),
     centerRuns(
-      [new TextRun({ text: "THE BARBAZZA BARBERSHOP", bold: true, size: 30, font: "Calibri", color: "0A0A0A" })],
+      [new TextRun({ text: company, bold: true, size: 28, font: "Calibri", color: "0A0A0A" })],
       { after: 120 }
     ),
     centerRuns(
@@ -329,31 +355,45 @@ function coverPage(input: ContractInput, logo: Buffer) {
     ornament(),
     blankLine(200),
     centerRuns(
-      [new TextRun({ text: "Document confidentiel · Amasezerano y’akazi · The Barbazza", size: 14, color: "888888", font: "Calibri" })],
+      [
+        new TextRun({
+          text: `Document confidentiel · Amasezerano y’akazi · ${company}`,
+          size: 14,
+          color: "888888",
+          font: "Calibri",
+        }),
+      ],
       { after: 40 }
     ),
     new Paragraph({ children: [new PageBreak()] }),
   ];
 }
 
-function docHeader() {
+function docHeader(company: string) {
   return new Header({
     children: [
       new Paragraph({
         alignment: AlignmentType.CENTER,
         border: { bottom: artBorder },
-        spacing: { after: 120 },
+        spacing: { after: 80 },
         children: [
-          new TextRun({ text: "THE BARBAZZA BARBERSHOP", bold: true, size: 16, font: "Georgia", color: "0A0A0A" }),
-          new TextRun({ text: "   ·   ", size: 16, color: "999999" }),
-          new TextRun({ text: "Amasezerano y’akazi", size: 15, italics: true, font: "Calibri", color: "555555" }),
+          new TextRun({ text: company, bold: true, size: 15, font: "Georgia", color: "0A0A0A" }),
+          new TextRun({ text: "   ·   ", size: 15, color: "999999" }),
+          new TextRun({ text: "Amasezerano y’akazi", size: 14, italics: true, font: "Calibri", color: "555555" }),
+        ],
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 80 },
+        children: [
+          new TextRun({ text: `TIN: ${COMPANY_TIN}`, bold: true, size: 13, font: "Calibri", color: "444444" }),
         ],
       }),
     ],
   });
 }
 
-function docFooter() {
+function docFooter(company: string) {
   return new Footer({
     children: [
       new Paragraph({
@@ -361,7 +401,12 @@ function docFooter() {
         spacing: { before: 80 },
         alignment: AlignmentType.CENTER,
         children: [
-          new TextRun({ text: "✂  The Barbazza  ·  Professional Grooming & Styling  ·  Kigali, Rwanda  ✂", size: 14, color: "666666", font: "Calibri" }),
+          new TextRun({
+            text: `✂  ${company}  ·  TIN ${COMPANY_TIN}  ·  Kigali, Rwanda  ✂`,
+            size: 13,
+            color: "666666",
+            font: "Calibri",
+          }),
         ],
       }),
       new Paragraph({
@@ -385,6 +430,8 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
   const dateLabel = dateLine(blank, input.contractDate);
   const article8 = input.type === "retention" ? retentionArticle8(input) : recruitmentArticle8(input);
 
+  const company = companyNameOf(input);
+  const tin = field(blank, companyTinOf(input), 14);
   const employerName = field(blank, input.employerName, 32);
   const employerId = field(blank, input.employerId, 24);
   const employerIdPlace = field(blank, input.employerIdPlace, 24);
@@ -404,18 +451,24 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
 
     ornament(),
     ...articleHeading("IRIBURIRO (PREAMBLE)"),
-    p(
+    richP([
       "Aya masezerano y’akazi akozwe ku bushake, mu bwumvikane busesuye kandi butagijwemo igitutu n’impande zombi, " +
         "agamije gushyiraho no kugenga umubano w’akazi hagati y’Umukoresha n’Umukozi, hakurikijwe amategeko y’umurimo " +
-        "akurikizwa muri Repubulika y’u Rwanda, amahame y’imyitwarire myiza mu kazi, n’amabwiriza y’imikorere ya The Barbazza Barbershop."
-    ),
-    p(
-      "Aya masezerano agamije kurinda inyungu z’impande zombi, guteza imbere ubunyamwuga, umusaruro, umutekano w’akazi, n’iterambere rya Barbazza Barbershop."
-    ),
+        "akurikizwa muri Repubulika y’u Rwanda, amahame y’imyitwarire myiza mu kazi, n’amabwiriza y’imikorere ya ",
+      { b: company },
+      ".",
+    ]),
+    richP([
+      "Aya masezerano agamije kurinda inyungu z’impande zombi, guteza imbere ubunyamwuga, umusaruro, umutekano w’akazi, n’iterambere rya ",
+      { b: company },
+      ".",
+    ]),
 
     ...articleHeading("INGINGO YA 1: IMPANDE ZIRI MURI AMASEZERANO"),
     p("1.1 Umukoresha", { bold: true }),
-    labeledBullet("Izina", employerName),
+    labeledBullet("Izina ry’ikigo / Company name", company),
+    labeledBullet("TIN (Numero y’umusoro)", tin),
+    labeledBullet("Uhagarariye ikigo (Representative)", employerName),
     labeledBullet("Indangamuntu (ID)", employerId),
     labeledBullet("Aho yatangiwe ID", employerIdPlace),
     labeledBullet("Aderesi", employerAddress),
@@ -433,20 +486,20 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
 
     ...articleHeading("INGINGO YA 2: ICYEREKEZO CY’AMASEZERANO"),
     p("Aya masezerano agamije:"),
-    bullet("Gushyiraho akazi Umukozi azakorera muri The Barbazza Barbershop"),
+    bullet(`Gushyiraho akazi Umukozi azakorera muri ${company}`),
     bullet("Kugaragaza inshingano, uburenganzira n’ibyo buri ruhande rwiyemeje"),
     bullet("Kugenga umushahara, amasaha y’akazi, ikiruhuko, n’ibihano"),
-    bullet("Kurinda izina, umutungo, n’iterambere rya Barbazza Barbershop"),
+    bullet(`Kurinda izina, umutungo, n’iterambere rya ${company}`),
 
     ...articleHeading("INGINGO YA 3: UBWO KO N’IMITERERE Y’AKAZI"),
     p("3.1. Umukozi yemeye gukora akazi ko gutunganya imisatsi y’abagabo (kogosha)."),
     p("3.2. Akazi kagomba gukorwa mu buryo bw’umwuga, isuku, icyubahiro, no kubaha abakiriya."),
-    p("3.3. Umukozi agomba gukurikiza amabwiriza yose ajyanye n’imikorere ya Barbazza Barbershop."),
+    richP(["3.3. Umukozi agomba gukurikiza amabwiriza yose ajyanye n’imikorere ya ", { b: company }, "."]),
 
     ...articleHeading("INGINGO YA 4: AHO AKAZI GAKORERWA"),
     richP([
       "Akazi kazakorerwa muri ",
-      { b: "The Barbazza Barbershop" },
+      { b: company },
       ", iherereye ",
       { b: workplace },
       ", keretse Umukoresha ategetse ahandi hafitanye isano n’akazi.",
@@ -470,8 +523,8 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
     ),
 
     ...articleHeading("INGINGO YA 6: IMPUZANKANO N’IMYITWARIRE"),
-    p("6.1. Abakozi bose bagomba kwambara impuzankano (uniform) ya Barbazza Barbershop mu masaha yose y’akazi."),
-    p("6.2. Impuzankano igomba kuba isukuye, imeze neza, kandi igaragaza isura nziza ya Barbazza."),
+    richP(["6.1. Abakozi bose bagomba kwambara impuzankano (uniform) ya ", { b: company }, " mu masaha yose y’akazi."]),
+    richP(["6.2. Impuzankano igomba kuba isukuye, imeze neza, kandi igaragaza isura nziza ya ", { b: company }, "."]),
 
     ...articleHeading("INGINGO YA 7: UMUSHARA N’UBURYO BWO GUHEMBWA"),
     richP([
@@ -491,7 +544,7 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
     p("9.1. Umukozi afite uburenganzira ku munsi umwe wo kuruhuka buri cyumweru."),
     p("9.2. Uwo munsi ugena mu bwumvikane n’Umukoresha hashingiwe ku bikenewe n’akazi."),
     p(
-      "9.3. Iyo Umukozi asibye umunsi adafite uruhushya, akatirwa agaciro kangana n’umusaruro w’umunsi wapimwe wa Barbazza Barbershop."
+      `9.3. Iyo Umukozi asibye umunsi adafite uruhushya, akatirwa agaciro kangana n’umusaruro w’umunsi wapimwe wa ${company}.`
     ),
 
     ...articleHeading("INGINGO YA 10: IKIRUHUKO NGARUKAMWAKA (ANNUAL LEAVE)"),
@@ -535,7 +588,7 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
 
     ...articleHeading("INGINGO YA 19: IMICUNGIRE Y’AMAFARANGA Y’ABAKIRIYA"),
     p("19.1. Umukozi abujijwe kwakira amafaranga y’abakiriya ku konti ye bwite, yaba cash cyangwa mobile money."),
-    p("19.2. Amafaranga yose y’abakiriya agomba kwinjira mu buryo bemewe na Barbazza Barbershop."),
+    richP(["19.2. Amafaranga yose y’abakiriya agomba kwinjira mu buryo bemewe na ", { b: company }, "."]),
     p(
       "19.3. Kwakira amafaranga y’abakiriya ku giti cye bifata nk’ikosa rikomeye (faute grave) rishobora gukurikirana n’ibihano bikomeye harimo gusesa amasezerano."
     ),
@@ -571,7 +624,7 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
     ),
 
     ...articleHeading("INGINGO YA 25: EMPLOYEE CODE OF CONDUCT"),
-    p("Umukozi yemera gukurikiza Code of Conduct ya The Barbazza Barbershop, harimo:"),
+    richP(["Umukozi yemera gukurikiza Code of Conduct ya ", { b: company }, ", harimo:"]),
     bullet("Imyitwarire rusange: inyangamugayo, icyubahiro, kudashinyagura cyangwa guhohotera"),
     bullet("Impuzankano n’isuku"),
     bullet("Imyitwarire ku bakiriya"),
@@ -616,7 +669,7 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
   // Force page break after cover: first content article starts new page
   // coverPage already inserts a break run; ensure body starts cleanly
   const doc = new Document({
-    creator: "The Barbazza Barbershop",
+    creator: COMPANY_LEGAL_NAME,
     title: `Amasezerano y'akazi — ${blank ? "Template" : input.employeeName || "Umukozi"}`,
     description: blank ? "Blank fill-in template" : "Filled employment contract",
     sections: [
@@ -626,8 +679,8 @@ export async function buildEmploymentContract(input: ContractInput): Promise<Buf
             margin: { top: 720, right: 792, bottom: 864, left: 792 },
           },
         },
-        headers: { default: docHeader() },
-        footers: { default: docFooter() },
+        headers: { default: docHeader(company) },
+        footers: { default: docFooter(company) },
         children,
       },
     ],
