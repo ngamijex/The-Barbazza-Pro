@@ -59,7 +59,8 @@ export default function PublicHomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: reduceMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
-            A house of quiet craft. Choose your barber, book them in, and leave sharper than you arrived.
+            Haircuts, fades, lining, kids cuts, women&apos;s styling, braids and nail care. Book your chair in
+            Ubutare, Kigali.
           </motion.p>
 
           <motion.div
@@ -82,10 +83,10 @@ export default function PublicHomePage() {
       <section className="public-section">
         <div className="public-split">
           <div>
-            <h2>Cut with intention.</h2>
+            <h2>Services on the floor.</h2>
             <p className="lede">
-              Black-and-white discipline. Real hands. Profiles with live stats from the floor — so you book the barber
-              whose craft matches your style.
+              Classic and premium men&apos;s cuts, hair lining, kids cuts, women&apos;s styling, men&apos;s braids, plus
+              hand and foot nail care — book the barber whose craft matches your style.
             </p>
             <Link href="/book" className="btn-ink" style={{ background: "var(--ink)", color: "#fff" }}>
               Reserve your time
@@ -119,7 +120,7 @@ export default function PublicHomePage() {
 
       <section className="public-section" style={{ paddingTop: 0 }}>
         <h2>Featured chairs</h2>
-        <p className="lede">Slogans, crafts, and live ratings — open a profile or book straight away.</p>
+        <p className="lede">Meet the barbers, see their craft, and book a time that works for you.</p>
         <div className="barber-grid">
           {barbers.map((barber) => (
             <article key={barber.id} className="barber-card barber-card--rich">

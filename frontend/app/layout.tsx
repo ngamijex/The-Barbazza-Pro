@@ -5,16 +5,18 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.thebarbazza.com"),
   title: {
-    default: "THE BARBAZZA BARBERSHOP | Book a Barber in Kigali",
+    default: "Barbazza Barbershop Kigali | Haircuts, Fades & Beard Grooming",
     template: "%s | Barbazza",
   },
   description:
-    "A house of quiet craft in Ubutare, Kigali. Choose your barber, book online, and leave sharper than you arrived.",
+    "Men's cuts, fades, lining, kids cuts, women's styling, braids and nail care in Ubutare, Kigali. Book your barber online at THE BARBAZZA BARBERSHOP.",
   applicationName: "Barbazza",
   keywords: [
     "Barbazza",
     "barbershop Kigali",
-    "barber Ubutare",
+    "haircut Kigali",
+    "fade Ubutare",
+    "beard grooming",
     "book a barber",
     "THE BARBAZZA BARBERSHOP",
   ],
@@ -24,17 +26,17 @@ export const metadata: Metadata = {
     locale: "en_RW",
     url: "https://www.thebarbazza.com",
     siteName: "THE BARBAZZA BARBERSHOP",
-    title: "THE BARBAZZA BARBERSHOP | Book a Barber in Kigali",
+    title: "Barbazza Barbershop Kigali | Haircuts, Fades & Beard Grooming",
     description:
-      "A house of quiet craft in Ubutare, Kigali. Choose your barber, book online, and leave sharper than you arrived.",
-    images: [{ url: "/logo.png", width: 512, height: 512, alt: "Barbazza" }],
+      "Men's cuts, fades, lining, kids cuts, women's styling, braids and nail care in Ubutare, Kigali. Book your barber online.",
+    images: [{ url: "/og-image.png", width: 512, height: 512, alt: "Barbazza Barbershop" }],
   },
   twitter: {
     card: "summary",
-    title: "THE BARBAZZA BARBERSHOP | Book a Barber in Kigali",
+    title: "Barbazza Barbershop Kigali | Haircuts, Fades & Beard Grooming",
     description:
-      "A house of quiet craft in Ubutare, Kigali. Choose your barber, book online, and leave sharper than you arrived.",
-    images: ["/logo.png"],
+      "Men's cuts, fades, lining, kids cuts, women's styling, braids and nail care in Ubutare, Kigali. Book your barber online.",
+    images: ["/og-image.png"],
   },
   appleWebApp: {
     capable: true,
@@ -45,13 +47,13 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
-      { url: "/favicon.png", sizes: "48x48", type: "image/png" },
-      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.png?v=3", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-32.png?v=3", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png?v=3", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png?v=3", sizes: "512x512", type: "image/png" },
     ],
-    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
-    shortcut: "/favicon.png",
+    apple: [{ url: "/apple-icon.png?v=3", sizes: "180x180", type: "image/png" }],
+    shortcut: "/favicon.png?v=3",
   },
 };
 
@@ -76,13 +78,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         {/* Server-rendered so staff/login CSS is present on first paint (no FOUC). */}
         <link rel="stylesheet" href="/styles.css" />
-        <link rel="icon" href="/favicon.png" type="image/png" sizes="48x48" />
-        <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
-        <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" />
+        <link rel="icon" href="/favicon.png?v=3" type="image/png" sizes="48x48" />
+        <link rel="icon" href="/favicon-32.png?v=3" type="image/png" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/apple-icon.png?v=3" sizes="180x180" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Barbazza" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BarberShop",
+              name: "THE BARBAZZA BARBERSHOP",
+              url: "https://www.thebarbazza.com",
+              image: "https://www.thebarbazza.com/og-image.png",
+              telephone: "+250791345455",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "186 KK 31 Ave, Ubutare",
+                addressLocality: "Kigali",
+                addressCountry: "RW",
+              },
+              description:
+                "Haircuts, fades, lining, kids cuts, women's styling, braids and nail care in Ubutare, Kigali.",
+              makesOffer: [
+                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Classic Men's Cut" } },
+                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Enhanced Cut" } },
+                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Ultimate Fresh Cut" } },
+                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Hair Lining" } },
+                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Kids Cut" } },
+                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Women's Style Cut" } },
+                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Men's Braids" } },
+                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Hand & Foot Nails" } },
+              ],
+            }),
+          }}
+        />
       </head>
       <body>
         <ThemeGate>{children}</ThemeGate>

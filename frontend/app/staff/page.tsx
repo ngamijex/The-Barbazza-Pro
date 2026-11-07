@@ -57,7 +57,7 @@ export default function LoginPage() {
         <div className="login-logo">
           <img src="/logo.png" alt="Barbazza Logo" width={150} height={150} />
         </div>
-        <h2 className="login-subtitle">Barbershop Management System</h2>
+        <h2 className="login-subtitle">Staff sign in</h2>
 
         {error ? <div className="alert alert-danger">{error}</div> : null}
 
