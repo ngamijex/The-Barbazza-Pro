@@ -1076,7 +1076,7 @@ app.post("/api/contracts/generate", requireAuth, allow("admin"), async (req, res
     contractDate: parsed.data.contractDate || new Date().toISOString().slice(0, 10),
     workplace: parsed.data.workplace || "",
     commissionPercent: parsed.data.commissionPercent ?? 40,
-    companyName: parsed.data.companyName || "THE BARBAZZA BARBERSHOP LTD",
+    companyName: parsed.data.companyName || "THE BARBAZZA BARBERSHOP",
     companyTin: parsed.data.companyTin || "152991357",
     employerName: parsed.data.employerName || "",
     employerId: parsed.data.employerId || "",

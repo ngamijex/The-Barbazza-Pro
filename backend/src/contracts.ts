@@ -16,7 +16,7 @@ import {
 
 export type ContractType = "recruitment" | "retention";
 
-export const COMPANY_LEGAL_NAME = "THE BARBAZZA BARBERSHOP LTD";
+export const COMPANY_LEGAL_NAME = "THE BARBAZZA BARBERSHOP";
 export const COMPANY_TIN = "152991357";
 
 export type ContractInput = {
@@ -306,7 +306,7 @@ function coverPage(input: ContractInput, logo: Buffer) {
           type: "png",
           data: logo,
           transformation: { width: 150, height: 150 },
-          altText: { title: "Barbazza", description: "THE BARBAZZA BARBERSHOP LTD logo", name: "logo" },
+          altText: { title: "Barbazza", description: "THE BARBAZZA BARBERSHOP logo", name: "logo" },
         }),
       ],
     }),

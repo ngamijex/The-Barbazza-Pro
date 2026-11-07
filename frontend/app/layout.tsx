@@ -5,33 +5,33 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.thebarbazza.com"),
   title: {
-    default: "THE BARBAZZA BARBERSHOP LTD | Book a Barber in Kigali",
+    default: "THE BARBAZZA BARBERSHOP | Book a Barber in Kigali",
     template: "%s | Barbazza",
   },
   description:
-    "A house of quiet craft in Ubutare, Kigali. Choose your barber, book online, and leave sharper than you arrived. THE BARBAZZA BARBERSHOP LTD.",
+    "A house of quiet craft in Ubutare, Kigali. Choose your barber, book online, and leave sharper than you arrived.",
   applicationName: "Barbazza",
   keywords: [
     "Barbazza",
     "barbershop Kigali",
     "barber Ubutare",
     "book a barber",
-    "THE BARBAZZA BARBERSHOP LTD",
+    "THE BARBAZZA BARBERSHOP",
   ],
-  authors: [{ name: "THE BARBAZZA BARBERSHOP LTD" }],
+  authors: [{ name: "THE BARBAZZA BARBERSHOP" }],
   openGraph: {
     type: "website",
     locale: "en_RW",
     url: "https://www.thebarbazza.com",
-    siteName: "THE BARBAZZA BARBERSHOP LTD",
-    title: "THE BARBAZZA BARBERSHOP LTD | Book a Barber in Kigali",
+    siteName: "THE BARBAZZA BARBERSHOP",
+    title: "THE BARBAZZA BARBERSHOP | Book a Barber in Kigali",
     description:
       "A house of quiet craft in Ubutare, Kigali. Choose your barber, book online, and leave sharper than you arrived.",
     images: [{ url: "/logo.png", width: 512, height: 512, alt: "Barbazza" }],
   },
   twitter: {
     card: "summary",
-    title: "THE BARBAZZA BARBERSHOP LTD | Book a Barber in Kigali",
+    title: "THE BARBAZZA BARBERSHOP | Book a Barber in Kigali",
     description:
       "A house of quiet craft in Ubutare, Kigali. Choose your barber, book online, and leave sharper than you arrived.",
     images: ["/logo.png"],

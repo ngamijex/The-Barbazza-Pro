@@ -37,7 +37,7 @@ const defaults: FormState = {
   contractDate: new Date().toISOString().slice(0, 10),
   workplace: "Kigarama / Karugira, Kigali",
   commissionPercent: 40,
-  companyName: "THE BARBAZZA BARBERSHOP LTD",
+  companyName: "THE BARBAZZA BARBERSHOP",
   companyTin: "152991357",
   employerName: "NGAMIJE Didier",
   employerId: "1200280228895062",
