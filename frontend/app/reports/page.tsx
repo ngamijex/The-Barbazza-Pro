@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Kpi, Panel, Shell } from "@/components/Shell";
 import { api, money } from "@/lib/api";
+import { shopBusinessDate } from "@/lib/time";
 
 type Report = {
   date: string;
@@ -15,11 +16,11 @@ type Report = {
 
 export default function ReportsPage() {
   const [from, setFrom] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 30);
-    return d.toISOString().slice(0, 10);
+    const today = shopBusinessDate();
+    const [y, m, d] = today.split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d) - 30 * 86_400_000).toISOString().slice(0, 10);
   });
-  const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [to, setTo] = useState(() => shopBusinessDate());
   const [rows, setRows] = useState<Report[]>([]);
   const [error, setError] = useState("");
 

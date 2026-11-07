@@ -9,6 +9,9 @@ import { publicApi } from "./publicApi";
 import { profileRoutes } from "./profileRoutes";
 import { UPLOAD_DIR, ensureUploadDir } from "./uploads";
 import { buildEmploymentContract, contractFilename, ContractInput } from "./contracts";
+import { applyShopTimezone, BUSINESS_DATE_SQL, businessDate, DAY_CLOSE_HOUR, SHOP_TIMEZONE } from "./time";
+
+applyShopTimezone();
 
 const app = express();
 app.disable("x-powered-by");
@@ -56,7 +59,13 @@ function monthBounds(month: string) {
 }
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, service: "barbazza-api" });
+  res.json({
+    ok: true,
+    service: "barbazza-api",
+    timezone: SHOP_TIMEZONE,
+    dayCloseHour: DAY_CLOSE_HOUR,
+    businessDate: businessDate(),
+  });
 });
 
 app.post("/api/auth/login", async (req, res) => {
@@ -120,20 +129,20 @@ app.get("/api/dashboard/overview", requireAuth, allow("admin"), async (_req, res
       query<{ count: string }>(`SELECT COUNT(*)::int AS count FROM barbers WHERE is_active = TRUE`),
       query<{ income: string; customers: string }>(
         `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers
-         FROM transactions WHERE transaction_date = CURRENT_DATE`
+         FROM transactions WHERE transaction_date = ${BUSINESS_DATE_SQL}`
       ),
       query<{ income: string; customers: string; expenses: string }>(
         `SELECT
-           (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date >= CURRENT_DATE - INTERVAL '7 days') AS income,
-           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date >= CURRENT_DATE - INTERVAL '7 days') AS customers,
-           (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date >= CURRENT_DATE - INTERVAL '7 days') AS expenses`
+           (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date >= ${BUSINESS_DATE_SQL} - INTERVAL '7 days') AS income,
+           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date >= ${BUSINESS_DATE_SQL} - INTERVAL '7 days') AS customers,
+           (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date >= ${BUSINESS_DATE_SQL} - INTERVAL '7 days') AS expenses`
       ),
       query<{ income: string; customers: string; expenses: string; days: string }>(
         `SELECT
-           (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date >= date_trunc('month', CURRENT_DATE)) AS income,
-           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date >= date_trunc('month', CURRENT_DATE)) AS customers,
-           (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date >= date_trunc('month', CURRENT_DATE)) AS expenses,
-           (SELECT COUNT(DISTINCT transaction_date)::int FROM transactions WHERE transaction_date >= date_trunc('month', CURRENT_DATE)) AS days`
+           (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})) AS income,
+           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})) AS customers,
+           (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date >= date_trunc('month', ${BUSINESS_DATE_SQL})) AS expenses,
+           (SELECT COUNT(DISTINCT transaction_date)::int FROM transactions WHERE transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})) AS days`
       ),
     ]);
     const income = num(month[0]?.income);
@@ -143,7 +152,7 @@ app.get("/api/dashboard/overview", requireAuth, allow("admin"), async (_req, res
       query<{ day: string; total: string }>(
         `SELECT transaction_date AS day, COALESCE(SUM(amount),0) AS total
          FROM transactions
-         WHERE transaction_date >= date_trunc('month', CURRENT_DATE)
+         WHERE transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})
          GROUP BY transaction_date ORDER BY transaction_date`
       ),
       query<{ barber_code: string; full_name: string | null; customers: string; earned: string }>(
@@ -154,7 +163,7 @@ app.get("/api/dashboard/overview", requireAuth, allow("admin"), async (_req, res
          LEFT JOIN users u ON b.user_id = u.user_id
          LEFT JOIN transactions t
            ON b.barber_id = t.barber_id
-          AND t.transaction_date >= date_trunc('month', CURRENT_DATE)
+          AND t.transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})
          WHERE b.is_active = TRUE
          GROUP BY b.barber_id, b.barber_code, u.full_name
          ORDER BY earned DESC NULLS LAST
@@ -675,7 +684,7 @@ app.post("/api/transactions", requireAuth, allow("manager", "admin"), async (req
     );
     await query(
       `INSERT INTO transactions (transaction_date, barber_id, service_id, service_name, amount, customer_name, notes, created_by)
-       VALUES (CURRENT_DATE, $1, $2, $3, $4, $5, $6, $7)`,
+       VALUES (${BUSINESS_DATE_SQL}, $1, $2, $3, $4, $5, $6, $7)`,
       [
         parsed.data.barberId,
         parsed.data.serviceId,
@@ -765,7 +774,7 @@ app.post("/api/expenses", requireAuth, allow("manager", "admin"), async (req, re
       `INSERT INTO expenses (expense_date, category_id, expense_type, barber_id, description, amount, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
-        parsed.data.date || new Date().toISOString().slice(0, 10),
+        parsed.data.date || businessDate(),
         parsed.data.categoryId,
         parsed.data.expenseType,
         parsed.data.expenseType === "barber" ? parsed.data.barberId ?? null : null,
@@ -882,7 +891,7 @@ app.post("/api/users", requireAuth, allow("admin"), async (req, res) => {
       const advance = parsed.data.recruitmentAdvance || 0;
       await query(
         `INSERT INTO barbers (user_id, barber_code, commission_rate, is_active, hire_date, recruitment_advance, advance_monthly_deduction, advance_remaining)
-         VALUES ($1, $2, $3, $4, CURRENT_DATE, $5, $6, $5)`,
+         VALUES ($1, $2, $3, $4, ${BUSINESS_DATE_SQL}, $5, $6, $5)`,
         [created[0].user_id, code, parsed.data.commissionRate ?? 40, parsed.data.active ?? true, advance, parsed.data.monthlyDeduction || 0]
       );
     }
@@ -965,7 +974,7 @@ app.put("/api/users/:id", requireAuth, allow("admin"), async (req, res) => {
         const code = `B${String(num(count[0]?.count) + 1).padStart(3, "0")}`;
         await query(
           `INSERT INTO barbers (user_id, barber_code, commission_rate, is_active, hire_date, recruitment_advance, advance_monthly_deduction, advance_remaining)
-           VALUES ($1, $2, $3, $4, CURRENT_DATE, $5, $6, $5)`,
+           VALUES ($1, $2, $3, $4, ${BUSINESS_DATE_SQL}, $5, $6, $5)`,
           [userId, code, rate, parsed.data.active, advance, deduction]
         );
       }
@@ -1148,26 +1157,26 @@ app.get("/api/barber/home", requireAuth, allow("barber"), async (req, res) => {
       ),
       query<{ income: string; customers: string }>(
         `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers
-         FROM transactions WHERE barber_id = $1 AND transaction_date = CURRENT_DATE`,
+         FROM transactions WHERE barber_id = $1 AND transaction_date = ${BUSINESS_DATE_SQL}`,
         [barberId]
       ),
       query<{ income: string; customers: string }>(
         `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers
          FROM transactions
-         WHERE barber_id = $1 AND transaction_date >= date_trunc('week', CURRENT_DATE)`,
+         WHERE barber_id = $1 AND transaction_date >= date_trunc('week', ${BUSINESS_DATE_SQL})`,
         [barberId]
       ),
       query<{ income: string; customers: string; services: string }>(
         `SELECT COALESCE(SUM(amount),0) AS income, COUNT(*)::int AS customers, COUNT(*)::int AS services
          FROM transactions
-         WHERE barber_id = $1 AND transaction_date >= date_trunc('month', CURRENT_DATE)`,
+         WHERE barber_id = $1 AND transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})`,
         [barberId]
       ),
       query<{ best: string }>(
         `SELECT COALESCE(MAX(daily),0) AS best FROM (
            SELECT SUM(amount) AS daily
            FROM transactions
-           WHERE barber_id = $1 AND transaction_date >= date_trunc('month', CURRENT_DATE)
+           WHERE barber_id = $1 AND transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})
            GROUP BY transaction_date
          ) d`,
         [barberId]
@@ -1182,13 +1191,13 @@ app.get("/api/barber/home", requireAuth, allow("barber"), async (req, res) => {
       query<{ day: string; total: string }>(
         `SELECT transaction_date AS day, COALESCE(SUM(amount),0) AS total
          FROM transactions
-         WHERE barber_id = $1 AND transaction_date >= date_trunc('month', CURRENT_DATE)
+         WHERE barber_id = $1 AND transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})
          GROUP BY transaction_date ORDER BY transaction_date`,
         [barberId]
       ),
       query<{ service_name: string; amount: string; customer_name: string | null; created_at: string }>(
         `SELECT service_name, amount, customer_name, TO_CHAR(created_at, 'HH24:MI') AS created_at
-         FROM transactions WHERE barber_id = $1 AND transaction_date = CURRENT_DATE
+         FROM transactions WHERE barber_id = $1 AND transaction_date = ${BUSINESS_DATE_SQL}
          ORDER BY created_at DESC`,
         [barberId]
       ),
@@ -1306,22 +1315,22 @@ app.get("/api/operations", requireAuth, allow("admin", "manager"), async (_req, 
     const [today, month, trend, tx] = await Promise.all([
       query<{ income: string; customers: string; expenses: string }>(
         `SELECT
-           (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date = CURRENT_DATE) AS income,
-           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date = CURRENT_DATE) AS customers,
-           (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date = CURRENT_DATE) AS expenses`
+           (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date = ${BUSINESS_DATE_SQL}) AS income,
+           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date = ${BUSINESS_DATE_SQL}) AS customers,
+           (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date = ${BUSINESS_DATE_SQL}) AS expenses`
       ),
       query<{ income: string; customers: string; expenses: string; services: string; days: string }>(
         `SELECT
-           (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date >= date_trunc('month', CURRENT_DATE)) AS income,
-           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date >= date_trunc('month', CURRENT_DATE)) AS customers,
-           (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date >= date_trunc('month', CURRENT_DATE)) AS expenses,
-           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date >= date_trunc('month', CURRENT_DATE)) AS services,
-           (SELECT COUNT(DISTINCT transaction_date)::int FROM transactions WHERE transaction_date >= date_trunc('month', CURRENT_DATE)) AS days`
+           (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})) AS income,
+           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})) AS customers,
+           (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE expense_date >= date_trunc('month', ${BUSINESS_DATE_SQL})) AS expenses,
+           (SELECT COUNT(*)::int FROM transactions WHERE transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})) AS services,
+           (SELECT COUNT(DISTINCT transaction_date)::int FROM transactions WHERE transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})) AS days`
       ),
       query<{ day: string; total: string }>(
         `SELECT transaction_date AS day, COALESCE(SUM(amount),0) AS total
          FROM transactions
-         WHERE transaction_date >= date_trunc('month', CURRENT_DATE)
+         WHERE transaction_date >= date_trunc('month', ${BUSINESS_DATE_SQL})
          GROUP BY transaction_date ORDER BY transaction_date`
       ),
       query<{
@@ -1341,7 +1350,7 @@ app.get("/api/operations", requireAuth, allow("admin", "manager"), async (_req, 
          FROM transactions t
          JOIN barbers b ON t.barber_id = b.barber_id
          LEFT JOIN users u ON b.user_id = u.user_id
-         WHERE t.transaction_date = CURRENT_DATE
+         WHERE t.transaction_date = ${BUSINESS_DATE_SQL}
          ORDER BY t.created_at DESC`
       ),
     ]);
@@ -1742,7 +1751,7 @@ app.get("/api/monthly-closing/months", requireAuth, allow("admin"), async (_req,
          TO_CHAR(transaction_date, 'YYYY-MM') AS month_key,
          TO_CHAR(transaction_date, 'Month YYYY') AS month_label
        FROM transactions
-       WHERE transaction_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '12 months')
+       WHERE transaction_date >= DATE_TRUNC('month', ${BUSINESS_DATE_SQL} - INTERVAL '12 months')
          AND TO_CHAR(transaction_date, 'YYYY-MM') NOT IN (
            SELECT DISTINCT
              LPAD(year::text, 4, '0') || '-' || LPAD(month::text, 2, '0')
@@ -1764,7 +1773,7 @@ app.get("/api/monthly-closing/months", requireAuth, allow("admin"), async (_req,
            TO_CHAR(transaction_date, 'YYYY-MM') AS month_key,
            TO_CHAR(transaction_date, 'Month YYYY') AS month_label
          FROM transactions
-         WHERE transaction_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '12 months')
+         WHERE transaction_date >= DATE_TRUNC('month', ${BUSINESS_DATE_SQL} - INTERVAL '12 months')
          ORDER BY month_key DESC`
       );
       res.json(fallback.map((row) => ({ key: row.month_key, label: row.month_label.trim() })));
@@ -2025,6 +2034,7 @@ const SETTING_KEYS = [
   "shop_whatsapp",
   "currency",
   "timezone",
+  "day_close_hour",
   "tax_rate",
   "commission_rate",
 ] as const;
@@ -2042,13 +2052,17 @@ app.get("/api/settings", requireAuth, allow("admin"), async (_req, res) => {
       shop_maps_url: "https://maps.google.com/?q=-1.974001,30.076725",
       shop_whatsapp: "https://wa.me/250791345455",
       currency: "RWF",
-      timezone: "Africa/Kigali",
+      timezone: SHOP_TIMEZONE,
+      day_close_hour: String(DAY_CLOSE_HOUR),
       tax_rate: "18",
       commission_rate: "40",
     };
     for (const row of rows) {
       if (row.setting_key in map) map[row.setting_key] = row.setting_value || "";
     }
+    // System clock is always Kigali; keep settings aligned.
+    map.timezone = SHOP_TIMEZONE;
+    if (!map.day_close_hour) map.day_close_hour = String(DAY_CLOSE_HOUR);
     res.json(map);
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load settings" });
@@ -2066,6 +2080,7 @@ app.put("/api/settings", requireAuth, allow("admin"), async (req, res) => {
       shop_whatsapp: z.string().max(240).optional(),
       currency: z.string().max(20).optional(),
       timezone: z.string().max(60).optional(),
+      day_close_hour: z.union([z.string(), z.number()]).optional(),
       tax_rate: z.union([z.string(), z.number()]).optional(),
       commission_rate: z.union([z.string(), z.number()]).optional(),
     })
@@ -2075,9 +2090,18 @@ app.put("/api/settings", requireAuth, allow("admin"), async (req, res) => {
     return;
   }
   try {
+    const payload = { ...parsed.data, timezone: SHOP_TIMEZONE };
+    if (payload.day_close_hour !== undefined) {
+      const hour = Number(payload.day_close_hour);
+      if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
+        res.status(400).json({ error: "Day close hour must be 0–23 (Kigali time)" });
+        return;
+      }
+      payload.day_close_hour = String(hour);
+    }
     for (const key of SETTING_KEYS) {
-      if (parsed.data[key] === undefined) continue;
-      const value = String(parsed.data[key] ?? "");
+      if (payload[key] === undefined) continue;
+      const value = String(payload[key] ?? "");
       const exists = await query<{ count: string }>(
         `SELECT COUNT(*)::int AS count FROM system_settings WHERE setting_key = $1`,
         [key]
@@ -2283,12 +2307,44 @@ app.post("/api/reports/generate", requireAuth, allow("admin", "manager"), async 
 
 const port = Number(process.env.PORT || 4000);
 
+async function ensureShopClockSettings() {
+  const defaults: Array<[string, string]> = [
+    ["timezone", SHOP_TIMEZONE],
+    ["day_close_hour", String(DAY_CLOSE_HOUR)],
+  ];
+  for (const [key, value] of defaults) {
+    const rows = await query<{ setting_value: string | null }>(
+      `SELECT setting_value FROM system_settings WHERE setting_key = $1 LIMIT 1`,
+      [key]
+    );
+    if (!rows[0]) {
+      await query(
+        `INSERT INTO system_settings (setting_key, setting_value, updated_at)
+         VALUES ($1, $2, CURRENT_TIMESTAMP)`,
+        [key, value]
+      );
+    } else if (key === "timezone" && rows[0].setting_value !== SHOP_TIMEZONE) {
+      await query(
+        `UPDATE system_settings SET setting_value = $1, updated_at = CURRENT_TIMESTAMP WHERE setting_key = $2`,
+        [SHOP_TIMEZONE, key]
+      );
+    }
+  }
+}
+
 async function boot() {
+  applyShopTimezone();
   // Warm one DB connection before accepting traffic (cuts first-request latency).
+  await pool.query(`SET TIME ZONE '${SHOP_TIMEZONE}'`);
   await pool.query("SELECT 1");
   await ensurePublicSchema();
+  await ensureShopClockSettings().catch((err) => {
+    console.error("Could not seed shop clock settings:", err instanceof Error ? err.message : err);
+  });
   app.listen(port, "0.0.0.0", () => {
-    console.log(`Barbazza API listening on ${port}`);
+    console.log(
+      `Barbazza API listening on ${port} (${SHOP_TIMEZONE}, day closes ${String(DAY_CLOSE_HOUR).padStart(2, "0")}:00, business ${businessDate()})`
+    );
   });
 }
 

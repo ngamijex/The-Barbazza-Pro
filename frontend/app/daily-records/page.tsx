@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Kpi, Panel, Shell, useSession } from "@/components/Shell";
 import { api, money } from "@/lib/api";
+import { shopBusinessDate } from "@/lib/time";
 
 type Day = {
   income: number;
@@ -27,9 +28,9 @@ type Tx = {
 export default function DailyRecordsPage() {
   const user = useSession();
   const router = useRouter();
-  const monthStart = new Date();
-  monthStart.setDate(1);
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const todayBiz = shopBusinessDate();
+  const monthStart = `${todayBiz.slice(0, 8)}01`;
+  const [date, setDate] = useState(() => shopBusinessDate());
   const [day, setDay] = useState<Day | null>(null);
   const [tx, setTx] = useState<Tx[]>([]);
   const [error, setError] = useState("");
@@ -62,8 +63,8 @@ export default function DailyRecordsPage() {
           <input
             type="date"
             value={date}
-            min={monthStart.toISOString().slice(0, 10)}
-            max={new Date().toISOString().slice(0, 10)}
+            min={monthStart}
+            max={todayBiz}
             onChange={(e) => setDate(e.target.value)}
           />
         </div>

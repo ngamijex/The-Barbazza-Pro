@@ -1,4 +1,5 @@
 import { Pool, QueryResultRow } from "pg";
+import { SHOP_TIMEZONE } from "./time";
 
 /** Tuned for Neon serverless + many short API requests */
 export const pool = new Pool({
@@ -11,6 +12,12 @@ export const pool = new Pool({
   allowExitOnIdle: false,
   keepAlive: true,
   keepAliveInitialDelayMillis: 10_000,
+});
+
+pool.on("connect", (client) => {
+  void client.query(`SET TIME ZONE '${SHOP_TIMEZONE}'`).catch((err) => {
+    console.error("Failed to set DB timezone:", err instanceof Error ? err.message : err);
+  });
 });
 
 pool.on("error", (err) => {

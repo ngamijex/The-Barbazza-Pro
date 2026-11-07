@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Kpi, Panel, Shell, useSession } from "@/components/Shell";
 import { api, money } from "@/lib/api";
+import { shopBusinessDate } from "@/lib/time";
 
 type Day = {
   income: number;
@@ -56,7 +57,7 @@ function downloadCsv(generated: Generated) {
 
 export default function DailyReportPage() {
   const user = useSession();
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(() => shopBusinessDate());
   const [format, setFormat] = useState("excel");
   const [preview, setPreview] = useState<Day | null>(null);
   const [recent, setRecent] = useState<Report[]>([]);
@@ -67,9 +68,10 @@ export default function DailyReportPage() {
   useEffect(() => {
     if (!user) return;
     api<Day>(`/api/day?date=${date}`).then(setPreview).catch(() => setPreview(null));
-    const from = new Date();
-    from.setDate(from.getDate() - 14);
-    api<Report[]>(`/api/reports?from=${from.toISOString().slice(0, 10)}&to=${new Date().toISOString().slice(0, 10)}`)
+    const today = shopBusinessDate();
+    const [y, m, d] = today.split("-").map(Number);
+    const from = new Date(Date.UTC(y, m - 1, d) - 14 * 86_400_000).toISOString().slice(0, 10);
+    api<Report[]>(`/api/reports?from=${from}&to=${today}`)
       .then(setRecent)
       .catch(() => undefined);
   }, [user, date]);
@@ -98,11 +100,10 @@ export default function DailyReportPage() {
           ? `Report saved for ${result.date}. Open the Google Drive folder to archive/share (Sheets auto-upload uses the same Drive folder as Shiny).`
           : `Report generated for ${result.date}. CSV downloaded (Excel-compatible).`
       );
-      const from = new Date();
-      from.setDate(from.getDate() - 14);
-      setRecent(
-        await api<Report[]>(`/api/reports?from=${from.toISOString().slice(0, 10)}&to=${new Date().toISOString().slice(0, 10)}`)
-      );
+      const today = shopBusinessDate();
+      const [y, m, d] = today.split("-").map(Number);
+      const from = new Date(Date.UTC(y, m - 1, d) - 14 * 86_400_000).toISOString().slice(0, 10);
+      setRecent(await api<Report[]>(`/api/reports?from=${from}&to=${today}`));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generate failed");
     } finally {
@@ -121,7 +122,7 @@ export default function DailyReportPage() {
         <div className="form-grid form-grid-3">
           <div className="form-group">
             <label>Report Date</label>
-            <input type="date" max={new Date().toISOString().slice(0, 10)} value={date} onChange={(e) => setDate(e.target.value)} />
+            <input type="date" max={shopBusinessDate()} value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div className="form-group">
             <label>Report Format</label>

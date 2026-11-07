@@ -10,6 +10,10 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: TZ
+        value: Africa/Kigali
+      - key: DAY_CLOSE_HOUR
+        value: "14"
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET

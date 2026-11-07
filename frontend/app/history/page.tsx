@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Kpi, Panel, Shell, useSession } from "@/components/Shell";
 import { api, money } from "@/lib/api";
+import { shopBusinessDate } from "@/lib/time";
 
 type BarberHome = {
   commissionRate: number;
@@ -23,13 +24,13 @@ type DayDetail = {
 export default function HistoryPage() {
   const user = useSession();
   const [period, setPeriod] = useState<"today" | "week" | "month">("today");
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(() => shopBusinessDate());
   const [home, setHome] = useState<BarberHome | null>(null);
   const [day, setDay] = useState<DayDetail | null>(null);
   const [error, setError] = useState("");
 
-  const monthStart = new Date();
-  monthStart.setDate(1);
+  const todayBiz = shopBusinessDate();
+  const monthStart = `${todayBiz.slice(0, 8)}01`;
 
   useEffect(() => {
     if (!user) return;
@@ -102,8 +103,8 @@ export default function HistoryPage() {
           <input
             type="date"
             value={date}
-            min={monthStart.toISOString().slice(0, 10)}
-            max={new Date().toISOString().slice(0, 10)}
+            min={monthStart}
+            max={todayBiz}
             onChange={(e) => setDate(e.target.value)}
           />
         </div>

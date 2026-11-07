@@ -5,6 +5,7 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Kpi, Panel, Shell, useSession } from "@/components/Shell";
 import { PageSkeleton } from "@/components/Skeleton";
 import { api, money } from "@/lib/api";
+import { shopBusinessDate } from "@/lib/time";
 
 type Operations = {
   today: { income: number; customers: number; expenses: number; profit: number };
@@ -102,7 +103,7 @@ export default function HomePage() {
     discountReason: "",
   });
   const [editingTx, setEditingTx] = useState<number | null>(null);
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(() => shopBusinessDate());
 
   const selectedService = services.find((s) => s.id === Number(form.serviceId));
   const needsDiscount =

@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Panel, Shell, useSession } from "@/components/Shell";
 import { api, money } from "@/lib/api";
+import { shopBusinessDate } from "@/lib/time";
 
 type Option = { id: number; name: string; code?: string };
 type ExpenseRow = { category: string; description: string; amount: number; time: string; addedBy: string };
@@ -15,7 +16,7 @@ export default function ExpensesPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
+    date: shopBusinessDate(),
     categoryId: "",
     expenseType: "shop",
     barberId: "",

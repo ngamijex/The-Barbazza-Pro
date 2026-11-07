@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Panel, Shell, useSession } from "@/components/Shell";
 import { api, money } from "@/lib/api";
+import { shopBusinessDate } from "@/lib/time";
 
 type Settings = {
   shop_name: string;
@@ -13,6 +14,7 @@ type Settings = {
   shop_whatsapp: string;
   currency: string;
   timezone: string;
+  day_close_hour: string;
   tax_rate: string;
   commission_rate: string;
 };
@@ -24,9 +26,10 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [locked, setLocked] = useState<LockedDay[]>([]);
   const [lockDate, setLockDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return d.toISOString().slice(0, 10);
+    const today = shopBusinessDate();
+    const [y, m, d] = today.split("-").map(Number);
+    const prev = new Date(Date.UTC(y, m - 1, d) - 86_400_000);
+    return prev.toISOString().slice(0, 10);
   });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -131,7 +134,18 @@ export default function SettingsPage() {
               </div>
               <div className="form-group">
                 <label>Timezone</label>
-                <input value={settings.timezone} onChange={(e) => setSettings({ ...settings, timezone: e.target.value })} />
+                <input value={settings.timezone || "Africa/Kigali"} readOnly title="Shop clock is fixed to Kigali time" />
+              </div>
+              <div className="form-group">
+                <label>Day closes at (Kigali)</label>
+                <input
+                  value={`${String(settings.day_close_hour ?? "14").padStart(2, "0")}:00`}
+                  readOnly
+                  title="Business day rolls at this hour in Kigali"
+                />
+                <small style={{ color: "var(--barbazza-cream)", opacity: 0.85 }}>
+                  Before this hour, new transactions still count on the previous business day.
+                </small>
               </div>
               <div className="form-group">
                 <label>Tax Rate (%)</label>

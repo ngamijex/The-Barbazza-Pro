@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Panel, Shell, useSession } from "@/components/Shell";
 import { PageSkeleton } from "@/components/Skeleton";
 import { api } from "@/lib/api";
+import { shopMonthKey } from "@/lib/time";
 
 type Booking = {
   id: number;
@@ -21,7 +22,7 @@ type Note = { id: number; title: string; body: string; link: string; read: boole
 
 export default function BarberCalendarPage() {
   const user = useSession();
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(() => shopMonthKey());
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
