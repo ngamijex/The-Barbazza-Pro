@@ -46,6 +46,20 @@ export const metadata: Metadata = {
     title: "Barbazza",
   },
   formatDetection: { telephone: false },
+  alternates: {
+    canonical: "https://www.thebarbazza.com",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
