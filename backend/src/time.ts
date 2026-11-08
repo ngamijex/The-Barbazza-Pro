@@ -1,10 +1,11 @@
-/** Shop clock: Kigali time. Business day rolls at DAY_CLOSE_HOUR (default 14:00). */
+/** Shop clock: Kigali time. Business day rolls at DAY_CLOSE_HOUR (default 02:00). */
 
 export const SHOP_TIMEZONE = "Africa/Kigali";
 
+/** Day ends at 02:00 next calendar morning; from 02:00 the new business day starts. */
 export const DAY_CLOSE_HOUR = Math.min(
   23,
-  Math.max(0, Number.parseInt(process.env.DAY_CLOSE_HOUR || "14", 10) || 14)
+  Math.max(0, Number.parseInt(process.env.DAY_CLOSE_HOUR || "2", 10) || 2)
 );
 
 /** Apply process-wide TZ so Date/logging match the shop. */
@@ -51,7 +52,7 @@ export function businessDate(now = new Date()): string {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-/** Calendar YYYY-MM-DD in Kigali (no 14:00 rollover). */
+/** Calendar YYYY-MM-DD in Kigali (no 02:00 rollover). */
 export function kigaliCalendarDate(now = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: SHOP_TIMEZONE,

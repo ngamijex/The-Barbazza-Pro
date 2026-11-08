@@ -1,9 +1,9 @@
-/** Shop clock mirrors the API: Africa/Kigali, business day rolls at 14:00. */
+/** Shop clock mirrors the API: Africa/Kigali, business day rolls at 02:00. */
 
 export const SHOP_TIMEZONE = "Africa/Kigali";
-export const DAY_CLOSE_HOUR = 14;
+export const DAY_CLOSE_HOUR = 2;
 
-/** YYYY-MM-DD business date in Kigali (before 14:00 still counts as yesterday). */
+/** YYYY-MM-DD business date in Kigali (before 02:00 still counts as yesterday). */
 export function shopBusinessDate(now = new Date()): string {
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat("en-US", {

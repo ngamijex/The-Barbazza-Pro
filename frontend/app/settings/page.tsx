@@ -139,12 +139,12 @@ export default function SettingsPage() {
               <div className="form-group">
                 <label>Day closes at (Kigali)</label>
                 <input
-                  value={`${String(settings.day_close_hour ?? "14").padStart(2, "0")}:00`}
+                  value={`${String(settings.day_close_hour ?? "2").padStart(2, "0")}:00`}
                   readOnly
-                  title="Business day rolls at this hour in Kigali"
+                  title="Business day ends at 02:00 Kigali (next calendar morning)"
                 />
                 <small style={{ color: "var(--barbazza-cream)", opacity: 0.85 }}>
-                  Before this hour, new transactions still count on the previous business day.
+                  Until 2:00 AM, work still counts on yesterday. From 2:00 AM the new day starts.
                 </small>
               </div>
               <div className="form-group">

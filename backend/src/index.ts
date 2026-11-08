@@ -2323,10 +2323,10 @@ async function ensureShopClockSettings() {
          VALUES ($1, $2, CURRENT_TIMESTAMP)`,
         [key, value]
       );
-    } else if (key === "timezone" && rows[0].setting_value !== SHOP_TIMEZONE) {
+    } else if (rows[0].setting_value !== value) {
       await query(
         `UPDATE system_settings SET setting_value = $1, updated_at = CURRENT_TIMESTAMP WHERE setting_key = $2`,
-        [SHOP_TIMEZONE, key]
+        [value, key]
       );
     }
   }
