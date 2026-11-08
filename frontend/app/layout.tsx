@@ -23,6 +23,9 @@ export const metadata: Metadata = {
     "THE BARBAZZA BARBERSHOP",
   ],
   authors: [{ name: "THE BARBAZZA BARBERSHOP" }],
+  verification: {
+    google: "D1r2X7F8O8tDdgowN4mWuj6SRx8LORuj4pWG3TDHc38",
+  },
   openGraph: {
     type: "website",
     locale: "en_RW",
