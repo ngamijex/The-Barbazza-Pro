@@ -59,7 +59,7 @@ export default function PublicHomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: reduceMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
-            The best barbershop in Kigali for haircuts, fades, lining, kids cuts, women&apos;s styling, braids and
+            The Barbazza barbershop in Kigali — haircuts, fades, lining, kids cuts, women&apos;s styling, braids and
             nail care. Book your chair in Ubutare.
           </motion.p>
 
