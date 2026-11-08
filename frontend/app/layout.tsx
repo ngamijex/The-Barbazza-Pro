@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: "%s | Barbazza",
   },
   description:
-    "The Barbazza barbershop in Kigali — the best spot in Ubutare for sharp men's cuts, fades, lining, kids cuts, women's styling, braids and nail care. Book your barber online.",
+    "The Barbazza barbershop in Kigali — sharp men's cuts, fades, lining, kids cuts, women's styling, braids and nail care. Book your barber online.",
   applicationName: "Barbazza",
   keywords: [
     "best barbershop in Kigali",
@@ -18,7 +18,6 @@ export const metadata: Metadata = {
     "Barbazza",
     "haircut Kigali",
     "fade Kigali",
-    "barber Ubutare",
     "beard grooming Kigali",
     "book a barber Kigali",
     "THE BARBAZZA BARBERSHOP",
@@ -31,14 +30,14 @@ export const metadata: Metadata = {
     siteName: "THE BARBAZZA BARBERSHOP",
     title: "Best Barbershop in Kigali | Barbazza",
     description:
-      "The Barbazza barbershop in Kigali — sharp men's cuts, fades, lining, kids cuts, women's styling, braids and nail care in Ubutare. Book your barber online.",
+      "The Barbazza barbershop in Kigali — sharp men's cuts, fades, lining, kids cuts, women's styling, braids and nail care. Book your barber online.",
     images: [{ url: "/og-image.png", width: 512, height: 512, alt: "The Barbazza barbershop in Kigali" }],
   },
   twitter: {
     card: "summary",
     title: "Best Barbershop in Kigali | Barbazza",
     description:
-      "The Barbazza barbershop in Kigali — sharp men's cuts, fades, lining, kids cuts, women's styling, braids and nail care in Ubutare. Book your barber online.",
+      "The Barbazza barbershop in Kigali — sharp men's cuts, fades, lining, kids cuts, women's styling, braids and nail care. Book your barber online.",
     images: ["/og-image.png"],
   },
   appleWebApp: {
@@ -105,7 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 addressCountry: "RW",
               },
               description:
-                "The Barbazza barbershop in Kigali — haircuts, fades, lining, kids cuts, women's styling, braids and nail care in Ubutare.",
+                "The Barbazza barbershop in Kigali — haircuts, fades, lining, kids cuts, women's styling, braids and nail care.",
               areaServed: "Kigali",
               slogan: "The Barbazza barbershop in Kigali",
               makesOffer: [

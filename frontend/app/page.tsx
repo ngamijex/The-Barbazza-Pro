@@ -60,7 +60,7 @@ export default function PublicHomePage() {
             transition={{ duration: 0.65, delay: reduceMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
             The Barbazza barbershop in Kigali — haircuts, fades, lining, kids cuts, women&apos;s styling, braids and
-            nail care. Book your chair in Ubutare.
+            nail care. Book your chair.
           </motion.p>
 
           <motion.div
@@ -98,7 +98,7 @@ export default function PublicHomePage() {
 
       <section className="public-section" style={{ paddingTop: 0 }}>
         <h2>Visit the shop</h2>
-        <p className="lede">Find us in Ubutare — call, WhatsApp, or walk in for a chair.</p>
+        <p className="lede">Find us in Kigali — call, WhatsApp, or walk in for a chair.</p>
         <div className="shop-contact">
           <a className="shop-contact-card" href={shop.mapsUrl} target="_blank" rel="noreferrer">
             <span className="shop-contact-label">Location</span>
