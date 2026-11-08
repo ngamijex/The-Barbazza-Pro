@@ -59,8 +59,8 @@ export default function PublicHomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: reduceMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
-            Haircuts, fades, lining, kids cuts, women&apos;s styling, braids and nail care. Book your chair in
-            Ubutare, Kigali.
+            The best barbershop in Kigali for haircuts, fades, lining, kids cuts, women&apos;s styling, braids and
+            nail care. Book your chair in Ubutare.
           </motion.p>
 
           <motion.div
@@ -83,7 +83,7 @@ export default function PublicHomePage() {
       <section className="public-section">
         <div className="public-split">
           <div>
-            <h2>Services on the floor.</h2>
+            <h2>Why Barbazza is the best barbershop in Kigali.</h2>
             <p className="lede">
               Classic and premium men&apos;s cuts, hair lining, kids cuts, women&apos;s styling, men&apos;s braids, plus
               hand and foot nail care — book the barber whose craft matches your style.
