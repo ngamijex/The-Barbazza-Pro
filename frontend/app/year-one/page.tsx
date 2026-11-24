@@ -1,495 +1,665 @@
-"use client";
-
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
-import {
-  Clapperboard,
-  DoorOpen,
-  Eye,
-  Film,
-  Handshake,
-  Mic2,
-  Play,
-  Scissors,
-  Sparkles,
-  Target,
-  Users,
-  ExternalLink,
-  Camera,
-  Music2,
-  ListChecks,
-  MapPin,
-} from "lucide-react";
 import "./year-one.css";
 
-const chapters = [
-  {
-    time: "0:00 – 0:35",
-    title: "The opening",
-    body: "Silence, the door, empty chairs, clippers waking up. A year ago we started with a vision.",
-    Icon: DoorOpen,
-  },
-  {
-    time: "0:35 – 1:15",
-    title: "The vision",
-    body: "Why Barbazza exists in Kigali — craft in black & white, chairs with intention, a house standard.",
-    Icon: Target,
-  },
-  {
-    time: "1:15 – 2:00",
-    title: "The numbers",
-    body: "Services, clients, returns, days open — large quiet typography over real shop footage.",
-    Icon: Eye,
-  },
-  {
-    time: "2:00 – 3:05",
-    title: "The hard part",
-    body: "After close. Decisions. Mistakes. The work people don’t see. Growth that wasn’t comfortable.",
-    Icon: Mic2,
-  },
-  {
-    time: "3:05 – 4:05",
-    title: "The people",
-    body: "Barbers, clients, the team that opens early and stays late. The chairs that give the brand life.",
-    Icon: Users,
-  },
-  {
-    time: "4:05 – 5:10",
-    title: "Next chapter",
-    body: "One year. More than a cut. Gratitude, logo, pull-back — and we’re just getting started.",
-    Icon: Sparkles,
-  },
-];
-
-const inspirations = [
+const videos = [
   {
     id: "28OYtRKo1PQ",
     title: "The Belmont Barbershop",
-    blurb: "Small Business Revolution — calm craft, community, and the real work behind a classic shop.",
-    meta: "YouTube · Documentary short",
+    blurb:
+      "Small Business Revolution Story #35. Study the calm pace, natural shop sound, and how ownership, craft, and community sit in one short documentary.",
   },
   {
     id: "1amOPUn49aM",
     title: "The Barber of Little Rock",
-    blurb: "Oscar-nominated New Yorker short — purpose, teaching, and building beyond the chair.",
-    meta: "YouTube · The New Yorker",
+    blurb:
+      "Oscar-nominated New Yorker documentary short. Study purpose beyond the cut — teaching, equity, and building something larger than a single chair.",
   },
   {
     id: "G0RbgK1r21Y",
-    title: "Schorem Barbers",
-    blurb: "Rotterdam documentary energy — identity, brotherhood, and a brand born from the floor.",
-    meta: "YouTube · Extended cut",
+    title: "Schorem Barbers — Extended Documentary",
+    blurb:
+      "Rotterdam identity film. Useful for brand attitude, brotherhood, and how a shop’s personality becomes the story.",
   },
   {
     id: "1gPmgIt9524",
     title: "Mr. Moore’s Barber Shop",
-    blurb: "A neighborhood house of trust — generational craft and community as the real product.",
-    meta: "YouTube · Community film",
+    blurb:
+      "A neighborhood house of trust across generations. Study interview warmth, community memory, and quiet pride.",
   },
   {
     id: "OVzhcmGRDL0",
-    title: "Miguel’s Riverside Barber Shop",
-    blurb: "Small Business Revolution Main Street — a sneak peek at barbershop storytelling on screen.",
-    meta: "YouTube · Sneak peek",
+    title: "Miguel’s Riverside Barber Shop — Sneak Peek",
+    blurb:
+      "Small Business Revolution Main Street sneak peek. Useful reference for short, story-led barbershop framing.",
   },
 ];
 
-const collect = [
-  { title: "Opening date", detail: "The day Barbazza officially opened the doors." },
-  { title: "Real numbers", detail: "Services, unique clients, returns, barbers, days open." },
-  { title: "Challenges", detail: "3–5 hard truths you’re willing to say on camera." },
-  { title: "Year-two vision", detail: "What the next chapter must protect and grow." },
-  { title: "Early footage", detail: "Setup, first clients, branding, empty chairs — archive or honest recreations." },
-  { title: "Team moments", detail: "Barbers, manager, cleaner, clients — people who feel seen." },
-];
-
-function fadeUp(reduce: boolean | null, delay = 0) {
-  return {
-    initial: reduce ? false : { opacity: 0, y: 18 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, amount: 0.25 },
-    transition: { duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] as const },
-  };
+function VideoBlock({
+  id,
+  title,
+  blurb,
+}: {
+  id: string;
+  title: string;
+  blurb: string;
+}) {
+  return (
+    <div className="ydoc-video">
+      <div className="ydoc-video-frame">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1`}
+          title={title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
+        />
+      </div>
+      <div className="ydoc-video-caption">
+        <strong>{title}</strong>
+        <p>{blurb}</p>
+      </div>
+    </div>
+  );
 }
 
-export default function YearOneDocumentaryPage() {
-  const reduce = useReducedMotion();
-
+export default function YearOneDocumentPage() {
   return (
-    <div className="yo">
-      <header className="yo-nav">
-        <Link href="/" className="yo-nav-brand" aria-label="Barbazza home">
-          <img src="/logo.png" alt="" />
-          <span className="yo-nav-mark">Year One</span>
-        </Link>
-        <nav className="yo-nav-links" aria-label="Sections">
-          <a href="#film">Film</a>
-          <a href="#look">Look</a>
-          <a href="#numbers">Numbers</a>
-          <a href="#inspire">Inspiration</a>
+    <div className="ydoc">
+      <header className="ydoc-topbar">
+        <Link href="/">Barbazza</Link>
+        <nav aria-label="Document sections">
+          <a href="#concept">Concept</a>
+          <a href="#script">Script</a>
+          <a href="#interviews">Interviews</a>
           <a href="#produce">Produce</a>
+          <a href="#inspire">Films</a>
         </nav>
-        <a className="yo-nav-cta" href="https://www.thebarbazza.com/book">
-          Book a chair
-        </a>
+        <a href="https://www.thebarbazza.com/book">Book a chair</a>
       </header>
 
-      <section className="yo-hero">
-        <motion.div
-          className="yo-hero-media"
-          aria-hidden
-          initial={reduce ? false : { scale: 1.1 }}
-          animate={reduce ? undefined : { scale: 1 }}
-          transition={{ duration: 14, ease: [0.22, 1, 0.36, 1] }}
-        />
-        <div className="yo-hero-veil" aria-hidden />
-        <div className="yo-hero-grain" aria-hidden />
-        <div className="yo-hero-copy">
-          <motion.p
-            className="yo-kicker"
-            initial={reduce ? false : { opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-          >
-            <Film /> Documentary brief · Barbazza Kigali
-          </motion.p>
-          <motion.h1
-            initial={reduce ? false : { opacity: 0, y: 22 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
-          >
-            BARBAZZA
-            <em>Year one. More than a cut.</em>
-          </motion.h1>
-          <motion.p
-            className="yo-hero-lede"
-            initial={reduce ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.48 }}
-          >
-            A calm, cinematic anniversary film about building a barbershop in Ubutare — the vision, the numbers,
-            the hard days, the chairs, and the people who made year one real.
-          </motion.p>
-          <motion.div
-            className="yo-hero-meta"
-            initial={reduce ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
-          >
-            <span>~4–5 minutes</span>
-            <span>Founder VO + interviews</span>
-            <span>Craft in black &amp; white</span>
-          </motion.div>
-        </div>
-        <div className="yo-scroll-hint">Scroll the story</div>
-      </section>
+      <main className="ydoc-sheet">
+        <header className="ydoc-cover">
+          <p className="ydoc-cover-meta">
+            <span>Internal production document</span>
+            <span>Version 1.0</span>
+            <span>Runtime target: 4–5 minutes</span>
+          </p>
+          <h1>
+            BARBAZZA — YEAR ONE
+            <em>More than a cut. A documentary production brief.</em>
+          </h1>
+          <p className="ydoc-cover-summary">
+            This is the working document for Barbazza’s first-anniversary film: a calm, cinematic short about
+            building a barbershop in Ubutare, Kigali — the vision, the numbers, the hard days, the team, and what
+            comes next. It is not an advertisement deck. It is the script, shot plan, interview guide, brand look,
+            and reference films for production.
+          </p>
+          <div className="ydoc-cover-grid">
+            <div>
+              <strong>Title</strong>
+              Barbazza — Year One. More than a cut.
+            </div>
+            <div>
+              <strong>Form</strong>
+              Founder VO + barber/client interviews + shop vérité
+            </div>
+            <div>
+              <strong>Place</strong>
+              186 KK 31 Ave, Ubutare, Kigali
+            </div>
+            <div>
+              <strong>Look</strong>
+              Craft in black &amp; white · bold stripes · quiet paper/ink
+            </div>
+            <div>
+              <strong>Central line</strong>
+              One year ago we had a vision. Today we have a story.
+            </div>
+            <div>
+              <strong>Contact</strong>
+              +250 791 345 455 · thebarbazza.com
+            </div>
+          </div>
+        </header>
 
-      <section className="yo-section" id="concept">
-        <motion.p className="yo-eyebrow" {...fadeUp(reduce)}>
-          <Clapperboard /> The concept
-        </motion.p>
-        <motion.h2 {...fadeUp(reduce, 0.05)}>Not an advert. A short documentary.</motion.h2>
-        <motion.p className="yo-lede" {...fadeUp(reduce, 0.1)}>
-          One year ago we had a vision. Today we have a story — and we are still building. This film should make
-          clients proud to belong here, make every barber feel seen, and show the human side of Barbazza beyond the
-          fade.
-        </motion.p>
+        <nav className="ydoc-toc" aria-label="Table of contents">
+          <h2>Contents</h2>
+          <ol>
+            <li>
+              <a href="#concept">
+                1. Concept &amp; intention <span>p.01</span>
+              </a>
+            </li>
+            <li>
+              <a href="#structure">
+                2. Film structure <span>p.02</span>
+              </a>
+            </li>
+            <li>
+              <a href="#script">
+                3. Full shooting script <span>p.03</span>
+              </a>
+            </li>
+            <li>
+              <a href="#numbers">
+                4. Numbers to collect <span>p.04</span>
+              </a>
+            </li>
+            <li>
+              <a href="#interviews">
+                5. Interview guide <span>p.05</span>
+              </a>
+            </li>
+            <li>
+              <a href="#look">
+                6. Visual &amp; brand language <span>p.06</span>
+              </a>
+            </li>
+            <li>
+              <a href="#produce">
+                7. Production notes <span>p.07</span>
+              </a>
+            </li>
+            <li>
+              <a href="#inspire">
+                8. Reference films (playable) <span>p.08</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
 
-        <div className="yo-grid-2">
-          <motion.blockquote className="yo-quote" {...fadeUp(reduce, 0.05)}>
-            “We started with a vision. One year later, we have a story. Year one. More than a cut. And we’re just
-            getting started.”
-            <cite>Closing line · Founder VO</cite>
-          </motion.blockquote>
-          <motion.div className="yo-film-strip" {...fadeUp(reduce, 0.12)}>
-            <figure>
+        <section className="ydoc-section" id="concept">
+          <h2>1. Concept &amp; intention</h2>
+          <p>
+            Barbazza is one year old. The film should feel like a short documentary about building something from
+            almost nothing: ambition, discipline, mistakes, brotherhood, craft, and the people behind the chairs. It
+            should make clients proud to be part of Barbazza, make every barber feel valued, and show the human side
+            of the business — not only the haircut.
+          </p>
+          <div className="ydoc-note">
+            Creative rule: do not celebrate a perfect year. Celebrate what it took to reach one year. The founder
+            narrates the vision, but is not the hero. The chairs, the clients, and the daily work carry the film.
+          </div>
+          <p>
+            Working title options considered: <em>One Year. One Vision. A Thousand Stories.</em> ·{" "}
+            <em>The First Chapter.</em> · <em>Built Through the Struggle.</em> · <em>More Than a Barbershop.</em>
+            Recommended lock: <strong>BARBAZZA — YEAR ONE. MORE THAN A CUT.</strong>
+          </p>
+          <p>
+            Tone: calm, precise, Kigali-rooted. Language from the brand: chairs, craft, black &amp; white, book your
+            chair, intention. Avoid corporate filler and fake numbers.
+          </p>
+        </section>
+
+        <section className="ydoc-section" id="structure">
+          <h2>2. Film structure</h2>
+          <p>
+            Approximate runtime 4–5 minutes. Timing is a guide. Authenticity and emotion outrank a forced clock.
+          </p>
+          <div className="ydoc-table-wrap">
+            <table className="ydoc-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Segment</th>
+                  <th>What the viewer experiences</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>0:00–0:35</td>
+                  <td>Opening</td>
+                  <td>Silence, door, lights, clippers, empty chairs, founder enters</td>
+                </tr>
+                <tr>
+                  <td>0:35–1:15</td>
+                  <td>Vision</td>
+                  <td>Why Barbazza was built; early days; house standard</td>
+                </tr>
+                <tr>
+                  <td>1:15–2:00</td>
+                  <td>Numbers</td>
+                  <td>Real milestones, one figure at a time, over craft footage</td>
+                </tr>
+                <tr>
+                  <td>2:00–3:05</td>
+                  <td>Challenges</td>
+                  <td>Hard decisions, quiet after close, honest interviews</td>
+                </tr>
+                <tr>
+                  <td>3:05–4:05</td>
+                  <td>People</td>
+                  <td>Team, clients, gratitude; strongest 5–15s soundbites</td>
+                </tr>
+                <tr>
+                  <td>4:05–4:40</td>
+                  <td>Celebration</td>
+                  <td>One year marked without becoming a party commercial</td>
+                </tr>
+                <tr>
+                  <td>4:40–5:10</td>
+                  <td>Next chapter</td>
+                  <td>Final VO, logo, end card with address and contact</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="ydoc-section" id="script">
+          <h2>3. Full shooting script</h2>
+          <p>
+            Founder voiceover is written in first person. Leave room for silence and natural shop sound. Do not rush
+            the VO over every frame.
+          </p>
+
+          <article className="ydoc-scene">
+            <div className="ydoc-scene-head">
+              <span>Scene 1</span>
+              <span>0:00–0:35 · Minimal music</span>
+            </div>
+            <h3>The opening — “A year ago…”</h3>
+            <span className="ydoc-label">Visuals</span>
+            <ul>
+              <li>Black screen → door opening → lights on</li>
+              <li>Clippers plugged in; cape shaken; tools cleaned</li>
+              <li>Empty chairs before the rush; founder walking in from behind</li>
+              <li>No talking for the first beats — only natural sound</li>
+            </ul>
+            <span className="ydoc-label">CEO voiceover</span>
+            <pre className="ydoc-vo">{`A year ago, we opened a door on KK 31 Avenue.
+Not just to cut hair — to build a place in Kigali where the chair meant something.
+Confidence. Craft. A team that shows up.
+We didn’t know every step.
+We only knew the standard we wanted Barbazza to hold.
+And this… is the story of our first year.`}</pre>
+            <p>Hold two seconds. Soft music enters. On-screen: BARBAZZA · YEAR ONE.</p>
+          </article>
+
+          <article className="ydoc-scene">
+            <div className="ydoc-scene-head">
+              <span>Scene 2</span>
+              <span>0:35–1:15</span>
+            </div>
+            <h3>The beginning — “We didn’t know everything”</h3>
+            <span className="ydoc-label">Visuals</span>
+            <ul>
+              <li>Early photos/video; setup; first clients; first chairs</li>
+              <li>Barbers preparing stations; branding in black &amp; white</li>
+              <li>If recreating early moments, do not present them as archive</li>
+            </ul>
+            <span className="ydoc-label">CEO voiceover</span>
+            <pre className="ydoc-vo">{`We wanted Barbazza to feel like craft in black and white — clean, intentional, honest.
+Classic cuts. Fades. Lining. Kids. Women’s styling. Braids. Nail care.
+Different hands. Different chairs. One house standard.
+Starting meant more than ambition.
+It meant learning the business while we were already open.
+Building a team. A culture. A name people could trust in Ubutare.
+None of that happens in a week.`}</pre>
+            <p>Transition: cape on a client → clipper sound → into numbers.</p>
+          </article>
+
+          <article className="ydoc-scene">
+            <div className="ydoc-scene-head">
+              <span>Scene 3</span>
+              <span>1:15–2:00</span>
+            </div>
+            <h3>One year in numbers — “The impact”</h3>
+            <span className="ydoc-label">Visuals</span>
+            <ul>
+              <li>Large, quiet typography over real shop footage</li>
+              <li>One number at a time; 2–3 seconds each; no flashy motion</li>
+            </ul>
+            <span className="ydoc-label">CEO voiceover (fill brackets with real figures)</span>
+            <pre className="ydoc-vo">{`One year later, the work has a shape.
+[NUMBER] services.
+[NUMBER] people who sat in our chairs.
+[NUMBER] who came back.
+[NUMBER] barbers who have been part of this journey.
+[NUMBER] days we opened the doors.
+Behind every number is a conversation, a finish, a reason someone returned.
+The numbers show how far we’ve come.
+They don’t show what it took.`}</pre>
+          </article>
+
+          <article className="ydoc-scene">
+            <div className="ydoc-scene-head">
+              <span>Scene 4</span>
+              <span>2:00–3:05 · Emotional core</span>
+            </div>
+            <h3>The challenges — “The part you don’t see”</h3>
+            <span className="ydoc-label">Visuals</span>
+            <ul>
+              <li>After close; quiet shop; cleaning stations; stock count</li>
+              <li>Founder alone near the entrance; focused cuts; team meeting</li>
+              <li>No staged sadness — keep it real</li>
+            </ul>
+            <span className="ydoc-label">CEO voiceover</span>
+            <pre className="ydoc-vo">{`The part people don’t see is the part that builds the place.
+Days that didn’t go to plan.
+Decisions that cost sleep.
+Standards we had to hold when it would have been easier to lower them.
+We got things wrong. We adjusted. We kept the chairs honest.
+Growth isn’t always comfortable.
+For Barbazza, it was necessary.`}</pre>
+            <p>Intercut short interview answers (5–12 seconds). Keep pauses and breath.</p>
+          </article>
+
+          <article className="ydoc-scene">
+            <div className="ydoc-scene-head">
+              <span>Scene 5</span>
+              <span>3:05–4:05</span>
+            </div>
+            <h3>The people — “We didn’t build this alone”</h3>
+            <span className="ydoc-label">Visuals</span>
+            <ul>
+              <li>Barbers helping each other; clients arriving; finish in the mirror</li>
+              <li>Busy floor; manager/cleaner moments if they consent</li>
+              <li>Soft group energy — not a commercial smile reel</li>
+            </ul>
+            <span className="ydoc-label">CEO voiceover</span>
+            <pre className="ydoc-vo">{`If this year has one truth, it’s the people.
+Barbazza was never going to be one person.
+It takes barbers who protect the craft.
+Clients who trust us with their time and their look.
+A team that opens early, stays late, and holds the house together.
+To our chairs — thank you for the work, every day.
+To everyone who walked through that door, recommended a friend, and came back — you are part of this story.
+A brand can have a name.
+People give it life.`}</pre>
+          </article>
+
+          <article className="ydoc-scene">
+            <div className="ydoc-scene-head">
+              <span>Scene 6</span>
+              <span>4:05–4:40</span>
+            </div>
+            <h3>Celebration — “One year. We made it.”</h3>
+            <span className="ydoc-label">Visuals</span>
+            <ul>
+              <li>Full energy; logo detail; team together; founder in the shop</li>
+              <li>If there is a celebration, keep it intimate</li>
+            </ul>
+            <span className="ydoc-label">CEO voiceover</span>
+            <pre className="ydoc-vo">{`Today we mark one year.
+One year of showing up.
+One year of learning.
+One year of building Barbazza in Kigali.
+We’re proud of what this house has become.
+We’re more interested in what it becomes next.`}</pre>
+          </article>
+
+          <article className="ydoc-scene">
+            <div className="ydoc-scene-head">
+              <span>Scene 7</span>
+              <span>4:40–5:10</span>
+            </div>
+            <h3>Next chapter — “We’re just getting started”</h3>
+            <span className="ydoc-label">Visuals</span>
+            <ul>
+              <li>Founder walks the floor → stops → looks → camera pulls back → logo → fade black</li>
+            </ul>
+            <span className="ydoc-label">CEO final voiceover</span>
+            <pre className="ydoc-vo">{`We started with a vision.
+One year later, we have a story.
+We’re not done.
+Higher standard. Cleaner craft. Stronger team. More people who find their chair here.
+To everyone in the first chapter of Barbazza — thank you.
+This is Barbazza.
+Year one.
+More than a cut.
+And we’re just getting started.`}</pre>
+            <span className="ydoc-label">Final card (hold ~4s)</span>
+            <pre className="ydoc-vo">{`BARBAZZA
+YEAR ONE
+More than a cut.
+
+186 KK 31 Ave, Ubutare, Kigali
+thebarbazza.com
++250 791 345 455`}</pre>
+          </article>
+        </section>
+
+        <section className="ydoc-section" id="numbers">
+          <h2>4. Numbers to collect before VO lock</h2>
+          <p>
+            Do not invent figures. Fill this table from Barbazza Pro / booking records / Google Business, then lock
+            Scene 3.
+          </p>
+          <div className="ydoc-table-wrap">
+            <table className="ydoc-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>What to measure</th>
+                  <th>Your figure</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Opening date</td>
+                  <td>Official first day open</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Services</td>
+                  <td>Total haircuts / services delivered</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Clients</td>
+                  <td>Unique clients, if tracked</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Returns</td>
+                  <td>Returning clients or return rate</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Barbers</td>
+                  <td>Current team + who passed through</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Days open</td>
+                  <td>Operating days in year one</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Public milestone</td>
+                  <td>Optional (online booking, new service, etc.)</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Revenue</td>
+                  <td>Only if you want it public — otherwise skip</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="ydoc-note">
+            Also collect: 3–5 challenges you are willing to say on camera; three achievements; one memorable moment;
+            what you learned as founder; year-two goals.
+          </div>
+        </section>
+
+        <section className="ydoc-section" id="interviews">
+          <h2>5. Interview guide</h2>
+          <p>
+            Do not ask people to memorize speeches. Have a conversation. Keep the interviewer off camera. Barbers look
+            slightly beside the lens. Founder may look into camera for one or two closing lines.
+          </p>
+          <h3>Questions for barbers</h3>
+          <ul>
+            <li>What has been the most difficult thing for you during this first year?</li>
+            <li>What is something you had to learn the hard way?</li>
+            <li>Was there a moment you felt discouraged, and what helped you keep going?</li>
+            <li>What is one thing we could have done better as a team?</li>
+            <li>How has Barbazza changed you as a barber or as a person?</li>
+            <li>What does being part of Barbazza mean to you?</li>
+          </ul>
+          <h3>One angle per barber (avoid repetition)</h3>
+          <ul>
+            <li>
+              <strong>Growth:</strong> What has changed in you since you started here?
+            </li>
+            <li>
+              <strong>Team:</strong> What do you appreciate most about this team?
+            </li>
+            <li>
+              <strong>Struggle:</strong> What has been the toughest moment in this journey?
+            </li>
+            <li>
+              <strong>Craft:</strong> What have you learned about the cut that you didn’t know before?
+            </li>
+            <li>
+              <strong>Future:</strong> Where should Barbazza be one year from now?
+            </li>
+          </ul>
+          <h3>Questions for the founder</h3>
+          <ul>
+            <li>What was your biggest fear when starting Barbazza?</li>
+            <li>What decision was hardest this year?</li>
+            <li>What did you get wrong in year one?</li>
+            <li>What did this business teach you about leadership?</li>
+            <li>What moment almost made you rethink the journey?</li>
+            <li>What are you proud of that people never see?</li>
+          </ul>
+          <h3>Questions for clients</h3>
+          <ul>
+            <li>Why do you choose Barbazza?</li>
+            <li>What makes the experience different?</li>
+            <li>How long have you been coming here?</li>
+            <li>What would you tell someone who has never visited?</li>
+          </ul>
+          <p>Final edit: use only 3–5 strong answers total. Cut the rest.</p>
+        </section>
+
+        <section className="ydoc-section" id="look">
+          <h2>6. Visual &amp; brand language</h2>
+          <p>
+            From Barbazza brand work: strictly black and white. Bold, straight, larger stripes for uniform and cape.
+            No sports-themed decoration. The film should feel like craft on paper — ink, grain, quiet luxury.
+          </p>
+          <div className="ydoc-figures">
+            <figure className="ydoc-figure">
+              <img src="/year-one/stripe-polo.jpg" alt="Black and white striped barber polo direction" />
+              <figcaption>Figure A — Uniform direction</figcaption>
+            </figure>
+            <figure className="ydoc-figure">
+              <img src="/year-one/stripe-cape.jpg" alt="Matching striped barber cape" />
+              <figcaption>Figure B — Cape language</figcaption>
+            </figure>
+          </div>
+          <div className="ydoc-figures four">
+            <figure className="ydoc-figure">
               <img src="/year-one/craft-cut.jpg" alt="Precise cut in the chair" />
               <figcaption>Craft</figcaption>
             </figure>
-            <figure>
-              <img src="/year-one/twin-chairs.jpg" alt="Two barbers working side by side" />
+            <figure className="ydoc-figure">
+              <img src="/year-one/twin-chairs.jpg" alt="Two barbers working" />
               <figcaption>Chairs</figcaption>
             </figure>
-            <figure>
-              <img src="/year-one/tools-detail.jpg" alt="Barber tools detail" />
+            <figure className="ydoc-figure">
+              <img src="/year-one/tools-detail.jpg" alt="Barber tools" />
               <figcaption>Tools</figcaption>
             </figure>
-            <figure>
-              <img src="/year-one/high-five.jpg" alt="Team energy after a cut" />
-              <figcaption>Team</figcaption>
+            <figure className="ydoc-figure">
+              <img src="/year-one/quiet-close.jpg" alt="Quiet end of day mood" />
+              <figcaption>After close</figcaption>
             </figure>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="yo-section--mist" id="film">
-        <div className="yo-section-inner">
-          <motion.p className="yo-eyebrow" {...fadeUp(reduce)}>
-            <Scissors /> Film structure
-          </motion.p>
-          <motion.h2 {...fadeUp(reduce, 0.05)}>Seven beats. One house story.</motion.h2>
-          <motion.p className="yo-lede" {...fadeUp(reduce, 0.1)}>
-            Flexible timing. Authenticity over a forced clock. Shop sound is half the soundtrack — clippers, door,
-            laughter, footsteps.
-          </motion.p>
-
-          <div className="yo-chapters">
-            {chapters.map((chapter, i) => (
-              <motion.article className="yo-chapter" key={chapter.title} {...fadeUp(reduce, i * 0.04)}>
-                <div className="yo-chapter-top">
-                  <div className="yo-chapter-icon" aria-hidden>
-                    <chapter.Icon strokeWidth={1.6} />
-                  </div>
-                  <span className="yo-chapter-time">{chapter.time}</span>
-                </div>
-                <h3>{chapter.title}</h3>
-                <p>{chapter.body}</p>
-              </motion.article>
-            ))}
           </div>
-        </div>
-      </section>
+          <h3>Shot types to capture</h3>
+          <ol>
+            <li>
+              <strong>Establishing:</strong> exterior, entrance, chairs, mirrors, signage; before open and at peak.
+            </li>
+            <li>
+              <strong>Detail:</strong> clippers, scissors, hands, cape, reflections, finish, textures.
+            </li>
+            <li>
+              <strong>Interviews:</strong> quiet corner, soft light, fixed camera, clean audio.
+            </li>
+            <li>
+              <strong>Natural moments:</strong> jokes, prep, teamwork — do not over-direct.
+            </li>
+            <li>
+              <strong>Founder:</strong> walking in, observing, sitting alone, one direct-to-camera moment.
+            </li>
+          </ol>
+        </section>
 
-      <section className="yo-section" id="look">
-        <motion.p className="yo-eyebrow" {...fadeUp(reduce)}>
-          <Camera /> Visual language
-        </motion.p>
-        <motion.h2 {...fadeUp(reduce, 0.05)}>Black &amp; white. Bold. Straight.</motion.h2>
-        <motion.p className="yo-lede" {...fadeUp(reduce, 0.1)}>
-          The Barbazza look from the brand work — strict monochrome, strong stripe language for uniforms and cape,
-          no sports clutter. The film should feel like craft on paper: ink, grain, quiet luxury.
-        </motion.p>
+        <section className="ydoc-section" id="produce">
+          <h2>7. Production notes</h2>
+          <h3>Music &amp; sound</h3>
+          <ul>
+            <li>
+              <strong>Opening:</strong> almost silence → soft ambient / piano
+            </li>
+            <li>
+              <strong>Vision:</strong> gentle lift
+            </li>
+            <li>
+              <strong>Numbers:</strong> sparse, confident
+            </li>
+            <li>
+              <strong>Challenges:</strong> low and restrained — no trailer drums
+            </li>
+            <li>
+              <strong>People / celebration:</strong> warm rhythm
+            </li>
+            <li>
+              <strong>Close:</strong> soft rise → fade under logo
+            </li>
+          </ul>
+          <p>
+            Shop sound is half the soundtrack. Mute music in places so clippers, door, and conversation can breathe.
+          </p>
+          <h3>Checklist before camera day</h3>
+          <ul>
+            <li>Opening date and locked numbers table</li>
+            <li>Consent from every barber / client on camera</li>
+            <li>Early footage folder (or honest recreations plan)</li>
+            <li>Interview shortlist and quiet interview corner</li>
+            <li>Uniform / cape / logo continuity for brand shots</li>
+            <li>End-card text proofed (address, phone, domain)</li>
+          </ul>
+        </section>
 
-        <motion.div className="yo-brand-board" {...fadeUp(reduce, 0.08)}>
-          <div className="yo-brand-main">
-            <img src="/year-one/stripe-polo.jpg" alt="Black and white striped barber polo direction" />
-            <div className="yo-brand-note">Uniform direction · bold vertical stripes</div>
-          </div>
-          <div className="yo-brand-side">
-            <div>
-              <img src="/year-one/stripe-cape.jpg" alt="Matching striped barber cape" />
-              <div className="yo-brand-note">Cape · same stripe language</div>
-            </div>
-            <div>
-              <img src="/year-one/firm-shop.jpg" alt="Moody barbershop interior reference" />
-              <div className="yo-brand-note">Shop mood · shadow &amp; steel</div>
-            </div>
-          </div>
-        </motion.div>
-
-        <div className="yo-vo">
-          <p>Shoot early morning empty chairs and peak-hour energy.</p>
-          <p>Detail shots: hands, clippers, cape shake, mirror lines, finish.</p>
-          <p>Interviews off-lens. Founder looks into camera only for the close.</p>
-        </div>
-      </section>
-
-      <section className="yo-section--dark" id="numbers">
-        <div className="yo-section-inner">
-          <motion.p className="yo-eyebrow" {...fadeUp(reduce)}>
-            <Eye /> One year in numbers
-          </motion.p>
-          <motion.h2 {...fadeUp(reduce, 0.05)}>Proof without flash.</motion.h2>
-          <motion.p className="yo-lede" {...fadeUp(reduce, 0.1)}>
-            Fill every figure with real Barbazza data before the final VO. One number on screen at a time. No
-            invented milestones.
-          </motion.p>
-
-          <div className="yo-stats">
-            {[
-              ["[Services]", "Haircuts & services delivered"],
-              ["[Clients]", "People who sat in our chairs"],
-              ["[Returns]", "Who came back"],
-              ["[Days]", "Days the doors opened"],
-            ].map(([value, label]) => (
-              <div className="yo-stat" key={label}>
-                <strong>{value}</strong>
-                <span>{label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="yo-vo">
-            <p>Behind every number is a conversation, a finish, a reason someone returned.</p>
-            <p>The numbers show how far we’ve come. They don’t show what it took.</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="yo-section" id="voice">
-        <div className="yo-grid-2">
-          <div>
-            <motion.p className="yo-eyebrow" {...fadeUp(reduce)}>
-              <Mic2 /> Founder voice
-            </motion.p>
-            <motion.h2 {...fadeUp(reduce, 0.05)}>Carry the vision. Don’t steal the hero role.</motion.h2>
-            <motion.p className="yo-lede" {...fadeUp(reduce, 0.1)}>
-              You narrate the arc. The barbers, clients, and daily craft carry the emotion. Keep VO short enough for
-              silence and shop sound to breathe.
-            </motion.p>
-          </div>
-          <motion.div {...fadeUp(reduce, 0.12)}>
-            <img
-              src="/year-one/quiet-close.jpg"
-              alt="Quiet end-of-day barbershop mood"
-              style={{ width: "100%", display: "block", filter: "grayscale(1) contrast(1.05)" }}
-            />
-          </motion.div>
-        </div>
-
-        <div className="yo-vo">
-          <p>A year ago, we opened a door on KK 31 Avenue.</p>
-          <p>Not just to cut hair — to build a place in Kigali where the chair meant something.</p>
-          <p>Confidence. Craft. A team that shows up.</p>
-        </div>
-      </section>
-
-      <section className="yo-section--mist" id="inspire">
-        <div className="yo-section-inner">
-          <motion.p className="yo-eyebrow" {...fadeUp(reduce)}>
-            <Play /> Watch before you shoot
-          </motion.p>
-          <motion.h2 {...fadeUp(reduce, 0.05)}>Inspiration reels</motion.h2>
-          <motion.p className="yo-lede" {...fadeUp(reduce, 0.1)}>
-            Study tone, pacing, and honesty — not to copy, but to aim the Barbazza film at the same level of care.
-            Open each on YouTube.
-          </motion.p>
-
-          <div className="yo-inspo">
-            {inspirations.map((item, i) => (
-              <motion.a
-                key={item.id}
-                className="yo-inspo-card"
-                href={`https://www.youtube.com/watch?v=${item.id}`}
-                target="_blank"
-                rel="noreferrer"
-                {...fadeUp(reduce, i * 0.05)}
-              >
-                <div className="yo-inspo-thumb">
-                  <img
-                    src={`https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`}
-                    alt=""
-                    loading="lazy"
-                  />
-                  <div className="yo-inspo-play" aria-hidden>
-                    <span>
-                      <Play fill="currentColor" />
-                    </span>
-                  </div>
-                </div>
-                <div className="yo-inspo-body">
-                  <strong>{item.title}</strong>
-                  <p>{item.blurb}</p>
-                  <div className="yo-inspo-meta">
-                    {item.meta} · Watch <ExternalLink style={{ width: 11, height: 11, display: "inline" }} />
-                  </div>
-                </div>
-              </motion.a>
-            ))}
-
-            <motion.a
-              className="yo-inspo-card"
+        <section className="ydoc-section" id="inspire">
+          <h2>8. Reference films — watch on this page</h2>
+          <p>
+            These are production references, not content to copy shot-for-shot. Study tone, honesty, pacing, and how
+            shop sound sits under voice. Press play below — each film embeds here.
+          </p>
+          {videos.map((video) => (
+            <VideoBlock key={video.id} {...video} />
+          ))}
+          <div className="ydoc-note">
+            Additional reading (not a video):{" "}
+            <a
               href="https://www.whereweconverge.com/post/more-than-a-cut-j-styles-barber-shops-25-years-as-a-south-seattle-community-hub"
               target="_blank"
               rel="noreferrer"
-              {...fadeUp(reduce, 0.2)}
             >
-              <div className="yo-inspo-thumb">
-                <img src="/year-one/firm-shop.jpg" alt="" />
-                <div className="yo-inspo-play" aria-hidden>
-                  <span>
-                    <ExternalLink />
-                  </span>
-                </div>
-              </div>
-              <div className="yo-inspo-body">
-                <strong>More Than a Cut — J Styles</strong>
-                <p>
-                  Converge Media feature on a 25-year community barbershop — the same “more than a cut” spirit as
-                  Barbazza’s title.
-                </p>
-                <div className="yo-inspo-meta">Article · Reading reference</div>
-              </div>
-            </motion.a>
+              More Than a Cut — J Styles Barber Shop (Converge Media)
+            </a>
+            . Same “more than a cut” spirit as Barbazza’s title.
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="yo-section" id="produce">
-        <motion.p className="yo-eyebrow" {...fadeUp(reduce)}>
-          <ListChecks /> Produce
-        </motion.p>
-        <motion.h2 {...fadeUp(reduce, 0.05)}>Collect before the camera rolls.</motion.h2>
-        <motion.p className="yo-lede" {...fadeUp(reduce, 0.1)}>
-          The real Barbazza story is what makes this film unique. Don’t invent numbers or struggles that weren’t
-          lived.
-        </motion.p>
-
-        <div className="yo-checklist">
-          {collect.map((item, i) => (
-            <motion.div className="yo-check" key={item.title} {...fadeUp(reduce, i * 0.04)}>
-              <Handshake strokeWidth={1.6} />
-              <div>
-                <strong>{item.title}</strong>
-                <span>{item.detail}</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="yo-grid-2" style={{ marginTop: "3rem" }}>
-          <motion.div {...fadeUp(reduce)}>
-            <p className="yo-eyebrow">
-              <Music2 /> Sound
-            </p>
-            <h3 style={{ fontFamily: "var(--yo-display)", fontSize: "1.8rem", margin: "0 0 0.75rem", fontWeight: 500 }}>
-              Music under. Shop on top.
-            </h3>
-            <p className="yo-lede" style={{ marginTop: 0 }}>
-              Opening almost silent. Challenges restrained. People warm. Closing soft rise then fade under the logo.
-              Mute the score in places so clippers and talk can breathe.
-            </p>
-          </motion.div>
-          <motion.div {...fadeUp(reduce, 0.08)}>
-            <p className="yo-eyebrow">
-              <MapPin /> Place
-            </p>
-            <h3 style={{ fontFamily: "var(--yo-display)", fontSize: "1.8rem", margin: "0 0 0.75rem", fontWeight: 500 }}>
-              186 KK 31 Ave, Ubutare
-            </h3>
-            <p className="yo-lede" style={{ marginTop: 0 }}>
-              End card: BARBAZZA · YEAR ONE · More than a cut · thebarbazza.com · +250 791 345 455
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="yo-final">
-        <motion.h2 {...fadeUp(reduce)}>This is Barbazza. Year one.</motion.h2>
-        <motion.p {...fadeUp(reduce, 0.08)}>
-          Craft in black &amp; white. Book a barber — or help us finish the film that tells how we got here.
-        </motion.p>
-        <motion.div className="yo-final-actions" {...fadeUp(reduce, 0.12)}>
-          <a className="yo-btn yo-btn--ink" href="https://www.thebarbazza.com/book">
-            Book a barber
-          </a>
-          <a className="yo-btn yo-btn--ghost" href="https://www.thebarbazza.com/team">
-            Meet the chairs
-          </a>
-          <a className="yo-btn yo-btn--ghost" href="https://www.youtube.com/watch?v=28OYtRKo1PQ" target="_blank" rel="noreferrer">
-            Watch a reference
-          </a>
-        </motion.div>
-      </section>
-
-      <footer className="yo-footer">
-        <span>Barbazza · Year One documentary brief</span>
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          <a href="https://www.thebarbazza.com">thebarbazza.com</a>
-          <a href="https://year.thebarbazza.com">year.thebarbazza.com</a>
-          <a href="tel:+250791345455">+250 791 345 455</a>
-        </div>
-      </footer>
+        <footer className="ydoc-end">
+          <p>
+            Barbazza Year One — production document ·{" "}
+            <a href="https://www.thebarbazza.com">thebarbazza.com</a> ·{" "}
+            <a href="https://www.thebarbazza.com/year-one">www.thebarbazza.com/year-one</a> ·{" "}
+            <a href="https://year.thebarbazza.com">year.thebarbazza.com</a>
+          </p>
+        </footer>
+      </main>
     </div>
   );
 }
