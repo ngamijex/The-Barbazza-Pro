@@ -1,48 +1,129 @@
 import Link from "next/link";
 import "./year-one.css";
 
-const videos = [
+type RefVideo = { id: string; title: string; blurb: string; study: string };
+
+const toneFilms: RefVideo[] = [
   {
     id: "28OYtRKo1PQ",
     title: "The Belmont Barbershop",
-    blurb:
-      "Small Business Revolution Story #35. Study the calm pace, natural shop sound, and how ownership, craft, and community sit in one short documentary.",
+    blurb: "Small Business Revolution Story #35 — classic shop, community, and ownership without hype.",
+    study: "Tone: calm · Shop sound under VO · Honest owner interview",
   },
   {
     id: "1amOPUn49aM",
     title: "The Barber of Little Rock",
-    blurb:
-      "Oscar-nominated New Yorker documentary short. Study purpose beyond the cut — teaching, equity, and building something larger than a single chair.",
+    blurb: "Oscar-nominated New Yorker short — purpose beyond the cut, teaching, and community building.",
+    study: "Tone: purposeful · Craft as teaching · Documentary restraint",
   },
   {
     id: "G0RbgK1r21Y",
     title: "Schorem Barbers — Extended Documentary",
-    blurb:
-      "Rotterdam identity film. Useful for brand attitude, brotherhood, and how a shop’s personality becomes the story.",
+    blurb: "Rotterdam identity film — how personality, brotherhood, and brand attitude become the story.",
+    study: "Tone: bold identity · Character-led · Brand as culture",
   },
   {
     id: "1gPmgIt9524",
     title: "Mr. Moore’s Barber Shop",
-    blurb:
-      "A neighborhood house of trust across generations. Study interview warmth, community memory, and quiet pride.",
+    blurb: "Generational neighborhood trust — quiet pride, memory, and the shop as community hub.",
+    study: "Tone: warm archive feel · Interview intimacy · Legacy",
+  },
+  {
+    id: "EBvMh2V0-kU",
+    title: "Beyond The Fade — Mos Faded Barbershop",
+    blurb: "Short barbershop documentary focused on craft identity and the world around the fade.",
+    study: "Tone: modern craft short · Shop atmosphere",
+  },
+  {
+    id: "HrVWXYMbCrQ",
+    title: "The Brisbane Barber Who Built a Legacy",
+    blurb: "Award-winning short documentary about building a barber legacy over time.",
+    study: "Tone: legacy story · Anniversary-adjacent structure",
   },
   {
     id: "OVzhcmGRDL0",
     title: "Miguel’s Riverside Barber Shop — Sneak Peek",
-    blurb:
-      "Small Business Revolution Main Street sneak peek. Useful reference for short, story-led barbershop framing.",
+    blurb: "Small Business Revolution Main Street sneak peek — short, story-led barbershop framing.",
+    study: "Tone: compact story open · Main-street energy",
+  },
+  {
+    id: "YSu6ro2YDWI",
+    title: "More Than a Barber — Col.BeeCutz journey",
+    blurb: "Long-form conversation on growth, criticism, craft, and becoming known for the chair.",
+    study: "Tone: growth interview · Human stakes · Career arc",
   },
 ];
 
-function VideoBlock({
-  id,
-  title,
-  blurb,
-}: {
-  id: string;
-  title: string;
-  blurb: string;
-}) {
+const editingFilms: RefVideo[] = [
+  {
+    id: "ZcIVl01h14Y",
+    title: "What Really Makes a Great Documentary",
+    blurb: "Tone, scene emotion, pacing choices, and why structure beats camera gear.",
+    study: "Edit: build tone per scene · Slow for hard truth · Fast for energy",
+  },
+  {
+    id: "U0YLUnga_2g",
+    title: "How to Make a Documentary (12-Step Process)",
+    blurb: "Assembly → rough → fine cut, then music/sound/color. Practical post-production order.",
+    study: "Edit: radio cut first · Then B-roll · Music last",
+  },
+  {
+    id: "vUIwB7i-6IQ",
+    title: "How Editors Shape Story Without Film School",
+    blurb: "Interview compression, B-roll flow, multi-tempo pacing, hooks and resolves.",
+    study: "Edit: dialog assemblies · Shot flow · Tempo as emotion",
+  },
+];
+
+const musicFilms: RefVideo[] = [
+  {
+    id: "WRZmZVPzMeQ",
+    title: "Cinematic Piano — URANO (Alex-Productions)",
+    blurb: "No-copyright cinematic piano bed. Study soft build, space under VO, and restrained emotion.",
+    study: "Music: opening / vision bed · Duck under speech",
+  },
+  {
+    id: "zgc2m-lr2RI",
+    title: "Cinematic Inspirational Piano — Wonders",
+    blurb: "Inspirational piano without trailer drums — useful for people / celebration chapters.",
+    study: "Music: people & celebration · Warm lift",
+  },
+  {
+    id: "U_-kPnM1lnE",
+    title: "Inspiring Ambient Piano — Power of Moments",
+    blurb: "Ambient piano with soft pulse. Good reference for modern calm documentary beds.",
+    study: "Music: ambient documentary · Numbers / transitions",
+  },
+];
+
+const craftFilms: RefVideo[] = [
+  {
+    id: "Oikttlsj0OY",
+    title: "Fade style — Barber Shop NOR (Japan)",
+    blurb: "Haircut, shaving, shampoo, ASMR craft detail. Study hands, clippers, and quiet precision.",
+    study: "Craft: detail B-roll · Clipper texture · Finish ritual",
+  },
+  {
+    id: "WkEPU_xyuvI",
+    title: "ASMR Barber Buzz Cut & Fade Transformation",
+    blurb: "Satisfying fade transformation sounds — useful for sound-design reference of a real cut.",
+    study: "Craft: sound of the cut · Transformation arc",
+  },
+  {
+    id: "dzvPF3Z9wqI",
+    title: "Real Men’s Haircut — Clipper, Fade, Beard (No Talking)",
+    blurb: "No-talk craft film. Watch how silence + tools carry the entire scene.",
+    study: "Craft: silence as soundtrack · Pure process",
+  },
+  {
+    id: "1XkAGR_JO54",
+    title: "Sharp, Clean, Quiet — Japanese Fade Experience",
+    blurb: "Full fade experience with clear chapters: scissors, clipper fade, wash, finish.",
+    study: "Craft: chaptered cut · Clean transitions · Ritual pace",
+  },
+];
+
+function VideoBlock({ id, title, blurb, study }: RefVideo) {
   return (
     <div className="ydoc-video">
       <div className="ydoc-video-frame">
@@ -58,8 +139,21 @@ function VideoBlock({
       <div className="ydoc-video-caption">
         <strong>{title}</strong>
         <p>{blurb}</p>
+        <p className="ydoc-study">{study}</p>
       </div>
     </div>
+  );
+}
+
+function ResourceBlock({ heading, intro, items }: { heading: string; intro: string; items: RefVideo[] }) {
+  return (
+    <>
+      <h3>{heading}</h3>
+      <p>{intro}</p>
+      {items.map((video) => (
+        <VideoBlock key={video.id} {...video} />
+      ))}
+    </>
   );
 }
 
@@ -71,9 +165,10 @@ export default function YearOneDocumentPage() {
         <nav aria-label="Document sections">
           <a href="#concept">Concept</a>
           <a href="#script">Script</a>
-          <a href="#interviews">Interviews</a>
-          <a href="#produce">Produce</a>
-          <a href="#inspire">Films</a>
+          <a href="#edit">Editing</a>
+          <a href="#inspire">Resources</a>
+          <a href="#music">Music</a>
+          <a href="#craft">Craft</a>
         </nav>
         <a href="https://www.thebarbazza.com/book">Book a chair</a>
       </header>
@@ -162,8 +257,33 @@ export default function YearOneDocumentPage() {
               </a>
             </li>
             <li>
+              <a href="#edit">
+                8. Editing strategy <span>p.08</span>
+              </a>
+            </li>
+            <li>
               <a href="#inspire">
-                8. Reference films (playable) <span>p.08</span>
+                9. Tone &amp; inspiration films <span>p.09</span>
+              </a>
+            </li>
+            <li>
+              <a href="#edit-films">
+                10. Editing masterclasses <span>p.10</span>
+              </a>
+            </li>
+            <li>
+              <a href="#music">
+                11. Instrumental beds <span>p.11</span>
+              </a>
+            </li>
+            <li>
+              <a href="#craft">
+                12. Barbershop craft &amp; cuts <span>p.12</span>
+              </a>
+            </li>
+            <li>
+              <a href="#reading">
+                13. Reading &amp; further links <span>p.13</span>
               </a>
             </li>
           </ol>
@@ -629,26 +749,220 @@ thebarbazza.com
           </ul>
         </section>
 
-        <section className="ydoc-section" id="inspire">
-          <h2>8. Reference films — watch on this page</h2>
+        <section className="ydoc-section" id="edit">
+          <h2>8. Editing strategy (Barbazza Year One)</h2>
           <p>
-            These are production references, not content to copy shot-for-shot. Study tone, honesty, pacing, and how
-            shop sound sits under voice. Press play below — each film embeds here.
+            Cut the film like a radio documentary first, then dress it with pictures. If the story works with only
+            founder VO + interview audio, the picture edit will be stronger.
           </p>
-          {videos.map((video) => (
-            <VideoBlock key={video.id} {...video} />
-          ))}
+          <h3>Order of work</h3>
+          <ol>
+            <li>
+              <strong>Lock VO + interview selects</strong> — tighten stumbles, keep natural breaths after big lines.
+            </li>
+            <li>
+              <strong>Radio assembly</strong> — Scene 1→7 with audio only. No B-roll yet.
+            </li>
+            <li>
+              <strong>Picture to the line</strong> — every sentence gets a matching visual (named person/place/action),
+              not a generic “barbershop vibe” shot.
+            </li>
+            <li>
+              <strong>Pace as a curve</strong> — denser picture changes in the open; longer holds in challenges; warm
+              rhythm in people; restrained close.
+            </li>
+            <li>
+              <strong>Music last</strong> — one bed per chapter; change music when the story turns; duck 12–18 dB under
+              speech; leave pure shop sound in places.
+            </li>
+          </ol>
+          <h3>Cutting rules for this film</h3>
+          <ul>
+            <li>Cut on voice turns (new sentence / new idea), not on a fixed beat grid.</li>
+            <li>Hold empty chairs and after-close shots longer than busy peak-hour montage.</li>
+            <li>Replace talky interview stretches with B-roll when the image says more than the words.</li>
+            <li>Numbers: one figure on screen at a time; 2–3 seconds minimum; no flashy kinetic type.</li>
+            <li>Never use jump-cut talking-head energy — this is not a vlog.</li>
+            <li>J/L cuts: let VO bridge shots so edits feel invisible.</li>
+            <li>Silence before the hardest line in Scene 4 — stronger than any swell.</li>
+          </ul>
+          <h3>Suggested A/B pace references</h3>
+          <p>
+            Measure one calm reference and one slightly denser reference. Count picture changes per minute. Barbazza
+            Year One should live closer to the calm side: roughly fewer, longer holds — except the cold open and busy
+            shop montage.
+          </p>
           <div className="ydoc-note">
-            Additional reading (not a video):{" "}
-            <a
-              href="https://www.whereweconverge.com/post/more-than-a-cut-j-styles-barber-shops-25-years-as-a-south-seattle-community-hub"
-              target="_blank"
-              rel="noreferrer"
-            >
-              More Than a Cut — J Styles Barber Shop (Converge Media)
-            </a>
-            . Same “more than a cut” spirit as Barbazza’s title.
+            Gold standard from award short-film editing practice: hold shots longer than social media instincts allow;
+            tell as much as possible through image, music, and FX — not constant speech.
           </div>
+        </section>
+
+        <section className="ydoc-section" id="inspire">
+          <h2>9. Tone &amp; inspiration films</h2>
+          <p>
+            Watch these on this page. Do not copy shot-for-shot. Steal honesty, pacing, and how shop life feels on
+            camera.
+          </p>
+          <ResourceBlock
+            heading="Barbershop / anniversary-adjacent documentaries"
+            intro="Primary tone board for Barbazza Year One — craft, community, struggle, and pride."
+            items={toneFilms}
+          />
+        </section>
+
+        <section className="ydoc-section" id="edit-films">
+          <h2>10. Editing masterclasses</h2>
+          <ResourceBlock
+            heading="How editors build tone and structure"
+            intro="Play these while planning the timeline. Translate lessons into the Barbazza chapter map above."
+            items={editingFilms}
+          />
+        </section>
+
+        <section className="ydoc-section" id="music">
+          <h2>11. Instrumental beds (listen on-page)</h2>
+          <p>
+            These are tone references for beds under VO. Clear license/credit rules before final use. Prefer sparse
+            piano / ambient over epic trailer music. Always duck under speech; sometimes mute completely for clippers.
+          </p>
+          <h3>Music map for Barbazza chapters</h3>
+          <div className="ydoc-table-wrap">
+            <table className="ydoc-table">
+              <thead>
+                <tr>
+                  <th>Chapter</th>
+                  <th>Instrumental feel</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Opening</td>
+                  <td>Near silence → soft piano enter</td>
+                  <td>Let door / clippers speak first</td>
+                </tr>
+                <tr>
+                  <td>Vision</td>
+                  <td>Gentle lift, still sparse</td>
+                  <td>No big drums</td>
+                </tr>
+                <tr>
+                  <td>Numbers</td>
+                  <td>Minimal pulse / ambient</td>
+                  <td>Typography needs air</td>
+                </tr>
+                <tr>
+                  <td>Challenges</td>
+                  <td>Low minor / restrained</td>
+                  <td>Use silence before hard lines</td>
+                </tr>
+                <tr>
+                  <td>People</td>
+                  <td>Warm piano / soft rhythm</td>
+                  <td>Duck hard under interviews</td>
+                </tr>
+                <tr>
+                  <td>Celebration / close</td>
+                  <td>Soft rise → fade under logo</td>
+                  <td>End clean, not triumphant bombast</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ResourceBlock
+            heading="Playable instrumental references"
+            intro="Listen for how much space sits under a hypothetical VO. If the track feels crowded alone, it will crush speech."
+            items={musicFilms}
+          />
+          <div className="ydoc-note">
+            More free documentary piano / ambient beds:{" "}
+            <a href="https://pixabay.com/music/search/documentary%20piano/" target="_blank" rel="noreferrer">
+              Pixabay — documentary piano
+            </a>
+            ,{" "}
+            <a href="https://pixabay.com/music/search/cinematic%20ambient/" target="_blank" rel="noreferrer">
+              Pixabay — cinematic ambient
+            </a>
+            . Always verify license before publishing.
+          </div>
+        </section>
+
+        <section className="ydoc-section" id="craft">
+          <h2>12. Barbershop craft &amp; cuts</h2>
+          <p>
+            Use these for B-roll language: hands, clipper grain, fade transitions, cape, wash, mirror reveal. Barbazza
+            should shoot its own craft — these teach what to look for and how long to hold.
+          </p>
+          <ResourceBlock
+            heading="Process, sound, and finish"
+            intro="Study silence, tool texture, and the ritual of a complete cut. Steal discipline, not logos."
+            items={craftFilms}
+          />
+        </section>
+
+        <section className="ydoc-section" id="reading">
+          <h2>13. Reading &amp; further links</h2>
+          <ul>
+            <li>
+              <a
+                href="https://www.whereweconverge.com/post/more-than-a-cut-j-styles-barber-shops-25-years-as-a-south-seattle-community-hub"
+                target="_blank"
+                rel="noreferrer"
+              >
+                More Than a Cut — J Styles Barber Shop (Converge Media)
+              </a>{" "}
+              — anniversary / community hub storytelling in prose.
+            </li>
+            <li>
+              <a
+                href="https://starlingproductions.com/more-than-a-cut-film/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Starling — “More Than A Cut” short film process
+              </a>{" "}
+              — Telly-winning edit notes: hold shots longer; tell through image, music, FX.
+            </li>
+            <li>
+              <a
+                href="https://nofilmschool.com/2015/11/how-cut-short-documentary-films-part-two-building-story-adding-b-roll"
+                target="_blank"
+                rel="noreferrer"
+              >
+                No Film School — building story &amp; adding B-roll
+              </a>{" "}
+              — radio edit first, then illustrate.
+            </li>
+            <li>
+              <a
+                href="https://www.kredosmedia.com/article/documentary-style-youtube-editing"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Kredos — documentary-style YouTube editing
+              </a>{" "}
+              — chapters, matching the line, music turns.
+            </li>
+            <li>
+              <a href="https://liveactionprojects.com/project/belmont-barbershop/" target="_blank" rel="noreferrer">
+                Live Action Projects — Belmont Barbershop case
+              </a>{" "}
+              — black-and-white barbershop documentary approach.
+            </li>
+            <li>
+              <a href="https://www.razatariq.com/giftedhandz" target="_blank" rel="noreferrer">
+                Gifted Handz — Raza Tariq
+              </a>{" "}
+              — short documentary portrait of a West London barber.
+            </li>
+            <li>
+              <a href="https://www.lasselinder.com/bashkimi-united" target="_blank" rel="noreferrer">
+                Bashkimi United — Lasse Linder
+              </a>{" "}
+              — poetic barbershop philosophy short.
+            </li>
+          </ul>
         </section>
 
         <footer className="ydoc-end">

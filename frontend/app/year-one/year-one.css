@@ -407,6 +407,15 @@ body:has(.ydoc) {
   max-width: none;
 }
 
+.ydoc-study {
+  margin-top: 0.55rem !important;
+  font-family: var(--ui);
+  font-size: 0.78rem !important;
+  letter-spacing: 0.04em;
+  color: var(--ink) !important;
+  font-weight: 600;
+}
+
 .ydoc-end {
   margin-top: 3rem;
   padding-top: 1.5rem;
