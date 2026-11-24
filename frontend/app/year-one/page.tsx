@@ -431,13 +431,14 @@ None of that happens in a week.`}</pre>
               <li>Large, quiet typography over real shop footage</li>
               <li>One number at a time; 2–3 seconds each; no flashy motion</li>
             </ul>
-            <span className="ydoc-label">CEO voiceover (fill brackets with real figures)</span>
+            <span className="ydoc-label">CEO voiceover (locked from live DB — Nov 2026)</span>
             <pre className="ydoc-vo">{`One year later, the work has a shape.
-[NUMBER] services.
-[NUMBER] people who sat in our chairs.
-[NUMBER] who came back.
-[NUMBER] barbers who have been part of this journey.
-[NUMBER] days we opened the doors.
+Eight thousand eight hundred forty-five services.
+Three hundred twenty-eight days we opened the doors.
+An average of twenty-seven chairs a day.
+Eleven barbers who have been part of this journey — nine still holding the house.
+From thirty services in our first recorded days…
+to over a thousand in our strongest month.
 Behind every number is a conversation, a finish, a reason someone returned.
 The numbers show how far we’ve come.
 They don’t show what it took.`}</pre>
@@ -542,67 +543,337 @@ thebarbazza.com
         </section>
 
         <section className="ydoc-section" id="numbers">
-          <h2>4. Numbers to collect before VO lock</h2>
+          <h2>4. Real success numbers (from Barbazza Pro DB)</h2>
           <p>
-            Do not invent figures. Fill this table from Barbazza Pro / booking records / Google Business, then lock
-            Scene 3.
+            Pulled live from production transactions as of <strong>24 Nov 2026</strong>. Source window: first recorded
+            sale <strong>30 Dec 2025</strong> → latest <strong>24 Nov 2026</strong> (~11 months of logged trade;
+            earliest barber hire dates <strong>29 Dec 2025</strong>).
           </p>
+          <div className="ydoc-note">
+            Unique / returning client counts are <strong>not reliable yet</strong> in the DB — almost all services were
+            saved without a customer name (8,842 / 8,845). Do not invent a client count for the film unless you add a
+            separate CRM or Google Business figure.
+          </div>
           <div className="ydoc-table-wrap">
             <table className="ydoc-table">
               <thead>
                 <tr>
                   <th>Metric</th>
-                  <th>What to measure</th>
-                  <th>Your figure</th>
+                  <th>Real figure</th>
+                  <th>Notes for the film</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Opening date</td>
-                  <td>Official first day open</td>
-                  <td></td>
+                  <td>Services delivered</td>
+                  <td>
+                    <strong>8,845</strong>
+                  </td>
+                  <td>All paid transactions / chair services</td>
                 </tr>
                 <tr>
-                  <td>Services</td>
-                  <td>Total haircuts / services delivered</td>
-                  <td></td>
+                  <td>Revenue (RWF)</td>
+                  <td>
+                    <strong>31,219,500</strong>
+                  </td>
+                  <td>Optional on camera — use only if you want money public</td>
                 </tr>
                 <tr>
-                  <td>Clients</td>
-                  <td>Unique clients, if tracked</td>
-                  <td></td>
+                  <td>Days with sales</td>
+                  <td>
+                    <strong>328</strong>
+                  </td>
+                  <td>Out of 330 calendar days in the logged span</td>
                 </tr>
                 <tr>
-                  <td>Returns</td>
-                  <td>Returning clients or return rate</td>
-                  <td></td>
+                  <td>Avg services / open day</td>
+                  <td>
+                    <strong>27</strong>
+                  </td>
+                  <td>~95,181 RWF average revenue per open day</td>
                 </tr>
                 <tr>
-                  <td>Barbers</td>
-                  <td>Current team + who passed through</td>
-                  <td></td>
+                  <td>Peak day</td>
+                  <td>
+                    <strong>76 services</strong> (5 Sep 2026)
+                  </td>
+                  <td>Also strong: 66 on 2 Oct · 65 on 7 Aug</td>
                 </tr>
                 <tr>
-                  <td>Days open</td>
-                  <td>Operating days in year one</td>
-                  <td></td>
+                  <td>Barbers (all-time)</td>
+                  <td>
+                    <strong>11</strong>
+                  </td>
+                  <td>
+                    <strong>9 active</strong> now
+                  </td>
                 </tr>
                 <tr>
-                  <td>Public milestone</td>
-                  <td>Optional (online booking, new service, etc.)</td>
-                  <td></td>
+                  <td>Active service menu</td>
+                  <td>
+                    <strong>9</strong>
+                  </td>
+                  <td>Cuts, lining, kids, women’s, braids, nails</td>
                 </tr>
                 <tr>
-                  <td>Revenue</td>
-                  <td>Only if you want it public — otherwise skip</td>
-                  <td></td>
+                  <td>Unique named clients</td>
+                  <td>Not usable</td>
+                  <td>Names missing on nearly all tickets — skip or source elsewhere</td>
+                </tr>
+                <tr>
+                  <td>Online bookings / ratings</td>
+                  <td>0 / 0</td>
+                  <td>Public booking + review tables empty in DB so far</td>
                 </tr>
               </tbody>
             </table>
           </div>
+
+          <h3>Month-by-month growth</h3>
+          <div className="ydoc-table-wrap">
+            <table className="ydoc-table">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Services</th>
+                  <th>Revenue (RWF)</th>
+                  <th>Days open</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>2025-12</td>
+                  <td>30</td>
+                  <td>90,000</td>
+                  <td>2</td>
+                </tr>
+                <tr>
+                  <td>2026-01</td>
+                  <td>566</td>
+                  <td>1,939,500</td>
+                  <td>31</td>
+                </tr>
+                <tr>
+                  <td>2026-02</td>
+                  <td>628</td>
+                  <td>2,210,000</td>
+                  <td>27</td>
+                </tr>
+                <tr>
+                  <td>2026-03</td>
+                  <td>725</td>
+                  <td>2,555,500</td>
+                  <td>31</td>
+                </tr>
+                <tr>
+                  <td>2026-04</td>
+                  <td>658</td>
+                  <td>2,271,500</td>
+                  <td>30</td>
+                </tr>
+                <tr>
+                  <td>2026-05</td>
+                  <td>816</td>
+                  <td>2,832,000</td>
+                  <td>31</td>
+                </tr>
+                <tr>
+                  <td>2026-06</td>
+                  <td>730</td>
+                  <td>2,531,500</td>
+                  <td>29</td>
+                </tr>
+                <tr>
+                  <td>2026-07</td>
+                  <td>878</td>
+                  <td>3,160,500</td>
+                  <td>31</td>
+                </tr>
+                <tr>
+                  <td>2026-08</td>
+                  <td>933</td>
+                  <td>3,411,000</td>
+                  <td>31</td>
+                </tr>
+                <tr>
+                  <td>2026-09</td>
+                  <td>
+                    <strong>1,064</strong>
+                  </td>
+                  <td>
+                    <strong>3,734,000</strong>
+                  </td>
+                  <td>30</td>
+                </tr>
+                <tr>
+                  <td>2026-10</td>
+                  <td>981</td>
+                  <td>3,456,000</td>
+                  <td>31</td>
+                </tr>
+                <tr>
+                  <td>2026-11 (to 24th)</td>
+                  <td>836</td>
+                  <td>3,028,000</td>
+                  <td>24</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Top services</h3>
+          <div className="ydoc-table-wrap">
+            <table className="ydoc-table">
+              <thead>
+                <tr>
+                  <th>Service</th>
+                  <th>Times</th>
+                  <th>Revenue (RWF)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Classic Men&apos;s Cut</td>
+                  <td>5,037</td>
+                  <td>15,440,000</td>
+                </tr>
+                <tr>
+                  <td>Enhanced Cut</td>
+                  <td>2,334</td>
+                  <td>11,724,000</td>
+                </tr>
+                <tr>
+                  <td>Hair Lining</td>
+                  <td>757</td>
+                  <td>1,497,000</td>
+                </tr>
+                <tr>
+                  <td>Kids Cut</td>
+                  <td>462</td>
+                  <td>916,500</td>
+                </tr>
+                <tr>
+                  <td>Ultimate Fresh Cut</td>
+                  <td>186</td>
+                  <td>1,129,000</td>
+                </tr>
+                <tr>
+                  <td>Foot Nails / Men&apos;s Braids / Women&apos;s / Hand Nails</td>
+                  <td>69 combined</td>
+                  <td>513,000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Chairs / team (services logged)</h3>
+          <div className="ydoc-table-wrap">
+            <table className="ydoc-table">
+              <thead>
+                <tr>
+                  <th>Barber</th>
+                  <th>Code</th>
+                  <th>Active</th>
+                  <th>Services</th>
+                  <th>Revenue (RWF)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>NSHIMIYIMANA Mugabo</td>
+                  <td>B004</td>
+                  <td>No</td>
+                  <td>1,920</td>
+                  <td>6,708,000</td>
+                </tr>
+                <tr>
+                  <td>Innocent KABABA</td>
+                  <td>B003</td>
+                  <td>Yes</td>
+                  <td>1,829</td>
+                  <td>7,248,500</td>
+                </tr>
+                <tr>
+                  <td>Eric Musabyimana</td>
+                  <td>B002</td>
+                  <td>Yes</td>
+                  <td>1,752</td>
+                  <td>6,209,000</td>
+                </tr>
+                <tr>
+                  <td>Damascene HAKIZIMANA</td>
+                  <td>B001</td>
+                  <td>Yes</td>
+                  <td>1,220</td>
+                  <td>3,983,500</td>
+                </tr>
+                <tr>
+                  <td>Kwizera Eric</td>
+                  <td>B005</td>
+                  <td>Yes</td>
+                  <td>985</td>
+                  <td>3,293,500</td>
+                </tr>
+                <tr>
+                  <td>Irakoze Barbazza</td>
+                  <td>B008</td>
+                  <td>Yes</td>
+                  <td>360</td>
+                  <td>1,113,000</td>
+                </tr>
+                <tr>
+                  <td>UWINEZA Flugency</td>
+                  <td>B007</td>
+                  <td>Yes</td>
+                  <td>279</td>
+                  <td>885,000</td>
+                </tr>
+                <tr>
+                  <td>Kabera Bosco</td>
+                  <td>B009</td>
+                  <td>Yes</td>
+                  <td>176</td>
+                  <td>562,000</td>
+                </tr>
+                <tr>
+                  <td>Nshimiyimana Chief</td>
+                  <td>B006</td>
+                  <td>No</td>
+                  <td>146</td>
+                  <td>472,000</td>
+                </tr>
+                <tr>
+                  <td>Eric Hakizimana</td>
+                  <td>B011</td>
+                  <td>Yes</td>
+                  <td>140</td>
+                  <td>611,000</td>
+                </tr>
+                <tr>
+                  <td>Noela</td>
+                  <td>B010</td>
+                  <td>Yes</td>
+                  <td>38</td>
+                  <td>134,000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Suggested locked VO lines (Scene 3)</h3>
+          <pre className="ydoc-vo">{`One year later, the work has a shape.
+Eight thousand eight hundred forty-five services.
+Three hundred twenty-eight days we opened the doors.
+An average of twenty-seven chairs a day.
+Eleven barbers who have been part of this journey — nine still holding the house.
+From thirty services in our first recorded days…
+to over a thousand in our strongest month.
+Behind every number is a conversation, a finish, a reason someone returned.
+The numbers show how far we’ve come.
+They don’t show what it took.`}</pre>
           <div className="ydoc-note">
-            Also collect: 3–5 challenges you are willing to say on camera; three achievements; one memorable moment;
-            what you learned as founder; year-two goals.
+            Still collect off-camera: 3–5 challenges, three achievements, one memorable moment, founder lesson,
+            year-two goals. Revenue can stay off the film if you prefer privacy.
           </div>
         </section>
 
