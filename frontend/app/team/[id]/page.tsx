@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { BookingModal } from "@/components/public/BookingModal";
 import { PublicShell, Stars } from "@/components/public/PublicShell";
 import { PageSkeleton } from "@/components/Skeleton";
+import { withBarberPortrait } from "@/lib/barberPortraits";
 import { BarberProfile, mediaSrc, money, PublicBarber, publicApi } from "@/lib/publicApi";
 import { telHref } from "@/lib/shop";
 
@@ -23,7 +24,8 @@ export default function BarberProfilePage() {
   const [bookServiceId, setBookServiceId] = useState<number | null>(null);
 
   async function load() {
-    setProfile(await publicApi<BarberProfile>(`/barbers/${id}`));
+    const row = await publicApi<BarberProfile>(`/barbers/${id}`);
+    setProfile(withBarberPortrait(row));
   }
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function BarberProfilePage() {
 
   const bookBarber: PublicBarber | null = useMemo(() => {
     if (!profile) return null;
-    return {
+    return withBarberPortrait({
       id: profile.id,
       code: profile.code,
       name: profile.name,
@@ -66,7 +68,7 @@ export default function BarberProfilePage() {
       clients90d: profile.clients90d,
       rating: profile.rating,
       reviews: profile.reviews,
-    };
+    });
   }, [profile]);
 
   if (!profile && !error) {

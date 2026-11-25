@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { BookingModal } from "@/components/public/BookingModal";
 import { PublicShell, Stars } from "@/components/public/PublicShell";
 import { PageSkeleton } from "@/components/Skeleton";
+import { withBarberPortrait } from "@/lib/barberPortraits";
 import { mediaSrc, PublicBarber, publicApi } from "@/lib/publicApi";
 
 export default function PublicTeamPage() {
@@ -15,7 +16,7 @@ export default function PublicTeamPage() {
 
   useEffect(() => {
     publicApi<PublicBarber[]>("/barbers")
-      .then(setBarbers)
+      .then((rows) => setBarbers(rows.map(withBarberPortrait)))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);

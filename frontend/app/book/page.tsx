@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { BookingModal } from "@/components/public/BookingModal";
 import { PublicShell, Stars } from "@/components/public/PublicShell";
 import { PageSkeleton } from "@/components/Skeleton";
+import { withBarberPortrait } from "@/lib/barberPortraits";
 import { mediaSrc, PublicBarber, publicApi } from "@/lib/publicApi";
 
 function BookChairs() {
@@ -22,9 +23,10 @@ function BookChairs() {
   useEffect(() => {
     publicApi<PublicBarber[]>("/barbers")
       .then((rows) => {
-        setBarbers(rows);
+        const withPortraits = rows.map(withBarberPortrait);
+        setBarbers(withPortraits);
         if (presetBarber) {
-          const match = rows.find((b) => b.id === presetBarber);
+          const match = withPortraits.find((b) => b.id === presetBarber);
           if (match) {
             setSelected(match);
             setModalOpen(true);

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { withBarberPortrait } from "@/lib/barberPortraits";
 import { mediaSrc, money, PublicBarber, publicApi } from "@/lib/publicApi";
 
 type Service = { id: number; name: string; price: number };
@@ -105,8 +106,10 @@ export function BookingModal({ barber, open, onClose, onBooked, presetServiceId 
 
   if (!open || !barber) return null;
 
+  const shown = withBarberPortrait(barber);
+
   return (
-    <div className="book-modal-root" role="dialog" aria-modal="true" aria-label={`Book ${barber.name}`}>
+    <div className="book-modal-root" role="dialog" aria-modal="true" aria-label={`Book ${shown.name}`}>
       <button type="button" className="book-modal-backdrop" aria-label="Close booking" onClick={onClose} />
       <div className="book-modal-panel">
         <button type="button" className="book-modal-close" onClick={onClose} aria-label="Close">
@@ -114,11 +117,11 @@ export function BookingModal({ barber, open, onClose, onBooked, presetServiceId 
         </button>
 
         <div className="book-modal-head">
-          <div className="book-modal-avatar" style={{ backgroundImage: `url(${mediaSrc(barber.avatarUrl)})` }} />
+          <div className="book-modal-avatar" style={{ backgroundImage: `url(${mediaSrc(shown.avatarUrl)})` }} />
           <div>
             <p className="book-modal-kicker">Book a barber</p>
-            <h3>{barber.name}</h3>
-            <p>{barber.slogan}</p>
+            <h3>{shown.name}</h3>
+            <p>{shown.slogan}</p>
           </div>
         </div>
 

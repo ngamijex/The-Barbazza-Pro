@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { BookingModal } from "@/components/public/BookingModal";
 import { PublicShell, Stars } from "@/components/public/PublicShell";
+import { withBarberPortrait } from "@/lib/barberPortraits";
 import { mediaSrc, PublicBarber, publicApi } from "@/lib/publicApi";
 import { PublicShop, SHOP_FALLBACK, telHref } from "@/lib/shop";
 
@@ -16,7 +17,7 @@ export default function PublicHomePage() {
 
   useEffect(() => {
     publicApi<PublicBarber[]>("/barbers")
-      .then((rows) => setBarbers(rows.slice(0, 3)))
+      .then((rows) => setBarbers(rows.map(withBarberPortrait).slice(0, 3)))
       .catch(() => setBarbers([]));
     publicApi<PublicShop>("/shop")
       .then(setShop)
