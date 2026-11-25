@@ -265,7 +265,7 @@ export default function YearOneDocumentPage() {
         <header className="ydoc-cover">
           <p className="ydoc-cover-meta">
             <span>Internal production document</span>
-            <span>Version 1.6</span>
+            <span>Version 1.7</span>
             <span>Runtime target: 4–5 minutes</span>
           </p>
           <h1>
@@ -338,6 +338,11 @@ export default function YearOneDocumentPage() {
             <li>
               <a href="#look">
                 6. Visual &amp; brand language <span>p.06</span>
+              </a>
+            </li>
+            <li>
+              <a href="#team-look">
+                6b. Team in uniform (B&amp;W) <span>p.06b</span>
               </a>
             </li>
             <li>
@@ -1317,8 +1322,8 @@ Scene 7  Next / close     → VO → Topic I → walk floor → Topic J → logo
           </p>
           <div className="ydoc-figures">
             <figure className="ydoc-figure">
-              <img src="/year-one/stripe-polo.jpg" alt="Black and white striped barber polo direction" />
-              <figcaption>Figure A — Uniform direction</figcaption>
+              <img src="/year-one/team/uniform-confirmed.jpg" alt="Confirmed Barbazza striped polo and cape" />
+              <figcaption>Figure A — Confirmed uniform</figcaption>
             </figure>
             <figure className="ydoc-figure">
               <img src="/year-one/stripe-cape.jpg" alt="Matching striped barber cape" />
@@ -1363,6 +1368,56 @@ Scene 7  Next / close     → VO → Topic I → walk floor → Topic J → logo
               chair-cam set.
             </li>
           </ol>
+        </section>
+
+        <section className="ydoc-section" id="team-look">
+          <h2>6b. Team in confirmed uniform (black &amp; white)</h2>
+          <p>
+            Each barber in the confirmed Barbazza striped polo, holding clippers, black-and-white brand look, logo in
+            the background, different poses. Use as look references for posters / film stills — real faces preserved as
+            closely as the tools allow.
+          </p>
+          <div className="ydoc-figures four">
+            <figure className="ydoc-figure">
+              <img src="/year-one/team/barber-irakoze-bw.jpg" alt="Irakoze in Barbazza uniform with clippers" />
+              <figcaption>Irakoze</figcaption>
+            </figure>
+            <figure className="ydoc-figure">
+              <img src="/year-one/team/barber-kabera-bw.jpg" alt="Kabera in Barbazza uniform with clippers" />
+              <figcaption>Kabera</figcaption>
+            </figure>
+            <figure className="ydoc-figure">
+              <img src="/year-one/team/barber-coucien-bw.jpg" alt="Coucien in Barbazza uniform with clippers" />
+              <figcaption>Coucien</figcaption>
+            </figure>
+            <figure className="ydoc-figure">
+              <img src="/year-one/team/barber-flugency-bw.jpg" alt="Flugency in Barbazza uniform with clippers" />
+              <figcaption>Flugency</figcaption>
+            </figure>
+          </div>
+          <div className="ydoc-figures four">
+            <figure className="ydoc-figure">
+              <img
+                src="/year-one/team/barber-eric-hakizimana-bw.jpg"
+                alt="Eric Hakizimana in Barbazza uniform with clippers"
+              />
+              <figcaption>Eric Hakizimana</figcaption>
+            </figure>
+            <figure className="ydoc-figure">
+              <img
+                src="/year-one/team/barber-eric-kwizera-bw.jpg"
+                alt="Eric Kwizera in Barbazza uniform with clippers"
+              />
+              <figcaption>Eric Kwizera</figcaption>
+            </figure>
+            <figure className="ydoc-figure">
+              <img
+                src="/year-one/team/barber-eric-musabyimana-bw.jpg"
+                alt="Eric Musabyimana in Barbazza uniform with clippers"
+              />
+              <figcaption>Eric Musabyimana</figcaption>
+            </figure>
+          </div>
         </section>
 
         <section className="ydoc-section" id="produce">
