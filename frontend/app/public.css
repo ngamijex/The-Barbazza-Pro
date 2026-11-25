@@ -398,8 +398,8 @@ body:has(.public-shell) h4 {
 }
 
 .barber-card-media {
-  height: 170px;
-  background: #111 center / cover no-repeat;
+  height: 280px;
+  background: #111 top center / cover no-repeat;
   filter: grayscale(1);
   position: relative;
 }
@@ -408,11 +408,11 @@ body:has(.public-shell) h4 {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.55));
+  background: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, 0.55));
 }
 
 .barber-card--rich .barber-card-media {
-  height: 190px;
+  height: 300px;
 }
 
 .barber-card-avatar {
@@ -424,7 +424,7 @@ body:has(.public-shell) h4 {
   height: 64px;
   border-radius: 50%;
   border: 3px solid #fff;
-  background: #222 center / cover no-repeat;
+  background: #222 top center / cover no-repeat;
   filter: grayscale(1);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
@@ -525,8 +525,8 @@ body:has(.public-shell) h4 {
 
 .profile-hero {
   position: relative;
-  min-height: 420px;
-  background: #111 center / cover no-repeat;
+  min-height: 480px;
+  background: #111 top center / cover no-repeat;
   filter: none;
   color: #fff;
   display: grid;
@@ -556,7 +556,7 @@ body:has(.public-shell) h4 {
   height: 96px;
   border-radius: 50%;
   border: 3px solid rgba(255, 255, 255, 0.85);
-  background: #222 center / cover no-repeat;
+  background: #222 top center / cover no-repeat;
   filter: grayscale(1);
 }
 
