@@ -165,10 +165,10 @@ export default function YearOneDocumentPage() {
         <nav aria-label="Document sections">
           <a href="#concept">Concept</a>
           <a href="#script">Script</a>
+          <a href="#chair">Chair cam</a>
           <a href="#edit">Editing</a>
           <a href="#inspire">Resources</a>
           <a href="#music">Music</a>
-          <a href="#craft">Craft</a>
         </nav>
         <a href="https://www.thebarbazza.com/book">Book a chair</a>
       </header>
@@ -177,7 +177,7 @@ export default function YearOneDocumentPage() {
         <header className="ydoc-cover">
           <p className="ydoc-cover-meta">
             <span>Internal production document</span>
-            <span>Version 1.0</span>
+            <span>Version 1.1</span>
             <span>Runtime target: 4–5 minutes</span>
           </p>
           <h1>
@@ -187,8 +187,9 @@ export default function YearOneDocumentPage() {
           <p className="ydoc-cover-summary">
             This is the working document for Barbazza’s first-anniversary film: a calm, cinematic short about
             building a barbershop in Ubutare, Kigali — the vision, the numbers, the hard days, the team, and what
-            comes next. It is not an advertisement deck. It is the script, shot plan, interview guide, brand look,
-            and reference films for production.
+            comes next. <strong>You are the only person on camera</strong>: voiceover plus seated chair-to-camera
+            pieces. Shop and craft appear as B-roll only. This document holds the VO, your on-camera talking scripts,
+            shot plan, brand look, and reference films.
           </p>
           <div className="ydoc-cover-grid">
             <div>
@@ -197,7 +198,7 @@ export default function YearOneDocumentPage() {
             </div>
             <div>
               <strong>Form</strong>
-              Founder VO + barber/client interviews + shop vérité
+              You only on camera · VO + chair-to-camera · shop B-roll
             </div>
             <div>
               <strong>Place</strong>
@@ -242,8 +243,8 @@ export default function YearOneDocumentPage() {
               </a>
             </li>
             <li>
-              <a href="#interviews">
-                5. Interview guide <span>p.05</span>
+              <a href="#chair">
+                5. Chair-to-camera scripts (you only) <span>p.05</span>
               </a>
             </li>
             <li>
@@ -298,8 +299,9 @@ export default function YearOneDocumentPage() {
             of the business — not only the haircut.
           </p>
           <div className="ydoc-note">
-            Creative rule: do not celebrate a perfect year. Celebrate what it took to reach one year. The founder
-            narrates the vision, but is not the hero. The chairs, the clients, and the daily work carry the film.
+            Creative rule: do not celebrate a perfect year. Celebrate what it took to reach one year. You narrate and
+            appear on camera, but the craft and the shop still carry emotion through B-roll. No barber or client
+            interviews in this cut — only you.
           </div>
           <p>
             Working title options considered: <em>One Year. One Vision. A Thousand Stories.</em> ·{" "}
@@ -345,12 +347,12 @@ export default function YearOneDocumentPage() {
                 <tr>
                   <td>2:00–3:05</td>
                   <td>Challenges</td>
-                  <td>Hard decisions, quiet after close, honest interviews</td>
+                  <td>Hard decisions + you on the chair facing camera</td>
                 </tr>
                 <tr>
                   <td>3:05–4:05</td>
-                  <td>People</td>
-                  <td>Team, clients, gratitude; strongest 5–15s soundbites</td>
+                  <td>People / gratitude</td>
+                  <td>B-roll of chairs + your chair-cam thank-you pieces</td>
                 </tr>
                 <tr>
                   <td>4:05–4:40</td>
@@ -464,7 +466,10 @@ Standards we had to hold when it would have been easier to lower them.
 We got things wrong. We adjusted. We kept the chairs honest.
 Growth isn’t always comfortable.
 For Barbazza, it was necessary.`}</pre>
-            <p>Intercut short interview answers (5–12 seconds). Keep pauses and breath.</p>
+            <p>
+              Intercut your chair-to-camera pieces from Section 5 (hard truths). Keep pauses and breath. No other
+              people speaking on camera.
+            </p>
           </article>
 
           <article className="ydoc-scene">
@@ -475,9 +480,9 @@ For Barbazza, it was necessary.`}</pre>
             <h3>The people — “We didn’t build this alone”</h3>
             <span className="ydoc-label">Visuals</span>
             <ul>
-              <li>Barbers helping each other; clients arriving; finish in the mirror</li>
-              <li>Busy floor; manager/cleaner moments if they consent</li>
-              <li>Soft group energy — not a commercial smile reel</li>
+              <li>B-roll only of the shop floor, chairs, finishes, busy moments (faces optional / blurred if needed)</li>
+              <li>You on the barber chair facing camera for gratitude pieces</li>
+              <li>No other talking heads</li>
             </ul>
             <span className="ydoc-label">CEO voiceover</span>
             <pre className="ydoc-vo">{`If this year has one truth, it’s the people.
@@ -499,8 +504,8 @@ People give it life.`}</pre>
             <h3>Celebration — “One year. We made it.”</h3>
             <span className="ydoc-label">Visuals</span>
             <ul>
-              <li>Full energy; logo detail; team together; founder in the shop</li>
-              <li>If there is a celebration, keep it intimate</li>
+              <li>Full energy B-roll; logo detail; you in the shop / on the chair</li>
+              <li>Keep it intimate — not a crowd commercial</li>
             </ul>
             <span className="ydoc-label">CEO voiceover</span>
             <pre className="ydoc-vo">{`Today we mark one year.
@@ -877,56 +882,167 @@ They don’t show what it took.`}</pre>
           </div>
         </section>
 
-        <section className="ydoc-section" id="interviews">
-          <h2>5. Interview guide</h2>
+        <section className="ydoc-section" id="chair">
+          <h2>5. Chair-to-camera scripts (you only)</h2>
           <p>
-            Do not ask people to memorize speeches. Have a conversation. Keep the interviewer off camera. Barbers look
-            slightly beside the lens. Founder may look into camera for one or two closing lines.
+            You are the only person who speaks on camera. Format: sit in a barber chair, face the lens, soft shop
+            background, clean audio. Record each topic as a separate take (20–45 seconds). In the edit, mix these with
+            the VO — VO carries the arc; chair-cam carries the human truth.
           </p>
-          <h3>Questions for barbers</h3>
+          <div className="ydoc-note">
+            How to deliver: do not read word-for-word if it feels stiff. Learn the topic, then answer like a
+            conversation with the camera. Keep 1–2 seconds of silence at the start and end of each take.
+          </div>
+
+          <h3>Setup</h3>
           <ul>
-            <li>What has been the most difficult thing for you during this first year?</li>
-            <li>What is something you had to learn the hard way?</li>
-            <li>Was there a moment you felt discouraged, and what helped you keep going?</li>
-            <li>What is one thing we could have done better as a team?</li>
-            <li>How has Barbazza changed you as a barber or as a person?</li>
-            <li>What does being part of Barbazza mean to you?</li>
+            <li>Camera at eye level, medium shot (chest up) + one wider safety take</li>
+            <li>You seated in the chair, still, calm — hands relaxed</li>
+            <li>Look into the lens (this is the “real you” layer)</li>
+            <li>Record VO separately later (or earlier) — different energy: quieter, storytelling</li>
           </ul>
-          <h3>One angle per barber (avoid repetition)</h3>
-          <ul>
-            <li>
-              <strong>Growth:</strong> What has changed in you since you started here?
-            </li>
-            <li>
-              <strong>Team:</strong> What do you appreciate most about this team?
-            </li>
-            <li>
-              <strong>Struggle:</strong> What has been the toughest moment in this journey?
-            </li>
-            <li>
-              <strong>Craft:</strong> What have you learned about the cut that you didn’t know before?
-            </li>
-            <li>
-              <strong>Future:</strong> Where should Barbazza be one year from now?
-            </li>
-          </ul>
-          <h3>Questions for the founder</h3>
-          <ul>
-            <li>What was your biggest fear when starting Barbazza?</li>
-            <li>What decision was hardest this year?</li>
-            <li>What did you get wrong in year one?</li>
-            <li>What did this business teach you about leadership?</li>
-            <li>What moment almost made you rethink the journey?</li>
-            <li>What are you proud of that people never see?</li>
-          </ul>
-          <h3>Questions for clients</h3>
-          <ul>
-            <li>Why do you choose Barbazza?</li>
-            <li>What makes the experience different?</li>
-            <li>How long have you been coming here?</li>
-            <li>What would you tell someone who has never visited?</li>
-          </ul>
-          <p>Final edit: use only 3–5 strong answers total. Cut the rest.</p>
+
+          <h3>Topic A — Why Barbazza exists</h3>
+          <p>
+            <strong>Question you are answering:</strong> Why did you open Barbazza — and what did you want this place
+            to mean in Kigali?
+          </p>
+          <pre className="ydoc-vo">{`I didn’t open Barbazza just to cut hair.
+I wanted a house with a standard — craft in black and white.
+A place in Ubutare where someone sits down and leaves with confidence.
+Different chairs. Different hands. One house.
+That was the vision.`}</pre>
+
+          <h3>Topic B — The beginning / fear</h3>
+          <p>
+            <strong>Question:</strong> What were you afraid of when you started?
+          </p>
+          <pre className="ydoc-vo">{`When we started, I was afraid of the unknown.
+Not having every answer.
+Building a team while the doors were already open.
+Ambition is easy. Holding a standard every day is the hard part.`}</pre>
+
+          <h3>Topic C — Hardest decision</h3>
+          <p>
+            <strong>Question:</strong> What decision this year was the hardest — and why?
+          </p>
+          <pre className="ydoc-vo">{`The hardest decisions were the ones nobody sees.
+About people. About standards. About money and time.
+When it would have been easier to lower the bar — and we didn’t.
+Those choices cost sleep. They also built Barbazza.`}</pre>
+
+          <h3>Topic D — What you got wrong</h3>
+          <p>
+            <strong>Question:</strong> What did you get wrong in year one?
+          </p>
+          <pre className="ydoc-vo">{`We got things wrong.
+I got things wrong.
+Timing. Expectations. How fast culture actually forms.
+The point isn’t pretending it was perfect.
+The point is we adjusted — and we stayed honest about the craft.`}</pre>
+
+          <h3>Topic E — The days people don’t see</h3>
+          <p>
+            <strong>Question:</strong> What does a hard day look like when the clients are gone?
+          </p>
+          <pre className="ydoc-vo">{`After close, the shop gets quiet.
+That’s when you feel the weight of the day —
+the numbers, the team, the responsibility.
+Building a business isn’t only the busy floor.
+It’s the decisions made when the chairs are empty.`}</pre>
+
+          <h3>Topic F — The team (without filming them talking)</h3>
+          <p>
+            <strong>Question:</strong> What do you want to say to the barbers and the house team?
+          </p>
+          <pre className="ydoc-vo">{`To every barber who held a chair this year — thank you.
+Talent matters. Showing up matters more.
+Barbazza is not one person.
+It’s people who protect the craft when nobody is filming.`}</pre>
+
+          <h3>Topic G — The clients</h3>
+          <p>
+            <strong>Question:</strong> What do clients mean to Barbazza after one year?
+          </p>
+          <pre className="ydoc-vo">{`To everyone who walked through that door —
+who trusted us with their time and their look —
+who came back, and brought a friend —
+you became part of this story.
+A brand can have a name. People give it life.`}</pre>
+
+          <h3>Topic H — What you’re proud of that nobody sees</h3>
+          <p>
+            <strong>Question:</strong> What are you proud of that the public never notices?
+          </p>
+          <pre className="ydoc-vo">{`I’m proud of the small things.
+The consistency.
+The days we held the standard when it was uncomfortable.
+The quiet work that never makes a post —
+but keeps the house standing.`}</pre>
+
+          <h3>Topic I — Year two vision</h3>
+          <p>
+            <strong>Question:</strong> Where is Barbazza going in year two?
+          </p>
+          <pre className="ydoc-vo">{`Year two is not about being louder.
+It’s about being clearer.
+Higher standard. Cleaner craft. Stronger team.
+More people in Kigali who find their chair here.
+We’re not done. We’re just getting started.`}</pre>
+
+          <h3>Topic J — Closing to camera (final card setup)</h3>
+          <p>
+            <strong>Question:</strong> If you had one line to leave people with, what is it?
+          </p>
+          <pre className="ydoc-vo">{`We started with a vision.
+One year later, we have a story.
+This is Barbazza.
+Year one.
+More than a cut.`}</pre>
+
+          <h3>How to mix VO + chair-cam</h3>
+          <div className="ydoc-table-wrap">
+            <table className="ydoc-table">
+              <thead>
+                <tr>
+                  <th>Film chapter</th>
+                  <th>VO</th>
+                  <th>Chair-cam topics to cut in</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Opening / Vision</td>
+                  <td>Scenes 1–2 VO</td>
+                  <td>A (why) · B (fear)</td>
+                </tr>
+                <tr>
+                  <td>Numbers</td>
+                  <td>Scene 3 VO</td>
+                  <td>Optional short glance / silence — keep numbers clean</td>
+                </tr>
+                <tr>
+                  <td>Challenges</td>
+                  <td>Scene 4 VO</td>
+                  <td>C · D · E · H</td>
+                </tr>
+                <tr>
+                  <td>People</td>
+                  <td>Scene 5 VO</td>
+                  <td>F · G</td>
+                </tr>
+                <tr>
+                  <td>Celebration / Close</td>
+                  <td>Scenes 6–7 VO</td>
+                  <td>I · J</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Final edit tip: keep <strong>4–7 chair-cam clips</strong> in the film (not all ten). Pick the most honest
+            takes. Straight-to-camera beats should feel rarer and heavier than the VO.
+          </p>
         </section>
 
         <section className="ydoc-section" id="look">
@@ -972,13 +1088,15 @@ They don’t show what it took.`}</pre>
               <strong>Detail:</strong> clippers, scissors, hands, cape, reflections, finish, textures.
             </li>
             <li>
-              <strong>Interviews:</strong> quiet corner, soft light, fixed camera, clean audio.
+              <strong>Chair-to-camera (you):</strong> seated facing lens, soft light, fixed camera, clean lav or boom.
+              Record Topics A–J as separate takes.
             </li>
             <li>
-              <strong>Natural moments:</strong> jokes, prep, teamwork — do not over-direct.
+              <strong>Natural shop B-roll:</strong> prep, craft, floor energy — faces optional; no other talking heads.
             </li>
             <li>
-              <strong>Founder:</strong> walking in, observing, sitting alone, one direct-to-camera moment.
+              <strong>Founder presence:</strong> walking in, observing empty chairs, after-close stillness, plus the
+              chair-cam set.
             </li>
           </ol>
         </section>
@@ -1012,10 +1130,10 @@ They don’t show what it took.`}</pre>
           <h3>Checklist before camera day</h3>
           <ul>
             <li>Opening date and locked numbers table</li>
-            <li>Consent from every barber / client on camera</li>
+            <li>Chair-cam set ready (one chair, soft key, quiet shop)</li>
+            <li>Printed Topic A–J cue cards (questions + key lines)</li>
             <li>Early footage folder (or honest recreations plan)</li>
-            <li>Interview shortlist and quiet interview corner</li>
-            <li>Uniform / cape / logo continuity for brand shots</li>
+            <li>Uniform / cape / logo continuity for brand B-roll</li>
             <li>End-card text proofed (address, phone, domain)</li>
           </ul>
         </section>
@@ -1024,12 +1142,12 @@ They don’t show what it took.`}</pre>
           <h2>8. Editing strategy (Barbazza Year One)</h2>
           <p>
             Cut the film like a radio documentary first, then dress it with pictures. If the story works with only
-            founder VO + interview audio, the picture edit will be stronger.
+            your VO + chair-cam selects, the picture edit will be stronger.
           </p>
           <h3>Order of work</h3>
           <ol>
             <li>
-              <strong>Lock VO + interview selects</strong> — tighten stumbles, keep natural breaths after big lines.
+              <strong>Lock VO + chair-cam selects</strong> — pick 4–7 best takes; keep natural breaths after big lines.
             </li>
             <li>
               <strong>Radio assembly</strong> — Scene 1→7 with audio only. No B-roll yet.
@@ -1051,9 +1169,9 @@ They don’t show what it took.`}</pre>
           <ul>
             <li>Cut on voice turns (new sentence / new idea), not on a fixed beat grid.</li>
             <li>Hold empty chairs and after-close shots longer than busy peak-hour montage.</li>
-            <li>Replace talky interview stretches with B-roll when the image says more than the words.</li>
+            <li>If a chair-cam take runs long, cut to B-roll under your continuing audio — don’t jump-cut your face.</li>
             <li>Numbers: one figure on screen at a time; 2–3 seconds minimum; no flashy kinetic type.</li>
-            <li>Never use jump-cut talking-head energy — this is not a vlog.</li>
+            <li>Never use jump-cut talking-head energy — this is not a vlog. Hold your face; cut the picture around it.</li>
             <li>J/L cuts: let VO bridge shots so edits feel invisible.</li>
             <li>Silence before the hardest line in Scene 4 — stronger than any swell.</li>
           </ul>
@@ -1131,7 +1249,7 @@ They don’t show what it took.`}</pre>
                 <tr>
                   <td>People</td>
                   <td>Warm piano / soft rhythm</td>
-                  <td>Duck hard under interviews</td>
+                  <td>Duck hard under chair-cam speech</td>
                 </tr>
                 <tr>
                   <td>Celebration / close</td>
