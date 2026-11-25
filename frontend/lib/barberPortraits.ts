@@ -1,7 +1,8 @@
-/** Confirmed Barbazza uniform portraits (B&W) keyed by barber code. */
+/** Confirmed Barbazza uniform portraits keyed by barber code. */
 const PORTRAITS_BY_CODE: Record<string, string> = {
   B001: "/barbers/B001.jpg", // Damascene HAKIZIMANA
   B002: "/barbers/B002.jpg", // Eric Musabyimana
+  B003: "/barbers/B003.jpg", // Innocent KABABA
   B005: "/barbers/B005.jpg", // Kwizera Eric
   B007: "/barbers/B007.jpg", // UWINEZA Flugency
   B008: "/barbers/B008.jpg", // Irakoze Barbazza
@@ -14,6 +15,9 @@ const PORTRAITS_BY_NAME: Record<string, string> = {
   "damascene hakizimana": "/barbers/B001.jpg",
   damascene: "/barbers/B001.jpg",
   "eric musabyimana": "/barbers/B002.jpg",
+  "innocent kababa": "/barbers/B003.jpg",
+  kababa: "/barbers/B003.jpg",
+  innocent: "/barbers/B003.jpg",
   "kwizera eric": "/barbers/B005.jpg",
   "uwineza flugency": "/barbers/B007.jpg",
   flugency: "/barbers/B007.jpg",

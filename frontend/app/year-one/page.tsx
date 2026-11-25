@@ -1373,50 +1373,53 @@ Scene 7  Next / close     → VO → Topic I → walk floor → Topic J → logo
         <section className="ydoc-section" id="team-look">
           <h2>6b. Team in confirmed uniform (black &amp; white)</h2>
           <p>
-            Each barber in the confirmed Barbazza striped polo, holding clippers, black-and-white brand look, logo in
-            the background, different poses. Use as look references for posters / film stills — real faces preserved as
-            closely as the tools allow.
+            Each barber in the confirmed Barbazza striped polo, color portraits, logo in the background, each keeping
+            their own original stance (side, crossed arms, or front). Use as look references for posters / film stills.
           </p>
           <div className="ydoc-figures four">
             <figure className="ydoc-figure">
-              <img src="/year-one/team/barber-irakoze-bw.jpg" alt="Irakoze in Barbazza uniform with clippers" />
+              <img src="/year-one/team/barber-kababa-bw.jpg" alt="Innocent Kababa in Barbazza uniform, arms crossed" />
+              <figcaption>Innocent Kababa</figcaption>
+            </figure>
+            <figure className="ydoc-figure">
+              <img src="/year-one/team/barber-irakoze-bw.jpg" alt="Irakoze in Barbazza uniform" />
               <figcaption>Irakoze</figcaption>
             </figure>
             <figure className="ydoc-figure">
-              <img src="/year-one/team/barber-kabera-bw.jpg" alt="Kabera in Barbazza uniform with clippers" />
+              <img src="/year-one/team/barber-kabera-bw.jpg" alt="Kabera in Barbazza uniform, arms crossed" />
               <figcaption>Kabera</figcaption>
             </figure>
             <figure className="ydoc-figure">
               <img
                 src="/year-one/team/barber-damascene-bw.jpg"
-                alt="Damascene Hakizimana in Barbazza uniform with scissors"
+                alt="Damascene Hakizimana in Barbazza uniform, arms crossed"
               />
               <figcaption>Damascene Hakizimana</figcaption>
-            </figure>
-            <figure className="ydoc-figure">
-              <img src="/year-one/team/barber-flugency-bw.jpg" alt="Flugency in Barbazza uniform with clippers" />
-              <figcaption>Flugency</figcaption>
             </figure>
           </div>
           <div className="ydoc-figures four">
             <figure className="ydoc-figure">
+              <img src="/year-one/team/barber-flugency-bw.jpg" alt="Flugency in Barbazza uniform, arms crossed" />
+              <figcaption>Flugency</figcaption>
+            </figure>
+            <figure className="ydoc-figure">
               <img
                 src="/year-one/team/barber-eric-hakizimana-bw.jpg"
-                alt="Eric Hakizimana in Barbazza uniform with clippers"
+                alt="Eric Hakizimana in Barbazza uniform, arms folded"
               />
               <figcaption>Eric Hakizimana</figcaption>
             </figure>
             <figure className="ydoc-figure">
               <img
                 src="/year-one/team/barber-eric-kwizera-bw.jpg"
-                alt="Eric Kwizera in Barbazza uniform with clippers"
+                alt="Eric Kwizera in Barbazza uniform, arms crossed"
               />
               <figcaption>Eric Kwizera</figcaption>
             </figure>
             <figure className="ydoc-figure">
               <img
                 src="/year-one/team/barber-eric-musabyimana-bw.jpg"
-                alt="Eric Musabyimana in Barbazza uniform with clippers"
+                alt="Eric Musabyimana in Barbazza uniform"
               />
               <figcaption>Eric Musabyimana</figcaption>
             </figure>
