@@ -398,7 +398,7 @@ body:has(.public-shell) h4 {
 }
 
 .barber-card-media {
-  height: 280px;
+  height: 320px;
   background: #111 top center / cover no-repeat;
   filter: grayscale(1);
   position: relative;
@@ -408,11 +408,11 @@ body:has(.public-shell) h4 {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, 0.55));
+  background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.5));
 }
 
 .barber-card--rich .barber-card-media {
-  height: 300px;
+  height: 340px;
 }
 
 .barber-card-avatar {
