@@ -177,7 +177,7 @@ export default function YearOneDocumentPage() {
         <header className="ydoc-cover">
           <p className="ydoc-cover-meta">
             <span>Internal production document</span>
-            <span>Version 1.2</span>
+            <span>Version 1.3</span>
             <span>Runtime target: 4–5 minutes</span>
           </p>
           <h1>
@@ -317,7 +317,8 @@ export default function YearOneDocumentPage() {
         <section className="ydoc-section" id="structure">
           <h2>2. Film structure</h2>
           <p>
-            Approximate runtime 4–5 minutes. Timing is a guide. Authenticity and emotion outrank a forced clock.
+            Approximate runtime 4–5 minutes. Chair-to-camera clips are <strong>not one block</strong> — they drop into
+            different sections of the film and mix with the VO. Timing is a guide.
           </p>
           <div className="ydoc-table-wrap">
             <table className="ydoc-table">
@@ -325,55 +326,76 @@ export default function YearOneDocumentPage() {
                 <tr>
                   <th>Time</th>
                   <th>Segment</th>
-                  <th>What the viewer experiences</th>
+                  <th>What happens</th>
+                  <th>Chair-cam mix in</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td>0:00–0:35</td>
                   <td>Opening</td>
-                  <td>Silence, door, lights, clippers, empty chairs, founder enters</td>
+                  <td>Silence, door, lights, empty chairs → VO starts</td>
+                  <td>None yet (B-roll + VO only)</td>
                 </tr>
                 <tr>
                   <td>0:35–1:15</td>
                   <td>Vision</td>
-                  <td>Why Barbazza was built; early days; house standard</td>
+                  <td>Why the shop exists; early days</td>
+                  <td>
+                    <strong>Topic A</strong> mid-scene · <strong>Topic B</strong> near end
+                  </td>
                 </tr>
                 <tr>
                   <td>1:15–2:00</td>
                   <td>Numbers</td>
-                  <td>Real milestones, one figure at a time, over craft footage</td>
+                  <td>One figure at a time over craft footage</td>
+                  <td>None (keep numbers clean) · optional silent face glance</td>
                 </tr>
                 <tr>
                   <td>2:00–3:05</td>
                   <td>Challenges</td>
-                  <td>Hard decisions + you on the chair facing camera</td>
+                  <td>Hard days; quiet after close</td>
+                  <td>
+                    <strong>E</strong> then <strong>C</strong> then <strong>D</strong> (spread apart)
+                  </td>
                 </tr>
                 <tr>
                   <td>3:05–4:05</td>
-                  <td>People / gratitude</td>
-                  <td>B-roll of chairs + your chair-cam thank-you pieces</td>
+                  <td>People</td>
+                  <td>Team + clients gratitude</td>
+                  <td>
+                    <strong>F</strong> then <strong>G</strong> · optional <strong>H</strong>
+                  </td>
                 </tr>
                 <tr>
                   <td>4:05–4:40</td>
                   <td>Celebration</td>
-                  <td>One year marked without becoming a party commercial</td>
+                  <td>One year marked</td>
+                  <td>Short look / quiet — no long talk</td>
                 </tr>
                 <tr>
                   <td>4:40–5:10</td>
                   <td>Next chapter</td>
-                  <td>Final VO, logo, end card with address and contact</td>
+                  <td>Future + close</td>
+                  <td>
+                    <strong>I</strong> then final <strong>J</strong> into logo
+                  </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div className="ydoc-note">
+            Rule: never stack all chair-cam clips together. After each chair-cam piece, return to B-roll + VO for at
+            least 8–15 seconds so the film breathes.
           </div>
         </section>
 
         <section className="ydoc-section" id="script">
           <h2>3. Full shooting script</h2>
           <p>
-            Founder voiceover is first person, in <strong>easy English</strong> — short words, clear meaning. Leave
-            room for silence and natural shop sound. Do not rush the VO over every frame.
+            Founder voiceover is first person, in <strong>easy English</strong>. Leave room for silence and shop sound.
+            Under each scene: <strong>Chair-cam mix</strong> = where your face-to-camera piece goes in that section.
+            Do not dump all chair-cam in one place.
           </p>
 
           <article className="ydoc-scene">
@@ -396,6 +418,10 @@ Feeling good. Good work. A team that shows up.
 We did not know every step.
 We only knew the kind of shop we wanted Barbazza to be.
 And this… is the story of our first year.`}</pre>
+            <span className="ydoc-label">Chair-cam mix</span>
+            <p>
+              <strong>None.</strong> Opening is shop sound + VO only. Your face comes later so it lands harder.
+            </p>
             <p>Hold two seconds. Soft music enters. On-screen: BARBAZZA · YEAR ONE.</p>
           </article>
 
@@ -419,7 +445,17 @@ Starting was more than big dreams.
 It meant learning the business while the doors were already open.
 Building a team. A good name people could trust in Ubutare.
 None of that happens in one week.`}</pre>
-            <p>Transition: cape on a client → clipper sound → into numbers.</p>
+            <span className="ydoc-label">Chair-cam mix (spread in this section)</span>
+            <ol>
+              <li>
+                After VO line “black and white, clean, and honest” → cut to <strong>Topic A</strong> (why you opened)
+                for ~15–25s → back to B-roll.
+              </li>
+              <li>
+                After VO “doors were already open” → cut to <strong>Topic B</strong> (fear / beginning) for ~15–25s →
+                then cape / clipper sound into numbers.
+              </li>
+            </ol>
           </article>
 
           <article className="ydoc-scene">
@@ -444,6 +480,11 @@ to more than one thousand in our best month.
 Behind every number is a talk, a haircut, a reason someone came back.
 The numbers show how far we have come.
 They do not show how hard it was.`}</pre>
+            <span className="ydoc-label">Chair-cam mix</span>
+            <p>
+              <strong>No talking chair-cam here.</strong> Keep numbers clean. Optional: 1–2 second silent face look
+              between “best month” and “Behind every number…” — no words.
+            </p>
           </article>
 
           <article className="ydoc-scene">
@@ -466,10 +507,20 @@ Times we had to keep our quality high when it would have been easier to let it g
 We got things wrong. We fixed them. We stayed honest about the work.
 Growing is not always easy.
 For Barbazza, we had to grow.`}</pre>
-            <p>
-              Intercut your chair-to-camera pieces from Section 5 (hard truths). Keep pauses and breath. No other
-              people speaking on camera.
-            </p>
+            <span className="ydoc-label">Chair-cam mix (spread — do not play C+D+E back to back)</span>
+            <ol>
+              <li>
+                After first VO lines about “the part people do not see” → <strong>Topic E</strong> (after close /
+                quiet day) → B-roll of empty chairs.
+              </li>
+              <li>
+                After “Choices that kept us awake…” → <strong>Topic C</strong> (hardest decision) → more quiet B-roll.
+              </li>
+              <li>
+                After “We got things wrong…” → <strong>Topic D</strong> (what you got wrong) → hold silence → next
+                scene.
+              </li>
+            </ol>
           </article>
 
           <article className="ydoc-scene">
@@ -480,8 +531,8 @@ For Barbazza, we had to grow.`}</pre>
             <h3>The people — “We didn’t build this alone”</h3>
             <span className="ydoc-label">Visuals</span>
             <ul>
-              <li>B-roll only of the shop floor, chairs, finishes, busy moments (faces optional / blurred if needed)</li>
-              <li>You on the barber chair facing camera for gratitude pieces</li>
+              <li>B-roll of the shop floor, chairs, finishes, busy moments</li>
+              <li>You on the chair facing camera only for the thank-you pieces below</li>
               <li>No other talking heads</li>
             </ul>
             <span className="ydoc-label">CEO voiceover</span>
@@ -494,6 +545,21 @@ To our barbers — thank you for the work, every day.
 To everyone who walked through that door, told a friend, and came back — you are part of this story.
 A shop can have a name.
 People make it real.`}</pre>
+            <span className="ydoc-label">Chair-cam mix (spread in this section)</span>
+            <ol>
+              <li>
+                After “never going to be one person” → shop B-roll of barbers working → <strong>Topic F</strong> (thank
+                the team) → more floor B-roll.
+              </li>
+              <li>
+                After “Clients who trust us…” → <strong>Topic G</strong> (thank the clients) → busy door / finish in
+                mirror.
+              </li>
+              <li>
+                Optional near end of scene: short <strong>Topic H</strong> (proud of small things) — only if Scene 4
+                did not already feel long.
+              </li>
+            </ol>
           </article>
 
           <article className="ydoc-scene">
@@ -514,6 +580,11 @@ One year of learning.
 One year of building Barbazza in Kigali.
 We are proud of what this shop has become.
 And we care even more about what comes next.`}</pre>
+            <span className="ydoc-label">Chair-cam mix</span>
+            <p>
+              <strong>No full topic here.</strong> Optional 2–3 second silent smile / look to camera between “we are
+              proud” and “what comes next” — then go to Scene 7.
+            </p>
           </article>
 
           <article className="ydoc-scene">
@@ -536,6 +607,16 @@ This is Barbazza.
 Year one.
 More than a cut.
 And we are just getting started.`}</pre>
+            <span className="ydoc-label">Chair-cam mix (end of film)</span>
+            <ol>
+              <li>
+                After “We are not done” → <strong>Topic I</strong> (year two) for ~15–20s → walk the floor B-roll.
+              </li>
+              <li>
+                Last human moment before logo: <strong>Topic J</strong> (closing lines) straight to camera → soft hold
+                → logo / end card.
+              </li>
+            </ol>
             <span className="ydoc-label">Final card (hold ~4s)</span>
             <pre className="ydoc-vo">{`BARBAZZA
 YEAR ONE
@@ -886,12 +967,14 @@ They do not show how hard it was.`}</pre>
           <h2>5. Chair-to-camera scripts (you only)</h2>
           <p>
             You are the only person who speaks on camera. Sit in a barber chair, face the camera, soft shop behind
-            you, clean sound. Record each topic as its own take (20–45 seconds). Mix these with the VO in the edit.
-            Scripts use <strong>easy English</strong> — say it like you talk.
+            you, clean sound. Record each topic as its own take (20–45 seconds). In the final cut, drop each take into
+            a <strong>different section</strong> of the film (see Scene mix notes in Section 3). Scripts use{" "}
+            <strong>easy English</strong>.
           </p>
           <div className="ydoc-note">
             How to say it: do not read word for word if it feels stiff. Learn the idea, then answer like you are
-            talking to a friend. Keep 1–2 seconds of quiet at the start and end of each take.
+            talking to a friend. Keep 1–2 seconds of quiet at the start and end of each take. After every chair-cam
+            clip in the edit, go back to B-roll + VO for 8–15 seconds — never stack all topics in one block.
           </div>
 
           <h3>Setup</h3>
@@ -899,10 +982,75 @@ They do not show how hard it was.`}</pre>
             <li>Camera at eye level, medium shot (chest up) + one wider safety take</li>
             <li>You seated in the chair, still, calm — hands relaxed</li>
             <li>Look into the lens (this is the “real you” layer)</li>
-            <li>Record VO separately later (or earlier) — different energy: quieter, storytelling</li>
+            <li>Record VO separately — quieter, storytelling energy</li>
           </ul>
 
-          <h3>Topic A — Why Barbazza exists</h3>
+          <h3>Where each topic goes in the video</h3>
+          <div className="ydoc-table-wrap">
+            <table className="ydoc-table">
+              <thead>
+                <tr>
+                  <th>Topic</th>
+                  <th>Film section</th>
+                  <th>When to cut it in</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>A — Why</td>
+                  <td>Scene 2 · Vision</td>
+                  <td>Mid-scene, after “clean and honest”</td>
+                </tr>
+                <tr>
+                  <td>B — Fear</td>
+                  <td>Scene 2 · Vision</td>
+                  <td>Near end, before numbers</td>
+                </tr>
+                <tr>
+                  <td>C — Hardest choice</td>
+                  <td>Scene 4 · Challenges</td>
+                  <td>Middle of hard section</td>
+                </tr>
+                <tr>
+                  <td>D — Got wrong</td>
+                  <td>Scene 4 · Challenges</td>
+                  <td>Near end of hard section</td>
+                </tr>
+                <tr>
+                  <td>E — After close</td>
+                  <td>Scene 4 · Challenges</td>
+                  <td>Start of hard section (first)</td>
+                </tr>
+                <tr>
+                  <td>F — Team</td>
+                  <td>Scene 5 · People</td>
+                  <td>After “not one person”</td>
+                </tr>
+                <tr>
+                  <td>G — Clients</td>
+                  <td>Scene 5 · People</td>
+                  <td>After client VO lines</td>
+                </tr>
+                <tr>
+                  <td>H — Proud (optional)</td>
+                  <td>Scene 5 · People</td>
+                  <td>Only if Scene 4 felt short</td>
+                </tr>
+                <tr>
+                  <td>I — Year two</td>
+                  <td>Scene 7 · Next</td>
+                  <td>After “We are not done”</td>
+                </tr>
+                <tr>
+                  <td>J — Closing</td>
+                  <td>Scene 7 · Next</td>
+                  <td>Last face before logo</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Topic A — Why Barbazza exists · goes in Scene 2</h3>
           <p>
             <strong>Question you are answering:</strong> Why did you open Barbazza — and what did you want this place
             to mean in Kigali?
@@ -913,7 +1061,7 @@ A place in Ubutare where someone sits down and leaves feeling good.
 Different chairs. Different hands. One shop.
 That was the dream.`}</pre>
 
-          <h3>Topic B — The beginning / fear</h3>
+          <h3>Topic B — The beginning / fear · goes in Scene 2</h3>
           <p>
             <strong>Question:</strong> What were you afraid of when you started?
           </p>
@@ -922,7 +1070,7 @@ Not having every answer.
 Building a team while the doors were already open.
 Big dreams are easy. Doing good work every day is the hard part.`}</pre>
 
-          <h3>Topic C — Hardest decision</h3>
+          <h3>Topic C — Hardest decision · goes in Scene 4</h3>
           <p>
             <strong>Question:</strong> What decision this year was the hardest — and why?
           </p>
@@ -931,7 +1079,7 @@ About people. About quality. About money and time.
 When it would have been easier to let things slide — and we did not.
 Those choices cost sleep. They also built Barbazza.`}</pre>
 
-          <h3>Topic D — What you got wrong</h3>
+          <h3>Topic D — What you got wrong · goes in Scene 4</h3>
           <p>
             <strong>Question:</strong> What did you get wrong in year one?
           </p>
@@ -941,7 +1089,7 @@ Timing. What I expected. How long it takes for a team to grow together.
 The point is not pretending it was perfect.
 The point is we fixed things — and we stayed honest about the work.`}</pre>
 
-          <h3>Topic E — The days people don’t see</h3>
+          <h3>Topic E — The days people don’t see · goes in Scene 4 (first)</h3>
           <p>
             <strong>Question:</strong> What does a hard day look like when the clients are gone?
           </p>
@@ -951,7 +1099,7 @@ the numbers, the team, the things you still have to fix.
 Building a business is not only the busy floor.
 It is the choices you make when the chairs are empty.`}</pre>
 
-          <h3>Topic F — The team (without filming them talking)</h3>
+          <h3>Topic F — The team · goes in Scene 5</h3>
           <p>
             <strong>Question:</strong> What do you want to say to the barbers and the shop team?
           </p>
@@ -960,7 +1108,7 @@ Skill matters. Showing up matters more.
 Barbazza is not one person.
 It is people who care about the work when nobody is filming.`}</pre>
 
-          <h3>Topic G — The clients</h3>
+          <h3>Topic G — The clients · goes in Scene 5</h3>
           <p>
             <strong>Question:</strong> What do clients mean to Barbazza after one year?
           </p>
@@ -970,7 +1118,7 @@ who came back, and brought a friend —
 you became part of this story.
 A shop can have a name. People make it real.`}</pre>
 
-          <h3>Topic H — What you’re proud of that nobody sees</h3>
+          <h3>Topic H — What you’re proud of · optional in Scene 5</h3>
           <p>
             <strong>Question:</strong> What are you proud of that people outside never notice?
           </p>
@@ -980,7 +1128,7 @@ The days we kept our quality high when it was hard.
 The quiet work that never makes a post —
 but keeps the shop strong.`}</pre>
 
-          <h3>Topic I — Year two</h3>
+          <h3>Topic I — Year two · goes in Scene 7</h3>
           <p>
             <strong>Question:</strong> Where is Barbazza going in year two?
           </p>
@@ -990,7 +1138,7 @@ Better quality. Cleaner work. A stronger team.
 More people in Kigali who find their chair here.
 We are not done. We are just getting started.`}</pre>
 
-          <h3>Topic J — Closing to camera (final card setup)</h3>
+          <h3>Topic J — Closing to camera · goes in Scene 7 (last face)</h3>
           <p>
             <strong>Question:</strong> If you had one line to leave people with, what is it?
           </p>
@@ -1000,48 +1148,17 @@ This is Barbazza.
 Year one.
 More than a cut.`}</pre>
 
-          <h3>How to mix VO + chair-cam</h3>
-          <div className="ydoc-table-wrap">
-            <table className="ydoc-table">
-              <thead>
-                <tr>
-                  <th>Film chapter</th>
-                  <th>VO</th>
-                  <th>Chair-cam topics to cut in</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Opening / Vision</td>
-                  <td>Scenes 1–2 VO</td>
-                  <td>A (why) · B (fear)</td>
-                </tr>
-                <tr>
-                  <td>Numbers</td>
-                  <td>Scene 3 VO</td>
-                  <td>Optional short glance / silence — keep numbers clean</td>
-                </tr>
-                <tr>
-                  <td>Challenges</td>
-                  <td>Scene 4 VO</td>
-                  <td>C · D · E · H</td>
-                </tr>
-                <tr>
-                  <td>People</td>
-                  <td>Scene 5 VO</td>
-                  <td>F · G</td>
-                </tr>
-                <tr>
-                  <td>Celebration / Close</td>
-                  <td>Scenes 6–7 VO</td>
-                  <td>I · J</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <h3>Suggested full-film edit order (VO ↔ chair-cam)</h3>
+          <pre className="ydoc-vo">{`Scene 1  Opening          → B-roll + VO only
+Scene 2  Vision           → VO → Topic A → B-roll → VO → Topic B → into numbers
+Scene 3  Numbers          → VO + numbers on screen (no chair talk)
+Scene 4  Challenges       → VO → Topic E → B-roll → VO → Topic C → B-roll → VO → Topic D
+Scene 5  People           → VO → Topic F → B-roll → VO → Topic G → (optional Topic H)
+Scene 6  Celebration      → VO + B-roll (optional silent look)
+Scene 7  Next / close     → VO → Topic I → walk floor → Topic J → logo + end card`}</pre>
           <p>
-            Final edit tip: keep <strong>4–7 chair-cam clips</strong> in the film (not all ten). Pick the most honest
-            takes. Straight-to-camera beats should feel rarer and heavier than the VO.
+            Final tip: keep about <strong>6–8 chair-cam clips</strong> in the finished film (not every take). Pick the
+            most honest ones. Face-to-camera should feel special — not constant.
           </p>
         </section>
 
