@@ -1,5 +1,6 @@
 /** Confirmed Barbazza uniform portraits (B&W) keyed by barber code. */
 const PORTRAITS_BY_CODE: Record<string, string> = {
+  B001: "/barbers/B001.jpg", // Damascene HAKIZIMANA
   B002: "/barbers/B002.jpg", // Eric Musabyimana
   B005: "/barbers/B005.jpg", // Kwizera Eric
   B007: "/barbers/B007.jpg", // UWINEZA Flugency
@@ -10,15 +11,17 @@ const PORTRAITS_BY_CODE: Record<string, string> = {
 
 /** Name fallbacks when code is missing or mismatched. */
 const PORTRAITS_BY_NAME: Record<string, string> = {
+  "damascene hakizimana": "/barbers/B001.jpg",
+  damascene: "/barbers/B001.jpg",
   "eric musabyimana": "/barbers/B002.jpg",
   "kwizera eric": "/barbers/B005.jpg",
   "uwineza flugency": "/barbers/B007.jpg",
+  flugency: "/barbers/B007.jpg",
   "irakoze barbazza": "/barbers/B008.jpg",
   irakoze: "/barbers/B008.jpg",
   "kabera bosco": "/barbers/B009.jpg",
   kabera: "/barbers/B009.jpg",
   "eric hakizimana": "/barbers/B011.jpg",
-  coucien: "/barbers/coucien.jpg",
 };
 
 export function portraitForBarber(code?: string | null, name?: string | null): string | null {

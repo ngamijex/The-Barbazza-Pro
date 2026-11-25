@@ -1387,8 +1387,11 @@ Scene 7  Next / close     → VO → Topic I → walk floor → Topic J → logo
               <figcaption>Kabera</figcaption>
             </figure>
             <figure className="ydoc-figure">
-              <img src="/year-one/team/barber-coucien-bw.jpg" alt="Coucien in Barbazza uniform with clippers" />
-              <figcaption>Coucien</figcaption>
+              <img
+                src="/year-one/team/barber-damascene-bw.jpg"
+                alt="Damascene Hakizimana in Barbazza uniform with scissors"
+              />
+              <figcaption>Damascene Hakizimana</figcaption>
             </figure>
             <figure className="ydoc-figure">
               <img src="/year-one/team/barber-flugency-bw.jpg" alt="Flugency in Barbazza uniform with clippers" />
