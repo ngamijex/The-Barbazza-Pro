@@ -265,7 +265,7 @@ export default function YearOneDocumentPage() {
         <header className="ydoc-cover">
           <p className="ydoc-cover-meta">
             <span>Internal production document</span>
-            <span>Version 1.5</span>
+            <span>Version 1.6</span>
             <span>Runtime target: 4–5 minutes</span>
           </p>
           <h1>
@@ -486,9 +486,9 @@ export default function YearOneDocumentPage() {
         <section className="ydoc-section" id="script">
           <h2>3. Full shooting script</h2>
           <p>
-            This is the real cut order. VO and chair answers are written like <strong>real talk</strong> — how you
-            would say it to a friend, not fancy lines. Short words. Real shop life. Follow the edit beats; do not dump
-            all chair-cam in one place.
+            This is the real cut order. Every line must be <strong>clear and easy to understand</strong> — say the full
+            meaning, do not use short poetic lines that confuse people. Talk about real service, real barbers, real
+            problems. Follow the edit beats; do not dump all chair-cam in one place.
           </p>
 
           <article className="ydoc-scene">
@@ -505,12 +505,11 @@ export default function YearOneDocumentPage() {
               <li>No talking for the first beats — only natural sound</li>
             </ul>
             <span className="ydoc-label">CEO voiceover</span>
-            <pre className="ydoc-vo">{`A year ago we opened on KK 31 Avenue, in Ubutare.
-We wanted a barbershop people in Kigali could trust.
-Not fancy talk. Just a clean shop, good haircuts, and a team that shows up.
-We did not know everything.
-We just started.
-This is what our first year looked like.`}</pre>
+            <pre className="ydoc-vo">{`A year ago we opened Barbazza on KK 31 Avenue, in Ubutare, Kigali.
+We wanted to give people a good barbershop experience — clean shop, good haircuts, and barbers who treat you well.
+We did not know everything when we started.
+We learned as we went.
+This video is about our first year.`}</pre>
             <span className="ydoc-label">Chair-cam mix</span>
             <p>
               <strong>None.</strong> Opening is shop sound + VO only. Your face comes later so it lands harder.
@@ -532,35 +531,35 @@ This is what our first year looked like.`}</pre>
             </ul>
 
             <span className="ydoc-label">Edit beat 1 — CEO voiceover</span>
-            <pre className="ydoc-vo">{`From day one we kept it simple.
-Black and white. Clean chairs. Clean cuts.
-Men’s cuts, fades, kids, women, braids, nails — whatever people needed.
-Different barbers. Same rules in the shop.`}</pre>
+            <pre className="ydoc-vo">{`From the first day, we wanted the service to be clear.
+A clean shop. Clean chairs. Good haircuts done the right way.
+We offer men’s cuts, fades, kids’ cuts, women’s styling, braids, and nail care.
+Every barber in the shop follows the same rules, so the client gets the same good service.`}</pre>
 
             <span className="ydoc-label">Edit beat 2 — Chair-cam (you facing camera) · Topic A — Why Barbazza</span>
             <p>
-              <em>Question:</em> Why did you open Barbazza?
+              <em>Question:</em> Why did you open Barbazza? What service did you want to give people?
             </p>
-            <pre className="ydoc-vo">{`Honestly? I was tired of shops where you sit down and nobody really cares.
-I wanted a place in Ubutare where you walk in, you get respected, and you leave looking good.
-Not because of Instagram.
-Because the cut is clean and the people are serious.`}</pre>
+            <pre className="ydoc-vo">{`I opened Barbazza because I wanted to offer really good service in Ubutare.
+I wanted a client to walk in, sit down, and leave happy with their haircut.
+Not a rushed cut. Not a dirty shop. Not someone who does not listen.
+I wanted polite barbers, clean tools, and a cut that looks sharp when you look in the mirror.
+That is the kind of service we try to give every day.`}</pre>
             <p>→ Cut back to B-roll (early shop / chairs) for 8–15 seconds.</p>
 
             <span className="ydoc-label">Edit beat 3 — CEO voiceover</span>
-            <pre className="ydoc-vo">{`Opening day is easy to talk about.
-The hard part started after.
-Learning how to run it while clients were already coming in.
-Hiring. Fixing mistakes. Trying to keep people happy.`}</pre>
+            <pre className="ydoc-vo">{`Opening the shop was one thing.
+Running it every day was harder.
+We had to find good barbers, train the team, and fix mistakes — while clients were already coming in.`}</pre>
 
             <span className="ydoc-label">Edit beat 4 — Chair-cam (you facing camera) · Topic B — Fear / beginning</span>
             <p>
-              <em>Question:</em> What were you afraid of when you started?
+              <em>Question:</em> What was hard when you started?
             </p>
-            <pre className="ydoc-vo">{`I was scared we would open and nobody would come.
-And I was scared that if people came, we would mess it up.
-I did not have all the answers.
-I was learning with the doors open.`}</pre>
+            <pre className="ydoc-vo">{`When we started, I was trying to build a team of good barbers, but the shop was already open.
+Clients were coming in, and we were still learning how to work together.
+I was scared that people would come once and never come back if the service was bad.
+I did not know everything. I was learning while we were already serving clients.`}</pre>
             <p>→ Cape on a client → clipper sound → into numbers (Scene 3).</p>
           </article>
 
@@ -576,20 +575,20 @@ I was learning with the doors open.`}</pre>
               <li>One number at a time; 2–3 seconds each; no flashy motion</li>
             </ul>
             <span className="ydoc-label">CEO voiceover (locked from live DB — Nov 2026)</span>
-            <pre className="ydoc-vo">{`Look at what the year actually looked like.
-Eight thousand eight hundred forty-five haircuts and services.
-We opened three hundred twenty-eight days.
-Around twenty-seven people in the chair every day.
-Eleven barbers worked here. Nine are still with us.
-At the start we did about thirty services a day.
-Our best month went past one thousand.
-Every number is a real person who sat down.
-The numbers look nice.
-The long days do not show up in the numbers.`}</pre>
+            <pre className="ydoc-vo">{`Here are the real numbers from our first year.
+We did eight thousand eight hundred forty-five haircuts and services.
+We opened the shop three hundred twenty-eight days.
+On average, about twenty-seven clients sat in the chair every day.
+Eleven barbers worked at Barbazza. Nine of them are still with us.
+In the beginning we did about thirty services a day.
+In our best month we did more than one thousand services.
+Each number is a real client who came to the shop.
+The numbers look good.
+They do not show how hard the long days were.`}</pre>
             <span className="ydoc-label">Chair-cam mix</span>
             <p>
-              <strong>No talking chair-cam here.</strong> Keep numbers clean. Optional: 1–2 second silent face look
-              between “best month” and “Behind every number…” — no words.
+              <strong>No talking chair-cam here.</strong> Keep numbers clean. Optional: 1–2 second silent face look —
+              no words.
             </p>
           </article>
 
@@ -606,48 +605,47 @@ The long days do not show up in the numbers.`}</pre>
               <li>No staged sadness — keep it real</li>
             </ul>
             <span className="ydoc-label">Edit beat 1 — CEO voiceover</span>
-            <pre className="ydoc-vo">{`People see the busy days.
-They do not see the nights after we lock the door.`}</pre>
+            <pre className="ydoc-vo">{`Clients see the busy shop during the day.
+They do not see what happens after we close and lock the door.`}</pre>
 
             <span className="ydoc-label">Edit beat 2 — Chair-cam · Topic E — After close</span>
             <p>
-              <em>Question:</em> What is a hard day like when everyone has gone home?
+              <em>Question:</em> What do you do after the shop closes?
             </p>
-            <pre className="ydoc-vo">{`After closing, the shop is quiet.
-That is when I check what went wrong.
-Who came late. Who complained. What we sold. What we still owe.
-Busy days look nice on camera.
-The real work is when the chairs are empty.`}</pre>
+            <pre className="ydoc-vo">{`After we close, the shop gets quiet.
+That is when I check the day.
+Which barber came late. If a client complained. How much money we made. What bills we still have to pay.
+When the shop is full, everything looks fine.
+After closing is when you see the real problems and you try to fix them.`}</pre>
             <p>→ B-roll of empty chairs / cleaning for 8–15 seconds.</p>
 
             <span className="ydoc-label">Edit beat 3 — CEO voiceover</span>
-            <pre className="ydoc-vo">{`Some days we had to make hard calls.
-About money. About people. About keeping the cut clean when it was easier to rush.`}</pre>
+            <pre className="ydoc-vo">{`Some days we had to make hard decisions about money, about the team, and about the quality of the haircut.
+It is easy to rush when the shop is full. We tried not to rush and spoil the cut.`}</pre>
 
             <span className="ydoc-label">Edit beat 4 — Chair-cam · Topic C — Hardest decision</span>
             <p>
               <em>Question:</em> What was the hardest decision this year?
             </p>
-            <pre className="ydoc-vo">{`The hardest ones were about people.
-Who stays. Who goes. When to say no.
-And when money was tight, still refusing a bad cut just to finish faster.
+            <pre className="ydoc-vo">{`The hardest decisions were about the team.
+Deciding which barber should stay, and which barber should leave, when the work was not good enough.
+Also when money was tight, still saying no to a bad fast haircut just to finish more clients.
 Those nights I did not sleep well.
-But if we drop the standard, Barbazza is finished.`}</pre>
+But if we accept bad service, clients stop coming, and the shop dies.`}</pre>
             <p>→ Quiet B-roll again (do not jump straight to next chair-cam).</p>
 
             <span className="ydoc-label">Edit beat 5 — CEO voiceover</span>
-            <pre className="ydoc-vo">{`We messed up. A lot.
-Then we fixed it and kept going.`}</pre>
+            <pre className="ydoc-vo">{`We made many mistakes in year one.
+We fixed what we could, and we kept the shop open.`}</pre>
 
             <span className="ydoc-label">Edit beat 6 — Chair-cam · Topic D — What you got wrong</span>
             <p>
               <em>Question:</em> What did you get wrong in year one?
             </p>
-            <pre className="ydoc-vo">{`I thought things would move faster.
-I thought the team would click in one month.
-It takes longer than that.
-I also expected too much too soon from myself.
-We fixed what we could. We learned. We did not quit.`}</pre>
+            <pre className="ydoc-vo">{`I thought the shop would grow faster than it did.
+I thought the barbers would work together perfectly in one month. That was wrong. It takes more time to build a good team.
+I also put too much pressure on myself too early.
+When we made mistakes, we talked about them, we fixed them, and we did not close the shop.`}</pre>
             <p>→ Hold silence → Scene 5.</p>
           </article>
 
@@ -664,49 +662,48 @@ We fixed what we could. We learned. We did not quit.`}</pre>
               <li>No other talking heads</li>
             </ul>
             <span className="ydoc-label">Edit beat 1 — CEO voiceover</span>
-            <pre className="ydoc-vo">{`I did not build this alone.
-Barbazza is the barbers who stand behind these chairs every day.`}</pre>
+            <pre className="ydoc-vo">{`I did not build Barbazza alone.
+The barbers who cut hair here every day are the reason clients come back.`}</pre>
             <p>→ Short B-roll of barbers working.</p>
 
             <span className="ydoc-label">Edit beat 2 — Chair-cam · Topic F — Thank the team</span>
             <p>
               <em>Question:</em> What do you want to say to the barbers?
             </p>
-            <pre className="ydoc-vo">{`To the barbers — thank you.
-For the early mornings. For the late finishes.
-For doing the cut right even when the shop was full.
-Without you, this place is just empty chairs.`}</pre>
+            <pre className="ydoc-vo">{`To every barber at Barbazza — thank you.
+Thank you for opening early, staying late, and giving a good haircut even when the shop was full and you were tired.
+Without good barbers, this shop is only empty chairs and a name on the door.`}</pre>
             <p>→ More floor B-roll for 8–15 seconds.</p>
 
             <span className="ydoc-label">Edit beat 3 — CEO voiceover</span>
-            <pre className="ydoc-vo">{`And thank you to every client who sat down here.
-You gave us your time. You trusted us with your hair.
-Some of you came back. Some of you brought a friend.
-That is how a shop survives.`}</pre>
+            <pre className="ydoc-vo">{`And thank you to every client who came to Barbazza.
+You gave us your time and you trusted us with your hair.
+Some of you came back again. Some of you brought a friend or a family member.
+That is how a barbershop stays open.`}</pre>
 
             <span className="ydoc-label">Edit beat 4 — Chair-cam · Topic G — Thank the clients</span>
             <p>
               <em>Question:</em> What do you want to say to the clients?
             </p>
-            <pre className="ydoc-vo">{`If you walked through that door this year — thank you.
-If you came back after the first cut — thank you.
-If you told your brother or your friend to come — thank you.
-We know you have many shops to choose from.
-You chose us. We do not take that lightly.`}</pre>
+            <pre className="ydoc-vo">{`If you came to Barbazza this year — thank you.
+If you came back after your first haircut — thank you.
+If you told your brother, your friend, or your family to come here — thank you.
+There are many barbershops in Kigali. You chose us.
+We take that seriously, and we try to give you good service every time.`}</pre>
             <p>→ Busy door / finish in the mirror.</p>
 
             <span className="ydoc-label">Edit beat 5 — CEO voiceover (close this chapter)</span>
-            <pre className="ydoc-vo">{`The name on the door is Barbazza.
-The people inside make it work.`}</pre>
+            <pre className="ydoc-vo">{`The shop is called Barbazza.
+It works because of the barbers and the clients inside it.`}</pre>
 
             <span className="ydoc-label">Optional edit beat — Chair-cam · Topic H — Proud of small things</span>
             <p>
-              Use only if Scene 4 felt short. <em>Question:</em> What are you proud of that nobody posts about?
+              Use only if Scene 4 felt short. <em>Question:</em> What are you proud of that people do not see online?
             </p>
-            <pre className="ydoc-vo">{`I am proud of the boring stuff.
-Cleaning the shop. Opening on time. Fixing a bad day without drama.
-Nobody posts that.
-But that is what keeps clients coming back.`}</pre>
+            <pre className="ydoc-vo">{`I am proud of the small daily work.
+Cleaning the shop. Opening on time. Fixing a problem with a client without making a big drama.
+Nobody puts that on Instagram.
+But that small work is what makes clients trust us and come back.`}</pre>
           </article>
 
           <article className="ydoc-scene">
@@ -721,11 +718,10 @@ But that is what keeps clients coming back.`}</pre>
               <li>Keep it intimate — not a crowd commercial</li>
             </ul>
             <span className="ydoc-label">CEO voiceover</span>
-            <pre className="ydoc-vo">{`Today we mark one year in Kigali.
-One year of opening the door.
-One year of learning the hard way.
-We are proud.
-And we still have work to do.`}</pre>
+            <pre className="ydoc-vo">{`Today we celebrate one year of Barbazza in Kigali.
+One year of opening the shop, serving clients, and learning from our mistakes.
+We are proud of how far we have come.
+We still have a lot of work to do to make the service even better.`}</pre>
             <span className="ydoc-label">Chair-cam mix</span>
             <p>
               <strong>No full topic here.</strong> Optional 2–3 second silent smile / look to camera between “we are
@@ -744,38 +740,36 @@ And we still have work to do.`}</pre>
               <li>Founder walks the floor → stops → looks → camera pulls back → logo → fade black</li>
             </ul>
             <span className="ydoc-label">Edit beat 1 — CEO voiceover</span>
-            <pre className="ydoc-vo">{`Year one is done.
-We are not stopping here.`}</pre>
+            <pre className="ydoc-vo">{`Year one is finished.
+Now we start year two, and we want the service to get better.`}</pre>
 
             <span className="ydoc-label">Edit beat 2 — Chair-cam · Topic I — Year two</span>
             <p>
-              <em>Question:</em> What do you want in year two?
+              <em>Question:</em> What do you want for Barbazza in year two?
             </p>
-            <pre className="ydoc-vo">{`Year two, I want fewer mistakes and cleaner cuts.
-A stronger team. More people in Kigali who say, “Let’s go to Barbazza.”
-Not louder. Just better.
-Every day.`}</pre>
+            <pre className="ydoc-vo">{`In year two, I want fewer mistakes and better haircuts.
+I want a stronger team of barbers who work well together.
+I want more people in Kigali to know Barbazza and choose to come here for good service.
+Not more noise online. Just better service in the chair, every day.`}</pre>
             <p>→ Walk the floor B-roll.</p>
 
             <span className="ydoc-label">Edit beat 3 — CEO voiceover</span>
-            <pre className="ydoc-vo">{`To everyone who helped us get through year one — thank you.`}</pre>
+            <pre className="ydoc-vo">{`To every barber and every client who helped us through year one — thank you.`}</pre>
 
             <span className="ydoc-label">Edit beat 4 — Chair-cam · Topic J — Closing (last face before logo)</span>
             <p>
-              <em>Question:</em> Last thing you want to say?
+              <em>Question:</em> Last thing you want to say to people watching?
             </p>
-            <pre className="ydoc-vo">{`We opened one year ago.
-We are still here.
+            <pre className="ydoc-vo">{`We opened Barbazza one year ago.
+We are still open, still cutting hair, and still improving the service.
 This is Barbazza.
 Year one.
 More than a cut.`}</pre>
             <p>→ Soft hold on your face → logo → end card.</p>
 
             <span className="ydoc-label">Edit beat 5 — CEO final lines under logo (optional VO under card)</span>
-            <pre className="ydoc-vo">{`Barbazza.
-Year one.
-More than a cut.
-See you in the chair.`}</pre>
+            <pre className="ydoc-vo">{`Barbazza. Year one. More than a cut.
+Come sit in the chair. We will take care of you.`}</pre>
 
             <span className="ydoc-label">Final card (hold ~4s)</span>
             <pre className="ydoc-vo">{`BARBAZZA
@@ -1107,16 +1101,16 @@ thebarbazza.com
           </div>
 
           <h3>Suggested locked VO lines (Scene 3)</h3>
-          <pre className="ydoc-vo">{`Look at what the year actually looked like.
-Eight thousand eight hundred forty-five haircuts and services.
-We opened three hundred twenty-eight days.
-Around twenty-seven people in the chair every day.
-Eleven barbers worked here. Nine are still with us.
-At the start we did about thirty services a day.
-Our best month went past one thousand.
-Every number is a real person who sat down.
-The numbers look nice.
-The long days do not show up in the numbers.`}</pre>
+          <pre className="ydoc-vo">{`Here are the real numbers from our first year.
+We did eight thousand eight hundred forty-five haircuts and services.
+We opened the shop three hundred twenty-eight days.
+On average, about twenty-seven clients sat in the chair every day.
+Eleven barbers worked at Barbazza. Nine of them are still with us.
+In the beginning we did about thirty services a day.
+In our best month we did more than one thousand services.
+Each number is a real client who came to the shop.
+The numbers look good.
+They do not show how hard the long days were.`}</pre>
           <div className="ydoc-note">
             Still collect off-camera: 3–5 challenges, three achievements, one memorable moment, founder lesson,
             year-two goals. Revenue can stay off the film if you prefer privacy.
@@ -1209,95 +1203,94 @@ The long days do not show up in the numbers.`}</pre>
 
           <h3>Topic A — Why Barbazza · Scene 2</h3>
           <p>
-            <strong>Question:</strong> Why did you open Barbazza?
+            <strong>Question:</strong> Why did you open Barbazza? What service did you want to give people?
           </p>
-          <pre className="ydoc-vo">{`Honestly? I was tired of shops where you sit down and nobody really cares.
-I wanted a place in Ubutare where you walk in, you get respected, and you leave looking good.
-Not because of Instagram.
-Because the cut is clean and the people are serious.`}</pre>
+          <pre className="ydoc-vo">{`I opened Barbazza because I wanted to offer really good service in Ubutare.
+I wanted a client to walk in, sit down, and leave happy with their haircut.
+Not a rushed cut. Not a dirty shop. Not someone who does not listen.
+I wanted polite barbers, clean tools, and a cut that looks sharp when you look in the mirror.
+That is the kind of service we try to give every day.`}</pre>
 
-          <h3>Topic B — Fear · Scene 2</h3>
+          <h3>Topic B — Building the team · Scene 2</h3>
           <p>
-            <strong>Question:</strong> What were you afraid of when you started?
+            <strong>Question:</strong> What was hard when you started?
           </p>
-          <pre className="ydoc-vo">{`I was scared we would open and nobody would come.
-And I was scared that if people came, we would mess it up.
-I did not have all the answers.
-I was learning with the doors open.`}</pre>
+          <pre className="ydoc-vo">{`When we started, I was trying to build a team of good barbers, but the shop was already open.
+Clients were coming in, and we were still learning how to work together.
+I was scared that people would come once and never come back if the service was bad.
+I did not know everything. I was learning while we were already serving clients.`}</pre>
 
           <h3>Topic C — Hardest decision · Scene 4</h3>
           <p>
             <strong>Question:</strong> What was the hardest decision this year?
           </p>
-          <pre className="ydoc-vo">{`The hardest ones were about people.
-Who stays. Who goes. When to say no.
-And when money was tight, still refusing a bad cut just to finish faster.
+          <pre className="ydoc-vo">{`The hardest decisions were about the team.
+Deciding which barber should stay, and which barber should leave, when the work was not good enough.
+Also when money was tight, still saying no to a bad fast haircut just to finish more clients.
 Those nights I did not sleep well.
-But if we drop the standard, Barbazza is finished.`}</pre>
+But if we accept bad service, clients stop coming, and the shop dies.`}</pre>
 
           <h3>Topic D — What you got wrong · Scene 4</h3>
           <p>
             <strong>Question:</strong> What did you get wrong in year one?
           </p>
-          <pre className="ydoc-vo">{`I thought things would move faster.
-I thought the team would click in one month.
-It takes longer than that.
-I also expected too much too soon from myself.
-We fixed what we could. We learned. We did not quit.`}</pre>
+          <pre className="ydoc-vo">{`I thought the shop would grow faster than it did.
+I thought the barbers would work together perfectly in one month. That was wrong. It takes more time to build a good team.
+I also put too much pressure on myself too early.
+When we made mistakes, we talked about them, we fixed them, and we did not close the shop.`}</pre>
 
           <h3>Topic E — After close · Scene 4 (first)</h3>
           <p>
-            <strong>Question:</strong> What is a hard day like when everyone has gone home?
+            <strong>Question:</strong> What do you do after the shop closes?
           </p>
-          <pre className="ydoc-vo">{`After closing, the shop is quiet.
-That is when I check what went wrong.
-Who came late. Who complained. What we sold. What we still owe.
-Busy days look nice on camera.
-The real work is when the chairs are empty.`}</pre>
+          <pre className="ydoc-vo">{`After we close, the shop gets quiet.
+That is when I check the day.
+Which barber came late. If a client complained. How much money we made. What bills we still have to pay.
+When the shop is full, everything looks fine.
+After closing is when you see the real problems and you try to fix them.`}</pre>
 
           <h3>Topic F — Team · Scene 5</h3>
           <p>
             <strong>Question:</strong> What do you want to say to the barbers?
           </p>
-          <pre className="ydoc-vo">{`To the barbers — thank you.
-For the early mornings. For the late finishes.
-For doing the cut right even when the shop was full.
-Without you, this place is just empty chairs.`}</pre>
+          <pre className="ydoc-vo">{`To every barber at Barbazza — thank you.
+Thank you for opening early, staying late, and giving a good haircut even when the shop was full and you were tired.
+Without good barbers, this shop is only empty chairs and a name on the door.`}</pre>
 
           <h3>Topic G — Clients · Scene 5</h3>
           <p>
             <strong>Question:</strong> What do you want to say to the clients?
           </p>
-          <pre className="ydoc-vo">{`If you walked through that door this year — thank you.
-If you came back after the first cut — thank you.
-If you told your brother or your friend to come — thank you.
-We know you have many shops to choose from.
-You chose us. We do not take that lightly.`}</pre>
+          <pre className="ydoc-vo">{`If you came to Barbazza this year — thank you.
+If you came back after your first haircut — thank you.
+If you told your brother, your friend, or your family to come here — thank you.
+There are many barbershops in Kigali. You chose us.
+We take that seriously, and we try to give you good service every time.`}</pre>
 
           <h3>Topic H — Proud of (optional) · Scene 5</h3>
           <p>
-            <strong>Question:</strong> What are you proud of that nobody posts about?
+            <strong>Question:</strong> What are you proud of that people do not see online?
           </p>
-          <pre className="ydoc-vo">{`I am proud of the boring stuff.
-Cleaning the shop. Opening on time. Fixing a bad day without drama.
-Nobody posts that.
-But that is what keeps clients coming back.`}</pre>
+          <pre className="ydoc-vo">{`I am proud of the small daily work.
+Cleaning the shop. Opening on time. Fixing a problem with a client without making a big drama.
+Nobody puts that on Instagram.
+But that small work is what makes clients trust us and come back.`}</pre>
 
           <h3>Topic I — Year two · Scene 7</h3>
           <p>
-            <strong>Question:</strong> What do you want in year two?
+            <strong>Question:</strong> What do you want for Barbazza in year two?
           </p>
-          <pre className="ydoc-vo">{`Year two, I want fewer mistakes and cleaner cuts.
-A stronger team. More people in Kigali who say, “Let’s go to Barbazza.”
-Not louder. Just better.
-Every day.`}</pre>
+          <pre className="ydoc-vo">{`In year two, I want fewer mistakes and better haircuts.
+I want a stronger team of barbers who work well together.
+I want more people in Kigali to know Barbazza and choose to come here for good service.
+Not more noise online. Just better service in the chair, every day.`}</pre>
 
           <h3>Topic J — Closing · Scene 7 (last face)</h3>
           <p>
-            <strong>Question:</strong> Last thing you want to say?
+            <strong>Question:</strong> Last thing you want to say to people watching?
           </p>
-          <pre className="ydoc-vo">{`We opened one year ago.
-We are still here.
+          <pre className="ydoc-vo">{`We opened Barbazza one year ago.
+We are still open, still cutting hair, and still improving the service.
 This is Barbazza.
 Year one.
 More than a cut.`}</pre>
