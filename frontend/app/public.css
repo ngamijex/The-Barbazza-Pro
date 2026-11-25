@@ -400,7 +400,7 @@ body:has(.public-shell) h4 {
 .barber-card-media {
   height: 320px;
   background: #111 top center / cover no-repeat;
-  filter: grayscale(1);
+  filter: none;
   position: relative;
 }
 
@@ -425,7 +425,7 @@ body:has(.public-shell) h4 {
   border-radius: 50%;
   border: 3px solid #fff;
   background: #222 top center / cover no-repeat;
-  filter: grayscale(1);
+  filter: none;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
@@ -557,7 +557,7 @@ body:has(.public-shell) h4 {
   border-radius: 50%;
   border: 3px solid rgba(255, 255, 255, 0.85);
   background: #222 top center / cover no-repeat;
-  filter: grayscale(1);
+  filter: none;
 }
 
 .profile-kicker {
@@ -667,7 +667,7 @@ body:has(.public-shell) h4 {
   height: 64px;
   border-radius: 50%;
   background: #222 center / cover no-repeat;
-  filter: grayscale(1);
+  filter: none;
   border: 2px solid #fff;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }

@@ -353,7 +353,7 @@ body:has(.ydoc) {
   width: 100%;
   aspect-ratio: 4 / 5;
   object-fit: cover;
-  filter: grayscale(1) contrast(1.05);
+  filter: none;
 }
 
 .ydoc-figure figcaption {
