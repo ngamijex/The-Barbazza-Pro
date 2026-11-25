@@ -96,6 +96,81 @@ const musicFilms: RefVideo[] = [
   },
 ];
 
+const cinematicFilms: RefVideo[] = [
+  {
+    id: "AP8PZeNfoeo",
+    title: "A Cinematic Barbershop Commercial",
+    blurb: "Short atmospheric promo — lighting, slow moves, and shop mood without heavy talk.",
+    study: "Cinema: atmosphere first · Soft light · Short holds",
+  },
+  {
+    id: "CRyB1gHZr1M",
+    title: "“Barbershop” Cinematic Video (GH5 + fast lens)",
+    blurb: "Shallow depth, creamy bokeh, and craft close-ups. Study what a fast lens does in a busy shop.",
+    study: "Cinema: shallow focus · Detail heroes · Lens character",
+  },
+  {
+    id: "J5oxDwuHC_0",
+    title: "MADEMAN Barbershop — Blackbird Films",
+    blurb: "Polished brand film — pacing, music hits, and how a shop feels “premium” on camera.",
+    study: "Cinema: brand polish · Music sync · Clean brand frames",
+  },
+  {
+    id: "U7GjXgR67k8",
+    title: "Standing Ovation Barbershop Commercial",
+    blurb: "Energetic commercial cut — useful contrast against Barbazza’s calmer documentary pace.",
+    study: "Cinema: contrast study · Faster montage · What not to overdo",
+  },
+  {
+    id: "JgRNAXxTpZo",
+    title: "Black Rabbit Barbershop — Bushwick Brooklyn Promo",
+    blurb: "Neighborhood shop promo — rooms, chairs, street energy, and local identity.",
+    study: "Cinema: place identity · Shop as character · Local texture",
+  },
+  {
+    id: "5NLbFvSaZCc",
+    title: "Amazing Fades Barbershop Promo",
+    blurb: "Fade-forward promo language — transformations, clipper work, reveal moments.",
+    study: "Cinema: before/after energy · Clipper motion · Reveal timing",
+  },
+  {
+    id: "yHpwpFoN_kg",
+    title: "Fade Factory Barbershop × J Visuals",
+    blurb: "Modern fade-house promo — gimbal moves, transitions, and social-ready pacing.",
+    study: "Cinema: gimbal flow · Transition ideas · Social pace",
+  },
+  {
+    id: "eOZhzUq_Ipg",
+    title: "The Barbershop Diaries (Documentary)",
+    blurb: "Diary-style shop life — conversation, chairs, and daily rhythm beyond a single cut.",
+    study: "Cinema: vérité day · Conversation under picture · Daily rhythm",
+  },
+  {
+    id: "YGvrmRE9SG4",
+    title: "Primo Barbershop — Tips on Filming a Promo (BTS)",
+    blurb: "Behind the scenes of a shop promo: mist filters, low angles, calm-to-intense cut pattern.",
+    study: "Cinema: how they shot it · Mist bloom · Angle power",
+  },
+  {
+    id: "Wty92BC45Zg",
+    title: "How I Edit Smooth Transitions — Barbershop B-roll Walkthrough",
+    blurb: "Edit lesson on cape wipes, motion match, and seamless shop B-roll assemblies.",
+    study: "Cinema: transition craft · B-roll assembly · Match cuts",
+  },
+  {
+    id: "TIoWlaQ_BNU",
+    title: "How I Shot a Cinematic Barber Video (Bupek)",
+    blurb: "Full breakdown: atmosphere with audio, film-look grade, in-camera transitions, shot variety.",
+    study: "Cinema: audio atmosphere · Grade look · Shot planning",
+  },
+  {
+    id: "EBvMh2V0-kU",
+    title: "Beyond The Fade — Mos Faded (also in tone board)",
+    blurb: "Short craft identity film — useful again here for pure cinematic shop atmosphere.",
+    study: "Cinema: craft identity · Short form · Shop mood",
+  },
+];
+
 const craftFilms: RefVideo[] = [
   {
     id: "Oikttlsj0OY",
@@ -120,6 +195,18 @@ const craftFilms: RefVideo[] = [
     title: "Sharp, Clean, Quiet — Japanese Fade Experience",
     blurb: "Full fade experience with clear chapters: scissors, clipper fade, wash, finish.",
     study: "Craft: chaptered cut · Clean transitions · Ritual pace",
+  },
+  {
+    id: "5NLbFvSaZCc",
+    title: "Amazing Fades — craft-forward promo cuts",
+    blurb: "Extra craft reference for fade reveals and tool motion inside a cinematic promo.",
+    study: "Craft: fade reveal · Tool motion inside a promo",
+  },
+  {
+    id: "yHpwpFoN_kg",
+    title: "Fade Factory — modern fade house cuts",
+    blurb: "Modern fade pacing and chair energy for Barbazza B-roll ideas.",
+    study: "Craft: modern fade pace · Chair energy",
   },
 ];
 
@@ -167,7 +254,8 @@ export default function YearOneDocumentPage() {
           <a href="#script">Script</a>
           <a href="#chair">Chair cam</a>
           <a href="#edit">Editing</a>
-          <a href="#inspire">Resources</a>
+          <a href="#inspire">Tone</a>
+          <a href="#cinematic">Cinema</a>
           <a href="#music">Music</a>
         </nav>
         <a href="https://www.thebarbazza.com/book">Book a chair</a>
@@ -177,7 +265,7 @@ export default function YearOneDocumentPage() {
         <header className="ydoc-cover">
           <p className="ydoc-cover-meta">
             <span>Internal production document</span>
-            <span>Version 1.3</span>
+            <span>Version 1.4</span>
             <span>Runtime target: 4–5 minutes</span>
           </p>
           <h1>
@@ -268,23 +356,28 @@ export default function YearOneDocumentPage() {
               </a>
             </li>
             <li>
+              <a href="#cinematic">
+                10. Barbershop cinematic videos <span>p.10</span>
+              </a>
+            </li>
+            <li>
               <a href="#edit-films">
-                10. Editing masterclasses <span>p.10</span>
+                11. Editing masterclasses <span>p.11</span>
               </a>
             </li>
             <li>
               <a href="#music">
-                11. Instrumental beds <span>p.11</span>
+                12. Instrumental beds <span>p.12</span>
               </a>
             </li>
             <li>
               <a href="#craft">
-                12. Barbershop craft &amp; cuts <span>p.12</span>
+                13. Barbershop craft &amp; cuts <span>p.13</span>
               </a>
             </li>
             <li>
               <a href="#reading">
-                13. Reading &amp; further links <span>p.13</span>
+                14. Reading &amp; further links <span>p.14</span>
               </a>
             </li>
           </ol>
@@ -393,9 +486,8 @@ export default function YearOneDocumentPage() {
         <section className="ydoc-section" id="script">
           <h2>3. Full shooting script</h2>
           <p>
-            Founder voiceover is first person, in <strong>easy English</strong>. Leave room for silence and shop sound.
-            Under each scene: <strong>Chair-cam mix</strong> = where your face-to-camera piece goes in that section.
-            Do not dump all chair-cam in one place.
+            This is the real cut order. Founder VO and <strong>full chair-to-camera words</strong> are written here in
+            sequence (easy English). Do not dump all chair-cam in one place — follow the edit beats in each scene.
           </p>
 
           <article className="ydoc-scene">
@@ -437,25 +529,38 @@ And this… is the story of our first year.`}</pre>
               <li>Barbers preparing stations; branding in black &amp; white</li>
               <li>If recreating early moments, do not present them as archive</li>
             </ul>
-            <span className="ydoc-label">CEO voiceover</span>
+
+            <span className="ydoc-label">Edit beat 1 — CEO voiceover</span>
             <pre className="ydoc-vo">{`We wanted Barbazza to feel simple and strong — black and white, clean, and honest.
 Classic cuts. Fades. Lining. Kids. Women’s styling. Braids. Nail care.
-Different hands. Different chairs. One way of working.
-Starting was more than big dreams.
+Different hands. Different chairs. One way of working.`}</pre>
+
+            <span className="ydoc-label">Edit beat 2 — Chair-cam (you facing camera) · Topic A — Why Barbazza</span>
+            <p>
+              <em>Question:</em> Why did you open Barbazza — and what did you want this place to mean in Kigali?
+            </p>
+            <pre className="ydoc-vo">{`I did not open Barbazza only to cut hair.
+I wanted a shop with a clear way of working — simple, black and white, and honest.
+A place in Ubutare where someone sits down and leaves feeling good.
+Different chairs. Different hands. One shop.
+That was the dream.`}</pre>
+            <p>→ Cut back to B-roll (early shop / chairs) for 8–15 seconds.</p>
+
+            <span className="ydoc-label">Edit beat 3 — CEO voiceover</span>
+            <pre className="ydoc-vo">{`Starting was more than big dreams.
 It meant learning the business while the doors were already open.
 Building a team. A good name people could trust in Ubutare.
 None of that happens in one week.`}</pre>
-            <span className="ydoc-label">Chair-cam mix (spread in this section)</span>
-            <ol>
-              <li>
-                After VO line “black and white, clean, and honest” → cut to <strong>Topic A</strong> (why you opened)
-                for ~15–25s → back to B-roll.
-              </li>
-              <li>
-                After VO “doors were already open” → cut to <strong>Topic B</strong> (fear / beginning) for ~15–25s →
-                then cape / clipper sound into numbers.
-              </li>
-            </ol>
+
+            <span className="ydoc-label">Edit beat 4 — Chair-cam (you facing camera) · Topic B — Fear / beginning</span>
+            <p>
+              <em>Question:</em> What were you afraid of when you started?
+            </p>
+            <pre className="ydoc-vo">{`When we started, I was afraid of what I did not know.
+Not having every answer.
+Building a team while the doors were already open.
+Big dreams are easy. Doing good work every day is the hard part.`}</pre>
+            <p>→ Cape on a client → clipper sound → into numbers (Scene 3).</p>
           </article>
 
           <article className="ydoc-scene">
@@ -499,28 +604,50 @@ They do not show how hard it was.`}</pre>
               <li>Founder alone near the entrance; focused cuts; team meeting</li>
               <li>No staged sadness — keep it real</li>
             </ul>
-            <span className="ydoc-label">CEO voiceover</span>
+            <span className="ydoc-label">Edit beat 1 — CEO voiceover</span>
             <pre className="ydoc-vo">{`The part people do not see is the part that builds the shop.
-Days that did not go as planned.
-Choices that kept us awake at night.
-Times we had to keep our quality high when it would have been easier to let it go.
-We got things wrong. We fixed them. We stayed honest about the work.
+Days that did not go as planned.`}</pre>
+
+            <span className="ydoc-label">Edit beat 2 — Chair-cam · Topic E — After close</span>
+            <p>
+              <em>Question:</em> What does a hard day look like when the clients are gone?
+            </p>
+            <pre className="ydoc-vo">{`After we close, the shop gets quiet.
+That is when you feel the day —
+the numbers, the team, the things you still have to fix.
+Building a business is not only the busy floor.
+It is the choices you make when the chairs are empty.`}</pre>
+            <p>→ B-roll of empty chairs / cleaning for 8–15 seconds.</p>
+
+            <span className="ydoc-label">Edit beat 3 — CEO voiceover</span>
+            <pre className="ydoc-vo">{`Choices that kept us awake at night.
+Times we had to keep our quality high when it would have been easier to let it go.`}</pre>
+
+            <span className="ydoc-label">Edit beat 4 — Chair-cam · Topic C — Hardest decision</span>
+            <p>
+              <em>Question:</em> What decision this year was the hardest — and why?
+            </p>
+            <pre className="ydoc-vo">{`The hardest choices were the ones nobody sees.
+About people. About quality. About money and time.
+When it would have been easier to let things slide — and we did not.
+Those choices cost sleep. They also built Barbazza.`}</pre>
+            <p>→ Quiet B-roll again (do not jump straight to next chair-cam).</p>
+
+            <span className="ydoc-label">Edit beat 5 — CEO voiceover</span>
+            <pre className="ydoc-vo">{`We got things wrong. We fixed them. We stayed honest about the work.
 Growing is not always easy.
 For Barbazza, we had to grow.`}</pre>
-            <span className="ydoc-label">Chair-cam mix (spread — do not play C+D+E back to back)</span>
-            <ol>
-              <li>
-                After first VO lines about “the part people do not see” → <strong>Topic E</strong> (after close /
-                quiet day) → B-roll of empty chairs.
-              </li>
-              <li>
-                After “Choices that kept us awake…” → <strong>Topic C</strong> (hardest decision) → more quiet B-roll.
-              </li>
-              <li>
-                After “We got things wrong…” → <strong>Topic D</strong> (what you got wrong) → hold silence → next
-                scene.
-              </li>
-            </ol>
+
+            <span className="ydoc-label">Edit beat 6 — Chair-cam · Topic D — What you got wrong</span>
+            <p>
+              <em>Question:</em> What did you get wrong in year one?
+            </p>
+            <pre className="ydoc-vo">{`We got things wrong.
+I got things wrong.
+Timing. What I expected. How long it takes for a team to grow together.
+The point is not pretending it was perfect.
+The point is we fixed things — and we stayed honest about the work.`}</pre>
+            <p>→ Hold silence → Scene 5.</p>
           </article>
 
           <article className="ydoc-scene">
@@ -535,31 +662,53 @@ For Barbazza, we had to grow.`}</pre>
               <li>You on the chair facing camera only for the thank-you pieces below</li>
               <li>No other talking heads</li>
             </ul>
-            <span className="ydoc-label">CEO voiceover</span>
+            <span className="ydoc-label">Edit beat 1 — CEO voiceover</span>
             <pre className="ydoc-vo">{`If this year has one truth, it is the people.
 Barbazza was never going to be one person.
-It takes barbers who care about good work.
-Clients who trust us with their time and how they look.
+It takes barbers who care about good work.`}</pre>
+            <p>→ Short B-roll of barbers working.</p>
+
+            <span className="ydoc-label">Edit beat 2 — Chair-cam · Topic F — Thank the team</span>
+            <p>
+              <em>Question:</em> What do you want to say to the barbers and the shop team?
+            </p>
+            <pre className="ydoc-vo">{`To every barber who worked a chair this year — thank you.
+Skill matters. Showing up matters more.
+Barbazza is not one person.
+It is people who care about the work when nobody is filming.`}</pre>
+            <p>→ More floor B-roll for 8–15 seconds.</p>
+
+            <span className="ydoc-label">Edit beat 3 — CEO voiceover</span>
+            <pre className="ydoc-vo">{`Clients who trust us with their time and how they look.
 A team that opens early, stays late, and keeps the shop strong.
 To our barbers — thank you for the work, every day.
-To everyone who walked through that door, told a friend, and came back — you are part of this story.
-A shop can have a name.
+To everyone who walked through that door, told a friend, and came back — you are part of this story.`}</pre>
+
+            <span className="ydoc-label">Edit beat 4 — Chair-cam · Topic G — Thank the clients</span>
+            <p>
+              <em>Question:</em> What do clients mean to Barbazza after one year?
+            </p>
+            <pre className="ydoc-vo">{`To everyone who walked through that door —
+who trusted us with their time and how they look —
+who came back, and brought a friend —
+you became part of this story.
+A shop can have a name. People make it real.`}</pre>
+            <p>→ Busy door / finish in the mirror.</p>
+
+            <span className="ydoc-label">Edit beat 5 — CEO voiceover (close this chapter)</span>
+            <pre className="ydoc-vo">{`A shop can have a name.
 People make it real.`}</pre>
-            <span className="ydoc-label">Chair-cam mix (spread in this section)</span>
-            <ol>
-              <li>
-                After “never going to be one person” → shop B-roll of barbers working → <strong>Topic F</strong> (thank
-                the team) → more floor B-roll.
-              </li>
-              <li>
-                After “Clients who trust us…” → <strong>Topic G</strong> (thank the clients) → busy door / finish in
-                mirror.
-              </li>
-              <li>
-                Optional near end of scene: short <strong>Topic H</strong> (proud of small things) — only if Scene 4
-                did not already feel long.
-              </li>
-            </ol>
+
+            <span className="ydoc-label">Optional edit beat — Chair-cam · Topic H — Proud of small things</span>
+            <p>
+              Use only if Scene 4 felt short. <em>Question:</em> What are you proud of that people outside never
+              notice?
+            </p>
+            <pre className="ydoc-vo">{`I am proud of the small things.
+Doing the same good work again and again.
+The days we kept our quality high when it was hard.
+The quiet work that never makes a post —
+but keeps the shop strong.`}</pre>
           </article>
 
           <article className="ydoc-scene">
@@ -597,26 +746,43 @@ And we care even more about what comes next.`}</pre>
             <ul>
               <li>Founder walks the floor → stops → looks → camera pulls back → logo → fade black</li>
             </ul>
-            <span className="ydoc-label">CEO final voiceover</span>
+            <span className="ydoc-label">Edit beat 1 — CEO voiceover</span>
             <pre className="ydoc-vo">{`We started with a dream.
 One year later, we have a story.
-We are not done.
-Better quality. Cleaner work. A stronger team. More people who find their chair here.
-To everyone in the first year of Barbazza — thank you.
+We are not done.`}</pre>
+
+            <span className="ydoc-label">Edit beat 2 — Chair-cam · Topic I — Year two</span>
+            <p>
+              <em>Question:</em> Where is Barbazza going in year two?
+            </p>
+            <pre className="ydoc-vo">{`Year two is not about being louder.
+It is about being clearer.
+Better quality. Cleaner work. A stronger team.
+More people in Kigali who find their chair here.
+We are not done. We are just getting started.`}</pre>
+            <p>→ Walk the floor B-roll.</p>
+
+            <span className="ydoc-label">Edit beat 3 — CEO voiceover</span>
+            <pre className="ydoc-vo">{`Better quality. Cleaner work. A stronger team. More people who find their chair here.
+To everyone in the first year of Barbazza — thank you.`}</pre>
+
+            <span className="ydoc-label">Edit beat 4 — Chair-cam · Topic J — Closing (last face before logo)</span>
+            <p>
+              <em>Question:</em> If you had one line to leave people with, what is it?
+            </p>
+            <pre className="ydoc-vo">{`We started with a dream.
+One year later, we have a story.
 This is Barbazza.
+Year one.
+More than a cut.`}</pre>
+            <p>→ Soft hold on your face → logo → end card.</p>
+
+            <span className="ydoc-label">Edit beat 5 — CEO final lines under logo (optional VO under card)</span>
+            <pre className="ydoc-vo">{`This is Barbazza.
 Year one.
 More than a cut.
 And we are just getting started.`}</pre>
-            <span className="ydoc-label">Chair-cam mix (end of film)</span>
-            <ol>
-              <li>
-                After “We are not done” → <strong>Topic I</strong> (year two) for ~15–20s → walk the floor B-roll.
-              </li>
-              <li>
-                Last human moment before logo: <strong>Topic J</strong> (closing lines) straight to camera → soft hold
-                → logo / end card.
-              </li>
-            </ol>
+
             <span className="ydoc-label">Final card (hold ~4s)</span>
             <pre className="ydoc-vo">{`BARBAZZA
 YEAR ONE
@@ -966,10 +1132,9 @@ They do not show how hard it was.`}</pre>
         <section className="ydoc-section" id="chair">
           <h2>5. Chair-to-camera scripts (you only)</h2>
           <p>
-            You are the only person who speaks on camera. Sit in a barber chair, face the camera, soft shop behind
-            you, clean sound. Record each topic as its own take (20–45 seconds). In the final cut, drop each take into
-            a <strong>different section</strong> of the film (see Scene mix notes in Section 3). Scripts use{" "}
-            <strong>easy English</strong>.
+            Recording cue cards. The <strong>same full words</strong> already sit inside Section 3 in cut order — use
+            this section on shoot day to record each take. You are the only person on camera. Sit in the chair, face
+            the lens, soft shop behind you. 20–45 seconds per topic. Easy English.
           </p>
           <div className="ydoc-note">
             How to say it: do not read word for word if it feels stiff. Learn the idea, then answer like you are
@@ -1317,8 +1482,21 @@ Scene 7  Next / close     → VO → Topic I → walk floor → Topic J → logo
           />
         </section>
 
+        <section className="ydoc-section" id="cinematic">
+          <h2>10. Barbershop cinematic videos</h2>
+          <p>
+            Extra cinematic shop films and promos — lighting, camera moves, atmosphere, and B-roll language. Play on
+            this page. Steal mood and craft, not logos or copycat edits. Barbazza stays calmer than the fastest promos.
+          </p>
+          <ResourceBlock
+            heading="Cinematic shop atmosphere (many embeds)"
+            intro="Commercials, promos, BTS, and diary films to fill the look board. Watch several — note light, lens, and how long they hold a shot."
+            items={cinematicFilms}
+          />
+        </section>
+
         <section className="ydoc-section" id="edit-films">
-          <h2>10. Editing masterclasses</h2>
+          <h2>11. Editing masterclasses</h2>
           <ResourceBlock
             heading="How editors build tone and structure"
             intro="Play these while planning the timeline. Translate lessons into the Barbazza chapter map above."
@@ -1327,7 +1505,7 @@ Scene 7  Next / close     → VO → Topic I → walk floor → Topic J → logo
         </section>
 
         <section className="ydoc-section" id="music">
-          <h2>11. Instrumental beds (listen on-page)</h2>
+          <h2>12. Instrumental beds (listen on-page)</h2>
           <p>
             These are tone references for beds under VO. Clear license/credit rules before final use. Prefer sparse
             piano / ambient over epic trailer music. Always duck under speech; sometimes mute completely for clippers.
@@ -1395,7 +1573,7 @@ Scene 7  Next / close     → VO → Topic I → walk floor → Topic J → logo
         </section>
 
         <section className="ydoc-section" id="craft">
-          <h2>12. Barbershop craft &amp; cuts</h2>
+          <h2>13. Barbershop craft &amp; cuts</h2>
           <p>
             Use these for B-roll language: hands, clipper grain, fade transitions, cape, wash, mirror reveal. Barbazza
             should shoot its own craft — these teach what to look for and how long to hold.
@@ -1408,7 +1586,7 @@ Scene 7  Next / close     → VO → Topic I → walk floor → Topic J → logo
         </section>
 
         <section className="ydoc-section" id="reading">
-          <h2>13. Reading &amp; further links</h2>
+          <h2>14. Reading &amp; further links</h2>
           <ul>
             <li>
               <a
